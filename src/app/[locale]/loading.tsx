@@ -1,5 +1,5 @@
 import styles from './loading.module.css';
-import logo from '../../img/hero/logo.svg';
+import logo from '../../img/logo.svg';
 import Image from 'next/image';
 
 export default function Loading() {

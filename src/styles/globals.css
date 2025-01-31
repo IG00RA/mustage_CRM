@@ -13,10 +13,10 @@ main {
 body {
   background-color: var(--background);
   margin: 0;
-  font-family: var(--font_ukr);
+  font-family: var(--font_sfPro);
   font-size: var(--fs_small);
   font-weight: 400;
-  color: var(--main_text_color);
+  color: var(--text_dark);
   line-height: 1.5;
 }
 
@@ -48,7 +48,7 @@ li {
 
 a {
   text-decoration: none;
-  color: var(--main_text_color);
+  color: var(--text_dark);
 }
 
 button {
@@ -57,7 +57,7 @@ button {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  color: var(--main_text_color);
+  color: var(--text_dark);
 }
 
 img {

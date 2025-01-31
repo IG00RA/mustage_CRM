@@ -11,36 +11,30 @@ interface PrivateRouteProps {
 export default function PrivateRoute({ children }: PrivateRouteProps) {
   const user = useAuthStore(state => state.user);
   const router = useRouter();
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Zustand's `persist` middleware should hydrate the store asynchronously.
     const checkUser = () => {
-      if (user === null && typeof window !== 'undefined') {
-        // Check localStorage directly if Zustand store is empty
+      if (!user) {
         const localStorageUser = localStorage.getItem('auth-storage');
         const parsedUser = localStorageUser
-          ? JSON.parse(localStorageUser).user
+          ? JSON.parse(localStorageUser).state.user
           : null;
 
-        // If we find the user in localStorage, we manually set it in Zustand
         if (parsedUser) {
           useAuthStore.setState({ user: parsedUser });
+        } else {
+          router.replace('/ru/login'); // Використовуємо `replace`, щоб не зберігати зайві переходи в історії
         }
       }
-      setIsHydrated(true);
+
+      setIsLoading(false);
     };
 
     checkUser();
-  }, [user]);
+  }, [user, router]);
 
-  if (!isHydrated) return null;
+  if (isLoading) return null; // Запобігає миготінню контенту
 
-  // If no user is found, redirect to login page
-  if (!user) {
-    router.push('/ru/login');
-    return null;
-  }
-
-  return <>{children}</>;
+  return user ? <>{children}</> : null;
 }

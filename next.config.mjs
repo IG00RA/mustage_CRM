@@ -14,7 +14,7 @@ const nextConfig = {
     return [
       {
         source: '/',
-        destination: '/uk',
+        destination: '/ru',
         permanent: false,
       },
     ];

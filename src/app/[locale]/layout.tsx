@@ -3,36 +3,49 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { NextIntlClientProvider } from 'next-intl';
 import localFont from 'next/font/local';
-import { Montserrat } from 'next/font/google';
+import { Inter, Public_Sans } from 'next/font/google';
 import { getMessages } from 'next-intl/server';
 import { ToastContainer } from 'react-toastify';
 import { Metadata } from 'next';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import PrivateRoute from '@/components/PrivateRoute/PrivateRoute';
 
-const montserrat = Montserrat({
+const public_Sans = Public_Sans({
   subsets: ['latin'],
-  weight: ['500'],
-  variable: '--font_mons',
+  weight: ['400', '600', '700'],
+  variable: '--font_sans',
   adjustFontFallback: false,
 });
 
-const ukraine = localFont({
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font_inter',
+  adjustFontFallback: false,
+});
+
+const sfPro = localFont({
   src: [
-    { path: '../../fonts/e-Ukraine-Light.otf', weight: '300', style: 'normal' },
     {
-      path: '../../fonts/e-Ukraine-Regular.otf',
+      path: '../../fonts/SF-Pro-Display-Regular.otf',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../../fonts/e-Ukraine-Medium.otf',
+      path: '../../fonts/SF-Pro-Display-Medium.otf',
       weight: '500',
       style: 'normal',
     },
-    { path: '../../fonts/e-Ukraine-Bold.otf', weight: '700', style: 'normal' },
+    {
+      path: '../../fonts/SF-Pro-Display-Semibold.otf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../fonts/SF-Pro-Display-Bold.otf',
+      weight: '700',
+      style: 'normal',
+    },
   ],
-  variable: '--font_ukr',
+  variable: '--font_sfPro',
 });
 
 export const localeMetadata: Record<
@@ -133,7 +146,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${montserrat.variable} ${ukraine.variable}`}>
+      <body
+        className={`${public_Sans.variable} ${inter.variable} ${sfPro.variable}`}
+      >
         <NextIntlClientProvider messages={messages}>
           {children}
           <ToastContainer />
