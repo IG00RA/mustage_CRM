@@ -60,9 +60,8 @@ export const localeMetadata: Record<
       'вакансії, робота, Mustage Team, digital-маркетинг, affiliate-маркетинг, кар’єра',
   },
   ru: {
-    title: 'Вакансии в Mustage Team – Работа в digital-маркетинге',
-    description:
-      'Присоединяйтесь к Mustage Team – молодой украинской команде, создающей инновационные решения в digital-маркетинге и affiliate-индустрии.',
+    title: 'Mustage CRM – Админ-панель для управления аккаунтами',
+    description: 'Mustage CRM – Админ-панель для управления аккаунтами',
     keywords:
       'вакансии, работа, Mustage Team, digital-маркетинг, affiliate-маркетинг, карьера',
   },

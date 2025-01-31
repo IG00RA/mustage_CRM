@@ -7,11 +7,14 @@
     "password": "Пароль:",
     "loginButton": "Войти"
   },
-  "login": "Вход",
-  "username": "Имя пользователя",
-  "password": "Пароль",
-  "loginButton": "Войти",
-  "overview": "Обзор",
-  "lineChart": "Линейный график",
-  "barChart": "Гистограмма"
+  "Sidebar": {
+    "logoText": "Mustage CRM",
+    "mainPar": "Общее",
+    "accPar": "Управление аккаунтами",
+    "otherPar": "Другое",
+    "otherParMenu": {
+      "review": "Обзор",
+      "settings": "Настройки базы данных"
+    }
+  }
 }

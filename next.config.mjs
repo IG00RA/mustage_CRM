@@ -17,6 +17,11 @@ const nextConfig = {
         destination: '/ru',
         permanent: false,
       },
+      {
+        source: '/ru',
+        destination: '/ru/dashboard',
+        permanent: false,
+      },
     ];
   },
 };

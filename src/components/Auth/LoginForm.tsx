@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './LoginForm.module.css';
 import logo from '@/img/logo.svg';
 
@@ -12,6 +12,7 @@ export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const login = useAuthStore(state => state.login);
+  const user = useAuthStore(state => state.user);
   const router = useRouter();
   const t = useTranslations();
 
@@ -22,6 +23,14 @@ export default function LoginForm() {
       router.push('/ru/dashboard');
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/ru/dashboard');
+    }
+  }, [user, router]);
+
+  if (user) return null;
 
   return (
     <section className={styles.section}>
