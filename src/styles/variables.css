@@ -1,0 +1,31 @@
+:root {
+  --font_mons: 'Montserrat', sans-serif;
+  --font_ukr: 'e-Ukraine', sans-serif;
+
+  --background: #fafafa;
+  --foreground: #e1e4f2;
+  --main_color: #082859;
+  --main_text_color: #1a1a1a;
+  --second_text_color: #082859;
+
+  --main_gradient: linear-gradient(98deg, #1a75ff 0%, #1df990 100%);
+
+  --fs_small: 14px;
+  --fs_xsmall: 16px;
+  --fs_medium: 18px;
+  --fs_large: 24px;
+  --fs_xlarge: 32px;
+  --fs_mxlarge: 40px;
+  --fs_xxlarge: 64px;
+  --fs_xxxlarge: 80px;
+
+  --mobile: 328px;
+  --mobile_l: 360px;
+  --mobile_xl: 475px;
+  --tablet: 768px;
+  --laptop: 1024px;
+  --desktop: 1328px;
+
+  --container: 91.1%;
+  --container_mob: 95.55%;
+}

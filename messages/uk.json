@@ -1,0 +1,9 @@
+{
+  "login": "Вхід",
+  "username": "Ім'я користувача",
+  "password": "Пароль",
+  "loginButton": "Увійти",
+  "overview": "Огляд",
+  "lineChart": "Лінійний графік",
+  "barChart": "Гістограма"
+}

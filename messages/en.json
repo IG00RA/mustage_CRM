@@ -1,0 +1,112 @@
+{
+  "Page": {
+    "back": "Return to the main page",
+    "button": "I want to be part of Mustage!",
+    "header": "Thank you for submitting your application!",
+    "salary": "*The salary is discussed individually during the interview depending on the quality of the demonstrated work.",
+    "candidate": "You are our ideal candidate if:",
+    "responsibilities": "What are the responsibilities?",
+    "offer": "What do we offer?",
+    "video": "About the vacancy",
+    "error": "No vacancies found",
+    "text": "Wait for a message from our manager"
+  },
+  "Header": {
+    "home": "MUSTAGE.TEAM"
+  },
+  "Hero": {
+    "header": "Mustage Team",
+    "video": "Video about us",
+    "text": "the perfect place for career growth in the IT industry",
+    "listHeader": "Links to our external projects:",
+    "blocHeader": {
+      "first": "Mustage Team",
+      "second": "Our Mission"
+    },
+    "blockText": {
+      "first": "- a young Ukrainian team in the field of digital marketing, developing innovative solutions for our own projects. We have created not just a media space but an entire ecosystem in the affiliate marketing industry.",
+      "second": "- become №1 in the industry by creating an ecosystem of services and projects that will cover absolutely all possible needs of webmasters and advertisers. Build the best team with the best people and create the best products on the market. We're looking for the best, we're looking for our people."
+    }
+  },
+  "Offer": {
+    "header": "What we offer",
+    "headerText": "By working with us, you will get:",
+    "blockHeader": {
+      "first": "Flexible work schedule",
+      "second": "Competitive salary",
+      "third": "Career growth opportunities",
+      "fourth": "Full-time employment",
+      "fifth": "Remote work",
+      "sixth": "Payment in crypto with a link to $",
+      "seventh": "We invest in your professional growth (payment for courses, training, advanced training)"
+    },
+    "blockText": {
+      "first": {
+        "first": "We work completely remotely, creating an environment where ",
+        "second": "everyone can realize their potential ",
+        "third": "while maintaining harmony with personal life."
+      },
+      "second": {
+        "first": "Our values are ",
+        "second": " flexibility, transparency, growth, team support, and result orientation."
+      },
+      "third": {
+        "first": "Our company is small, but that's our strength! ",
+        "second": "Every week, we hold online meetings where we help each other, especially newcomers, and always support those in need. We build warm and friendly relationships within the team and never forget the 'goodies' for important dates for each of us 😉."
+      }
+    }
+  },
+  "Vacancies": {
+    "error": "Currently, there are no open vacancies",
+    "header": {
+      "first": "The number of new ideas ",
+      "second": "emerges faster ",
+      "third": "than we can ",
+      "fourth": "bring them to life, ",
+      "fifth": "so we are ",
+      "sixth": "constantly actively looking for employees ",
+      "seventh": "for the following positions"
+    }
+  },
+  "Form": {
+    "headerPage": "Thank you for your feedback!",
+    "header": "Didn't find your vacancy but want to work with us?",
+    "headerPageText": "We are ready to get to know you, but first, tell us about your experience and share your contact details ☺️",
+    "headerText": "Leave your details, and we will definitely contact you as soon as we find the perfect role for you!",
+    "questionText": "If you have any questions, you can write to us here:",
+    "errors": {
+      "nameLength": "Name length up to 100 characters",
+      "required": "Required field",
+      "nickFormat": "Invalid nickname format",
+      "linkFormat": "Invalid link format",
+      "fileOrLinkRequired": "File or resume link is required",
+      "sendError": "An error occurred, please try again later",
+      "validError": "There are errors in the form"
+    },
+    "form": {
+      "namePlaceHolder": "First and last name",
+      "name": "First and last name",
+      "contentPlaceHolder": "Share your thoughts...",
+      "content": "Share your thoughts...",
+      "contentPagePlaceHolder": "A few words about you...",
+      "contentPage": "A few words about you...",
+      "button": "Submit",
+      "resume": "Attach your resume",
+      "resumePlaceHolder": "Resume (.pdf)",
+      "resumeLink": "Resume link",
+      "resumeLinkPlaceHolder": "Resume link",
+      "nick": "Telegram nickname",
+      "nickPlaceHolder": "Telegram nickname",
+      "or": "or",
+      "ok": "Form submitted"
+    }
+  },
+  "Footer": {
+    "policy": "Privacy Policy",
+    "menu": {
+      "offer": "About us",
+      "vacancies": "Vacancies",
+      "contacts": "Contacts"
+    }
+  }
+}
