@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { menuItems, socialItems } from '@/data/data';
+// import { menuItems, socialItems } from '@/data/sidebar';
 import styles from './MobMenu.module.css';
 import Icon from '@/helpers/Icon';
 import Link from 'next/link';
@@ -47,7 +47,7 @@ export default function MobMenu({
             <span className={styles.line}></span>
           </div>
         </div>
-        <nav>
+        {/* <nav>
           <ul>
             {menuItems.map((item, index) => (
               <li
@@ -61,12 +61,12 @@ export default function MobMenu({
               </li>
             ))}
           </ul>
-        </nav>
+        </nav> */}
 
         <div className={styles.lang_wrap}>
           <LanguageSwitcher headerStyle={false} />
         </div>
-        <ul className={styles.social}>
+        {/* <ul className={styles.social}>
           {socialItems.map((item, index) => (
             <li className={styles.social_item} key={index}>
               <a
@@ -80,7 +80,7 @@ export default function MobMenu({
               </a>
             </li>
           ))}
-        </ul>
+        </ul> */}
       </div>
     </div>
   );

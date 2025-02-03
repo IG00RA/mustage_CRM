@@ -5,17 +5,22 @@
 
   --background: #fff;
   --foreground: #e1e4f2;
+
+  --blue_light: rgba(86, 113, 255, 0.2);
+
   --main_light: #aebbff;
   --main_blue: #5671ff;
-  --blue_light: rgba(86, 113, 255, 0.2);
   --main_darker: #0f2abd;
   --main_dark: #1939df;
-  --transparent-grey: #a9a9c1;
+
   --text_light: #707579;
   --text_dark: #2a2a2a;
   --text_light_primary: #212b36;
+
   --grey: #e1e1ec;
   --grey_light: #f1f1f6;
+  --transparent_grey: #a9a9c1;
+  --disabled_grey: #a9a9c1;
 
   --box_shadow: 0px 0px 2px 0px rgba(153, 159, 195, 0.2),
     0px 12px 24px -4px rgba(153, 159, 195, 0.12);

@@ -7,3 +7,146 @@
   /* @media (min-width: 1408px) {
   } */
 }
+
+.logo_wrap {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.logo_img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.logo_text {
+  color: var(--main_blue);
+  font-size: var(--fs_medium);
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2;
+}
+
+.user_wrap {
+  display: flex;
+  padding: 16px 20px;
+  align-items: center;
+  gap: 16px;
+  border-radius: 16px;
+  background: rgba(145, 158, 171, 0.08);
+  margin: 0 4px 2px;
+}
+
+.user_logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nick_wrap {
+  /* display: flex; */
+}
+
+.nick {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 590;
+  line-height: 1.57;
+}
+
+.role {
+  color: var(--disabled_grey);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+}
+
+.parTitle {
+  padding: 24px 0px 8px 12px;
+  border-radius: 8px;
+  background: var(--background);
+  margin-bottom: 4px;
+  color: var(--text_light);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.63;
+  text-transform: uppercase;
+}
+
+.nav {
+  margin-bottom: 4px;
+}
+
+.nav_item {
+  margin-bottom: 4px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.nav_item_link {
+  display: flex;
+  gap: 12px;
+  display: flex;
+  padding: 9px 12px;
+  align-items: center;
+  position: relative;
+  transition: background-color 0.3s ease;
+  border-radius: 12px;
+
+  &:hover,
+  &:focus {
+    background-color: var(--blue_light);
+    & .logo {
+      opacity: 0;
+    }
+    & .logo_hov {
+      opacity: 1;
+    }
+    & .nav_item_text {
+      color: var(--main_blue);
+    }
+  }
+}
+
+.nav_item.active .nav_item_link {
+  background-color: var(--blue_light);
+  & .logo {
+    opacity: 0;
+  }
+  & .logo_hov {
+    opacity: 1;
+  }
+  & .nav_item_text {
+    color: var(--main_blue);
+  }
+}
+
+.nav_item_text {
+  color: var(--text_light);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+  transition: color 0.3s ease;
+}
+
+.logo {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.logo_hov {
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}

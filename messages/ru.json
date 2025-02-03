@@ -10,11 +10,27 @@
   "Sidebar": {
     "logoText": "Mustage CRM",
     "mainPar": "Общее",
-    "accPar": "Управление аккаунтами",
-    "otherPar": "Другое",
-    "otherParMenu": {
+    "mainParMenu": {
       "review": "Обзор",
       "settings": "Настройки базы данных"
+    },
+    "accPar": "Управление аккаунтами",
+    "accParMenu": {
+      "category": "Категории",
+      "names": "Наименования",
+      "allAcc": "Все аккаунты",
+      "upload": "Загрузка аккаунтов",
+      "load": "Выгрузка аккаунтов",
+      "distribution": "Раздача аккаунтов",
+      "replacement": "Замена аккаунтов",
+      "removeSale": "Убрать аккаунты с продажи",
+      "autoFarmControl": "Управление автофармом"
+    },
+    "otherPar": "Другое",
+    "otherParMenu": {
+      "promo": "Промокоды",
+      "users": "Пользователи",
+      "referrals": "Реферальная система"
     }
   }
 }

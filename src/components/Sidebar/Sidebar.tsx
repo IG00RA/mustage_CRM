@@ -1,32 +1,41 @@
 'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 import { useAuthStore } from '@/store/authStore';
 import Image from 'next/image';
 import logo from '@/img/logo.svg';
 import avatar from '@/img/sidebar/avatar.png';
 import { useTranslations } from 'next-intl';
+import Icon from '@/helpers/Icon';
+import { accParMenu, mainParMenu, otherParMenu } from '@/data/sidebar';
 
 const Sidebar = () => {
   const t = useTranslations();
+  const pathname = usePathname();
 
   const logout = useAuthStore(state => state.logout);
   const handleLogout = () => {
     logout();
   };
+
+  // Функція для визначення активного посилання
+  const isActive = (link: string): boolean => pathname === `/ru/${link}`;
+
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo_wrap}>
+      <Link href="/" className={styles.logo_wrap}>
         <Image
           src={logo}
           alt="Mustage CRM logo"
-          className={styles.logo}
+          className={styles.logo_img}
           width={0}
           height={0}
           sizes="100vw"
         />
-        <span className={styles.logo_wrap}>{t('Sidebar.logoText')}</span>
-      </div>
+        <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
+      </Link>
       <div className={styles.user_wrap}>
         <Image
           src={avatar}
@@ -37,23 +46,98 @@ const Sidebar = () => {
           sizes="100vw"
         />
         <div className={styles.nick_wrap}>
-          <span className={styles.nick}>Hudson Alvarez</span>
-          <span className={styles.role}>Admin</span>
+          <h2 className={styles.nick}>Hudson Alvarez</h2>
+          <p className={styles.role}>Admin</p>
         </div>
       </div>
-      <nav>
-        <span className={styles.par_text}>{t('Sidebar.mainPar')}</span>
 
-        <ul>
-          <li>
-            <Link href="/ru/dashboard">🏠 Dashboard</Link>
-          </li>
-          <li>
-            <Link href="/ru/dashboard/statistics">📊 Statistics</Link>
-          </li>
-          <li>
-            <button onClick={handleLogout}>Logout</button>
-          </li>
+      <h3 className={styles.parTitle}>{t('Sidebar.mainPar')}</h3>
+      <nav className={styles.nav}>
+        <ul role="menu">
+          {mainParMenu.map((item, index) => (
+            <li
+              className={`${styles.nav_item} ${
+                isActive(item.link) ? styles.active : ''
+              }`}
+              key={index}
+            >
+              <Link className={styles.nav_item_link} href={`/ru/${item.link}`}>
+                <Icon
+                  className={styles.logo}
+                  name={item.logo}
+                  width={22}
+                  height={22}
+                />
+                <Icon
+                  className={styles.logo_hov}
+                  name={item.logo_hov}
+                  width={22}
+                  height={22}
+                />
+                <span className={styles.nav_item_text}>{t(item.header)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <h3 className={styles.parTitle}>{t('Sidebar.accPar')}</h3>
+      <nav className={styles.nav}>
+        <ul role="menu">
+          {accParMenu.map((item, index) => (
+            <li
+              className={`${styles.nav_item} ${
+                isActive(item.link) ? styles.active : ''
+              }`}
+              key={index}
+            >
+              <Link className={styles.nav_item_link} href={`/ru/${item.link}`}>
+                <Icon
+                  className={styles.logo}
+                  name={item.logo}
+                  width={22}
+                  height={22}
+                />
+                <Icon
+                  className={styles.logo_hov}
+                  name={item.logo_hov}
+                  width={22}
+                  height={22}
+                />
+                <span className={styles.nav_item_text}>{t(item.header)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <h3 className={styles.parTitle}>{t('Sidebar.otherPar')}</h3>
+      <nav className={styles.nav}>
+        <ul role="menu">
+          {otherParMenu.map((item, index) => (
+            <li
+              className={`${styles.nav_item} ${
+                isActive(item.link) ? styles.active : ''
+              }`}
+              key={index}
+            >
+              <Link className={styles.nav_item_link} href={`/ru/${item.link}`}>
+                <Icon
+                  className={styles.logo}
+                  name={item.logo}
+                  width={22}
+                  height={22}
+                />
+                <Icon
+                  className={styles.logo_hov}
+                  name={item.logo_hov}
+                  width={22}
+                  height={22}
+                />
+                <span className={styles.nav_item_text}>{t(item.header)}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
     </aside>
