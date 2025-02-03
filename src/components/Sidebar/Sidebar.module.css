@@ -47,9 +47,9 @@
   flex-shrink: 0;
 }
 
-.nick_wrap {
-  /* display: flex; */
-}
+/* .nick_wrap {
+  display: flex;
+} */
 
 .nick {
   color: var(--text_dark);

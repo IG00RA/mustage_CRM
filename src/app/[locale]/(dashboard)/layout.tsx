@@ -22,7 +22,9 @@ export default function DashboardLayout({
     <PrivateRoute>
       <div className={styles.main_wrap}>
         <Sidebar />
-        <main className={styles.main}>{children}</main>
+        <main className={styles.main}>
+          <div className={styles.main_container}>{children}</div>
+        </main>
       </div>
     </PrivateRoute>
   );

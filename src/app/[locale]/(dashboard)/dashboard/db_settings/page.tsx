@@ -3,8 +3,8 @@ import Statistics from '@/components/Statistics/Statistics';
 
 export default function Db_settings() {
   return (
-    <PrivateRoute>
-      <Statistics />
-    </PrivateRoute>
+    <>
+      <span>Db_settings</span>
+    </>
   );
 }

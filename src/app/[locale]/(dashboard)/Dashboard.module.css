@@ -1,3 +1,7 @@
 .main_wrap {
   display: flex;
 }
+
+.main_container {
+  padding: 24px 32px 48px;
+}
