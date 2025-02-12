@@ -1,5 +1,3 @@
-// salesData.ts
-
 export type Sale = {
   period: string;
   amount: number;

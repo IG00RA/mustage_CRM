@@ -9,7 +9,5 @@ export default function Dashboard() {
     logout();
   };
 
-  return (
-      <Statistics />
-  );
+  return <Statistics />;
 }

@@ -1,0 +1,87 @@
+.selectWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.selectLabel {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+}
+
+.selectContainer {
+  position: relative;
+  display: inline-block;
+  width: 400px;
+}
+
+.selectBox {
+  cursor: pointer;
+  height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--grey);
+  background: var(--background);
+  color: var(--text_light);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+  display: flex;
+  justify-content: space-between;
+  & svg {
+    transition: transform 0.3s ease;
+  }
+}
+
+.selectBox:hover {
+  background-color: #f8f8f8;
+}
+
+.selectBox.open svg {
+  transform: rotate(180deg);
+}
+
+.selectOptions {
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 5px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.selectOpen.selectOptions {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.optionItem {
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--text_light);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+}
+
+.optionItem:hover {
+  background: #f0f0f0;
+}
+
+.selectBox,
+.optionItem {
+  user-select: none;
+}

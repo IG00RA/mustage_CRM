@@ -32,5 +32,40 @@
       "users": "Пользователи",
       "referrals": "Реферальная система"
     }
+  },
+  "Statistics": {
+    "header": "Обзор",
+    "stat": {
+      "headerQuantity": "Продажи (кол-во)",
+      "headerSum": "Продажи (сумма)",
+      "periodDay": "за сегодня",
+      "periodWeek": "за эту неделю",
+      "periodMonth": "за этот месяц"
+    },
+    "chart": {
+      "header": "График",
+      "headerText": "чем в прошлом году",
+      "toggler": {
+        "togglerType": "Тип:",
+        "togglerSum": "Сумма",
+        "togglerQuantity": "Количество",
+        "togglerData": "Дата:",
+        "togglerDataToday": "Сегодня",
+        "togglerDataYesterday": "Вчера",
+        "togglerDataWeek": "Неделя",
+        "togglerDataMonth": "Месяц",
+        "togglerDataQuarter": "Квартал",
+        "togglerDataCustom": "Ввести период",
+        "togglerDataYear": "Год",
+        "togglerCategory": "Категории:",
+        "togglerChooseCategory": "Выберите категорию",
+        "togglerName": "Наименование:",
+        "togglerChooseName": "Выберите наименование"
+      },
+      "buttonText": "Скачать xlsx-отчет",
+      "chartView": "Вид графика:",
+      "chartViewLinear": "Линейный график",
+      "chartViewHistogram": "Гистограмма"
+    }
   }
 }

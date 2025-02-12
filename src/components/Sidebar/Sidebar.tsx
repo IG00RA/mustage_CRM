@@ -25,7 +25,7 @@ const Sidebar = () => {
 
   return (
     <aside className={styles.sidebar}>
-      <Link href="/" className={styles.logo_wrap}>
+      {/* <Link href="/" className={styles.logo_wrap}>
         <Image
           src={logo}
           alt="Mustage CRM logo"
@@ -35,7 +35,7 @@ const Sidebar = () => {
           sizes="100vw"
         />
         <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
-      </Link>
+      </Link> */}
       <div className={styles.user_wrap}>
         <Image
           src={avatar}
