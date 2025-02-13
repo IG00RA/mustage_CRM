@@ -1,0 +1,49 @@
+.searchContainer {
+  position: relative;
+}
+
+.button {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+}
+
+.icon {
+  transition: fill 0.3s ease;
+}
+
+.input {
+  position: relative;
+  display: flex;
+  padding: 8px 14px 8px 42px;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--grey);
+  color: var(--text_dark);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  transition: border 0.3s ease;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    border: 1px solid var(--main_light);
+  }
+
+  &:disabled {
+    border: 1px solid var(--grey);
+    background: var(--grey_light);
+    color: var(--disabled_grey);
+    & .icon {
+      fill: var(--disabled_grey);
+    }
+  }
+}
+
+.input::placeholder {
+  color: var(--text_light);
+  font-size: var(--fs_small);
+}

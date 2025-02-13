@@ -17,7 +17,7 @@ export const mainParMenu = [
 export const accParMenu = [
   {
     header: 'Sidebar.accParMenu.category',
-    link: 'dashboard1',
+    link: 'category',
     logo: 'icon-inbox-filled',
     logo_hov: 'icon-fill_inbox-filled',
   },
