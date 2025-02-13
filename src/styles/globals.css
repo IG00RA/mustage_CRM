@@ -64,3 +64,35 @@ img {
   display: block;
   height: auto;
 }
+
+/* Глобальні стилі для скролбара */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Трек (фонова область) */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Смуга прокрутки */
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: #eaecf0;
+}
+
+/* Горизонтальний скролбар */
+::-webkit-scrollbar:horizontal {
+  height: 8px;
+}
+
+/* Зміна кольору при наведенні */
+::-webkit-scrollbar-thumb:hover {
+  background: #d0d4db;
+}
+
+/* Зміна кольору при натисканні */
+::-webkit-scrollbar-thumb:active {
+  background: #b8bdc6;
+}

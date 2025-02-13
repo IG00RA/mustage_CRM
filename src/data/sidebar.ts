@@ -8,7 +8,7 @@ export const mainParMenu = [
 
   {
     header: 'Sidebar.mainParMenu.settings',
-    link: 'dashboard1',
+    link: 'db_settings',
     logo: 'icon-gear-2',
     logo_hov: 'icon-fill_gear-2',
   },

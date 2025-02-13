@@ -1,4 +1,3 @@
-// /components/Statistics/SalesChart.tsx
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -10,6 +9,7 @@ import {
   LineElement,
   PointElement,
   Title,
+  Filler,
   Tooltip,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
@@ -17,10 +17,10 @@ import { useTranslations } from 'next-intl';
 import { filterSalesData } from '@/helpers/filterData';
 import { CustomSelect } from '@/components/CustomSelect/CustomSelect';
 import Icon from '@/helpers/Icon';
-import styles from '../Statistics.module.css';
+import styles from './SalesChart.module.css';
 import { Sale } from '@/api/sales/data';
 import useExportToExcel from '@/hooks/useExportToExcel';
-import ExportButton from '@/components/ExportButton/ExportButton';
+import DownloadBtn from '@/components/Buttons/DownloadBtn/DownloadBtn';
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +29,7 @@ ChartJS.register(
   LineElement,
   PointElement,
   Title,
+  Filler,
   Tooltip
 );
 
@@ -44,24 +45,85 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedName, setSelectedName] = useState('');
 
-  // Мемоізація відфільтрованих даних залежно від вибраного діапазону
+  // Відфільтровані дані за вибраним діапазоном
   const filteredSales = useMemo(
     () => filterSalesData(dateRange, salesData),
     [dateRange, salesData]
   );
 
-  const chartData = {
-    labels: filteredSales.map(sale => sale.period),
-    datasets: [
-      {
-        data: filteredSales.map(sale => sale[dataType]),
-        backgroundColor: '#AEBBFF',
-        borderRadius: 5,
+  // Параметри для бар-чарту:
+  const barWidth = 32; // ширина стовпця
+  const gapWidth = 50; // відстань між стовпцями
+  // Обчислюємо мінімальну ширину внутрішнього контейнера:
+  const chartMinWidth =
+    filteredSales.length > 0 ? filteredSales.length * (barWidth + gapWidth) : 0;
+
+  // Розрахунок максимуму для осі y (використовується для відображення фіксованих міток)
+  const maxValue = useMemo(() => {
+    const values = filteredSales.map(sale => sale[dataType]);
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [filteredSales, dataType]);
+
+  // Генеруємо набір міток для y-осі (наприклад, 5 інтервалів)
+  const tickCount = 5;
+  const tickValues = useMemo(() => {
+    const ticks = [];
+    for (let i = 0; i <= tickCount; i++) {
+      ticks.push(Math.round((maxValue / tickCount) * i));
+    }
+    return ticks;
+  }, [maxValue]);
+
+  // Спільні налаштування графіка
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: { display: false },
       },
-    ],
+      y: {
+        position: 'right' as const,
+        grid: { display: true },
+        ticks: { display: false },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+    },
   };
 
-  // Використовуємо хук для експорту, передаючи відфільтровані дані та вибраний діапазон
+  const lineOptions = {
+    ...commonOptions,
+    elements: {
+      point: { radius: 0 },
+      line: { tension: 0.3 },
+    },
+  };
+
+  const barOptions = {
+    ...commonOptions,
+  };
+
+  const dataset = {
+    data: filteredSales.map(sale => sale[dataType]),
+    backgroundColor: chartType === 'bar' ? '#AEBBFF' : '#5672ff10',
+    borderColor: '#AEBBFF',
+    borderRadius: 5,
+    ...(chartType === 'bar'
+      ? { barThickness: barWidth, maxBarThickness: barWidth }
+      : { fill: true }),
+  };
+
+  const chartData = {
+    labels: filteredSales.map(sale => sale.period),
+    datasets: [dataset],
+  };
+
+  // Вибір налаштувань залежно від типу графіка
+  const options = chartType === 'bar' ? barOptions : lineOptions;
+
+  // Хук для експорту даних у Excel
   const exportToExcel = useExportToExcel({ sales: filteredSales, dateRange });
 
   const dateRangeOptions = [
@@ -130,7 +192,6 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         </div>
       </div>
 
-      {/* Вибір категорії та назви */}
       <div className={styles.chart_category_wrap}>
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerCategory')}
@@ -152,15 +213,35 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         />
       </div>
 
-      {chartType === 'bar' ? (
-        <Bar data={chartData} />
-      ) : (
-        <Line data={chartData} />
-      )}
+      <div className={styles.chart_wrapper}>
+        <div className={styles.chart_container}>
+          <div
+            className={styles.chart_box}
+            style={{
+              minWidth: chartMinWidth,
+            }}
+          >
+            {chartType === 'bar' ? (
+              <Bar data={chartData} options={options} />
+            ) : (
+              <Line data={chartData} options={options} />
+            )}
+          </div>
+        </div>
+        <div className={styles.fixed_y_axis}>
+          {tickValues.map((val, idx) => (
+            <span className={styles.axis_item} key={idx}>
+              {val}
+            </span>
+          ))}
+        </div>
+      </div>
 
       <div className={styles.bottom_wrap}>
-        {/* Використовуємо окремий компонент кнопки експорту */}
-        <ExportButton onExport={exportToExcel} />
+        <DownloadBtn
+          onClick={exportToExcel}
+          text={'Statistics.chart.buttonText'}
+        />
 
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>

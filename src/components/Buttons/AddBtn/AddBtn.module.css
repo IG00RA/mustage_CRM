@@ -1,0 +1,39 @@
+.icon {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.icon_hov {
+  position: absolute;
+  top: 13px;
+  left: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: var(--main_blue);
+  transition: background 0.3s ease;
+  color: var(--grey_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.37;
+
+  &:hover,
+  &:focus {
+    background: var(--main_dark);
+    & .icon {
+      opacity: 0;
+    }
+    & .icon_hov {
+      opacity: 1;
+    }
+  }
+}

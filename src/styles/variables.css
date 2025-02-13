@@ -9,6 +9,7 @@
   --blue_light: rgba(86, 113, 255, 0.2);
 
   --main_light: #aebbff;
+  --main_lighter: #e8ecff;
   --main_blue: #5671ff;
   --main_darker: #0f2abd;
   --main_dark: #1939df;
@@ -22,6 +23,8 @@
   --grey_light: #f1f1f6;
   --transparent_grey: #a9a9c1;
   --disabled_grey: #a9a9c1;
+
+  --error_main: #ff5630;
 
   --box_shadow: 0px 0px 2px 0px rgba(153, 159, 195, 0.2),
     0px 12px 24px -4px rgba(153, 159, 195, 0.12);

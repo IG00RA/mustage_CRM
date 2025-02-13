@@ -1,0 +1,21 @@
+.button {
+  position: relative;
+  display: flex;
+  padding: 12px 32px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--main_blue);
+  color: var(--main_blue);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.37;
+  transition: background 0.3s ease;
+  height: 47px;
+
+  &:hover,
+  &:focus {
+    background: var(--main_lighter);
+  }
+}

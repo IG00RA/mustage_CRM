@@ -1,0 +1,21 @@
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 12px 32px;
+  background: var(--main_blue);
+  transition: background 0.3s ease;
+  color: var(--grey_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  line-height: 1.37;
+  font-weight: 600;
+  height: 47px;
+
+  &:hover,
+  &:focus {
+    background: var(--main_dark);
+  }
+}

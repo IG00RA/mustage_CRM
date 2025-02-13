@@ -48,7 +48,7 @@ const sfPro = localFont({
   variable: '--font_sfPro',
 });
 
-export const localeMetadata: Record<
+const localeMetadata: Record<
   string,
   { title: string; description: string; keywords: string }
 > = {

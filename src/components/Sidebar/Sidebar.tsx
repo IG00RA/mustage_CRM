@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 import { useAuthStore } from '@/store/authStore';
 import Image from 'next/image';
-import logo from '@/img/logo.svg';
 import avatar from '@/img/sidebar/avatar.png';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
