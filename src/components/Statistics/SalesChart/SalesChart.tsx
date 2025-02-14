@@ -20,7 +20,7 @@ import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
 import { Sale } from '@/api/sales/data';
 import useExportToExcel from '@/hooks/useExportToExcel';
-import DownloadBtn from '@/components/Buttons/DownloadBtn/DownloadBtn';
+import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 
 ChartJS.register(
   CategoryScale,
@@ -238,9 +238,11 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
       </div>
 
       <div className={styles.bottom_wrap}>
-        <DownloadBtn
+        <WhiteBtn
           onClick={exportToExcel}
           text={'Statistics.chart.buttonText'}
+          icon="icon-cloud-download"
+          iconFill="icon-cloud-download-fill"
         />
 
         <div className={styles.chart_toggler_block}>

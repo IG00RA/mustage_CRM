@@ -6,6 +6,7 @@
   position: absolute;
   top: 12px;
   left: 14px;
+  z-index: 1;
 }
 
 .icon {
@@ -46,4 +47,56 @@
 .input::placeholder {
   color: var(--text_light);
   font-size: var(--fs_small);
+}
+
+.dropdown {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: 0px 7px 10px 0px rgba(109, 100, 197, 0.1);
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.dropdownItem {
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &:hover,
+  &:focus {
+    background: var(--grey_light);
+
+    & .list_icon {
+      opacity: 1;
+    }
+  }
+}
+
+.list_text {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+}
+
+.list_icon {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dropdownItem.active {
+  background: var(--grey_light);
+  & .list_icon {
+    opacity: 1;
+  }
 }

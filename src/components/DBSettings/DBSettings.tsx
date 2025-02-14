@@ -4,7 +4,7 @@ import styles from './DBSettings.module.css';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import DownloadBtn from '../Buttons/DownloadBtn/DownloadBtn';
+import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
@@ -42,7 +42,12 @@ const DBSettings = () => {
         <h2 className={styles.header}>{t('Sidebar.mainParMenu.settings')}</h2>
         <p className={styles.header_text}>{t('DBSettings.headerText')}</p>
         <div className={styles.buttons_wrap}>
-          <DownloadBtn onClick={download} text={'DBSettings.downloadBtn'} />
+          <WhiteBtn
+            onClick={download}
+            text={'DBSettings.downloadBtn'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
           <AddBtn onClick={add} text={'DBSettings.addBtn'} />
         </div>
       </div>

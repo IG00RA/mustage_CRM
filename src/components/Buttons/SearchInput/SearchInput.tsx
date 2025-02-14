@@ -48,26 +48,6 @@ const SearchInput: React.FC<SearchInputProps> = ({
 
   return (
     <div className={styles.searchContainer}>
-      <input
-        type="text"
-        value={query}
-        onChange={handleInputChange}
-        className={styles.input}
-        placeholder={t(text)}
-      />
-      {showDropdown && filteredOptions.length > 0 && (
-        <ul className={styles.dropdown}>
-          {filteredOptions.map((option, index) => (
-            <li
-              key={index}
-              className={styles.dropdownItem}
-              onClick={() => handleSelectOption(option)}
-            >
-              {option}
-            </li>
-          ))}
-        </ul>
-      )}
       <button
         type="button"
         className={styles.button}
@@ -80,6 +60,34 @@ const SearchInput: React.FC<SearchInputProps> = ({
           height={16}
         />
       </button>
+      <input
+        type="text"
+        value={query}
+        onChange={handleInputChange}
+        className={styles.input}
+        placeholder={t(text)}
+      />
+      {showDropdown && filteredOptions.length > 0 && (
+        <ul className={styles.dropdown}>
+          {filteredOptions.map((option, index) => (
+            <li
+              key={index}
+              className={`${styles.dropdownItem} ${
+                query === option ? styles.active : ''
+              }`}
+              onClick={() => handleSelectOption(option)}
+            >
+              <p className={styles.list_text}>{option}</p>
+              <Icon
+                className={styles.list_icon}
+                name="icon-list-check"
+                width={12}
+                height={12}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

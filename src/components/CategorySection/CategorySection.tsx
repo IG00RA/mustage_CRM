@@ -14,6 +14,8 @@ import {
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
+import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
+import Icon from '@/helpers/Icon';
 
 interface Category {
   id: number;
@@ -51,30 +53,6 @@ const data: Category[] = [
   { id: 27, name: 'Категория 27', description: 'Описание категории 27' },
 ];
 
-const columns: ColumnDef<Category>[] = [
-  {
-    accessorKey: 'id',
-    header: 'ID',
-  },
-  {
-    accessorKey: 'name',
-    header: 'Название категории',
-  },
-  {
-    accessorKey: 'description',
-    header: 'Описание категории',
-  },
-  {
-    id: 'actions',
-    header: 'Действия',
-    cell: ({ row }) => (
-      <button onClick={() => toast.info(`Редактирование ${row.original.name}`)}>
-        ✏️
-      </button>
-    ),
-  },
-];
-
 const CategorySection = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
@@ -84,17 +62,48 @@ const CategorySection = () => {
     pageSize: 5, // Початковий розмір сторінки
   });
 
+  const onEdit = () => {
+    console.log(123);
+  };
+
+  const columns: ColumnDef<Category>[] = [
+    {
+      accessorKey: 'id',
+      header: 'ID',
+    },
+    {
+      accessorKey: 'name',
+      header: t('Category.table.name'),
+    },
+    {
+      accessorKey: 'description',
+      header: t('Category.table.description'),
+    },
+    {
+      id: 'actions',
+      header: t('Category.table.actions'),
+      cell: ({ row }) => (
+        <WhiteBtn
+          onClick={onEdit}
+          text={'Category.table.editBtn'}
+          icon="icon-edit-pencil"
+          iconFill="icon-edit-pencil"
+        />
+      ),
+    },
+  ];
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Додаємо підтримку фільтрації
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       globalFilter,
       pagination,
     },
-    onGlobalFilterChange: setGlobalFilter, // Додаємо зміни глобального фільтру
+    onGlobalFilterChange: setGlobalFilter,
     filterFns: {
       global: (row, columnId, filterValue) => {
         if (!filterValue) return true;
@@ -126,11 +135,11 @@ const CategorySection = () => {
       </div>
       <div className={styles.table_container}>
         <table className={styles.table}>
-          <thead>
+          <thead className={styles.thead}>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <th className={styles.th} key={header.id}>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()
@@ -140,11 +149,11 @@ const CategorySection = () => {
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody className={styles.tbody}>
             {table.getRowModel().rows.map(row => (
               <tr key={row.id}>
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>
+                  <td className={styles.td} key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -153,23 +162,11 @@ const CategorySection = () => {
           </tbody>
         </table>
         <div className={styles.pagination}>
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            ◀️
-          </button>
-          <span>
-            Страница {table.getState().pagination.pageIndex + 1} из{' '}
-            {table.getPageCount()}
+          <span className={styles.pagination_text}>
+            {t('Category.table.pagination')}
           </span>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            ▶️
-          </button>
           <select
+            className={styles.pagination_select}
             value={pagination.pageSize}
             onChange={e =>
               setPagination(prev => ({
@@ -180,10 +177,45 @@ const CategorySection = () => {
           >
             {[5, 10, 20].map(size => (
               <option key={size} value={size}>
-                {size} на странице
+                {size}
               </option>
             ))}
           </select>
+          <span className={styles.pagination_text}>
+            {pagination.pageIndex * pagination.pageSize + 1}-
+            {Math.min(
+              (pagination.pageIndex + 1) * pagination.pageSize,
+              data.length
+            )}
+            {t('Category.table.pages')}
+            {data.length}
+          </span>
+          <div className={styles.pagination_btn_wrap}>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <Icon
+                className={styles.icon_back}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <Icon
+                className={styles.icon_forward}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </section>
