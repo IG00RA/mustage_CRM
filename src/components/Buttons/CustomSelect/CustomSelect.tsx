@@ -1,16 +1,31 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Dispatch, SetStateAction } from 'react';
 import styles from './CustomSelect.module.css';
 import Icon from '@/helpers/Icon';
 
-export const CustomSelect = ({ options, selected, onSelect, label }) => {
+interface SelectProps {
+  options: string[];
+  onSelect: Dispatch<SetStateAction<string>>;
+  selected: string;
+  label: string;
+}
+
+export const CustomSelect = ({
+  options,
+  selected,
+  onSelect,
+  label,
+}: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selectRef = useRef(null);
+  const selectRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = event => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        selectRef.current &&
+        !selectRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };

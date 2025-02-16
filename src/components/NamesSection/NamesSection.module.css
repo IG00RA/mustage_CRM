@@ -73,7 +73,7 @@
     width: 64px;
   }
   &:last-child {
-    width: 175px;
+    width: 305px;
   }
 }
 
@@ -85,11 +85,20 @@
   &:last-child {
     padding: 9px 16px;
   }
+}
 
+.table_buttons {
+  display: flex;
+  gap: 8px;
   & button {
     font-size: 14px;
+    padding: 8px 12px;
     height: 36px;
     gap: 6px;
+
+    & .icon_hov {
+      display: none;
+    }
   }
 }
 

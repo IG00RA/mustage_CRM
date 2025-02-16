@@ -1,6 +1,6 @@
 'use client';
 
-import styles from './CategorySection.module.css';
+import styles from './NamesSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import {
@@ -19,49 +19,244 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
 import UpdateCategory from '../ModalComponent/EditCategory/EditCategory';
+import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
+import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
 
 interface Category {
   id: number;
   name: string;
-  description: string;
+  category: string;
+  quantity: number;
+  cost: number;
+  price: number;
 }
 
 const data: Category[] = [
-  { id: 1, name: 'Категория 1', description: 'Описание категории 1' },
-  { id: 2, name: 'Категория 2', description: 'Описание категории 2' },
-  { id: 3, name: 'Категория 3', description: 'Описание категории 3' },
-  { id: 4, name: 'Категория 4', description: 'Описание категории 4' },
-  { id: 5, name: 'Категория 5', description: 'Описание категории 5' },
-  { id: 6, name: 'Категория 6', description: 'Описание категории 6' },
-  { id: 7, name: 'Категория 7', description: 'Описание категории 7' },
-  { id: 8, name: 'Категория 8', description: 'Описание категории 8' },
-  { id: 9, name: 'Категория 9', description: 'Описание категории 9' },
-  { id: 10, name: 'Категория 10', description: 'Описание категории 10' },
-  { id: 11, name: 'Категория 11', description: 'Описание категории 11' },
-  { id: 12, name: 'Категория 12', description: 'Описание категории 12' },
-  { id: 13, name: 'Категория 13', description: 'Описание категории 13' },
-  { id: 14, name: 'Категория 14', description: 'Описание категории 14' },
-  { id: 15, name: 'Категория 15', description: 'Описание категории 15' },
-  { id: 16, name: 'Категория 16', description: 'Описание категории 16' },
-  { id: 17, name: 'Категория 17', description: 'Описание категории 17' },
-  { id: 18, name: 'Категория 18', description: 'Описание категории 18' },
-  { id: 19, name: 'Категория 19', description: 'Описание категории 19' },
-  { id: 20, name: 'Категория 20', description: 'Описание категории 20' },
-  { id: 21, name: 'Категория 21', description: 'Описание категории 21' },
-  { id: 22, name: 'Категория 22', description: 'Описание категории 22' },
-  { id: 23, name: 'Категория 23', description: 'Описание категории 23' },
-  { id: 24, name: 'Категория 24', description: 'Описание категории 24' },
-  { id: 25, name: 'Категория 25', description: 'Описание категории 25' },
-  { id: 26, name: 'Категория 26', description: 'Описание категории 26' },
-  { id: 27, name: 'Категория 27', description: 'Описание категории 27' },
+  {
+    id: 1,
+    name: 'Facebook Ads',
+    category: 'Таргетована реклама',
+    quantity: 100,
+    cost: 500,
+    price: 700,
+  },
+  {
+    id: 2,
+    name: 'Google Ads',
+    category: 'Контекстна реклама',
+    quantity: 150,
+    cost: 800,
+    price: 1100,
+  },
+  {
+    id: 3,
+    name: 'TikTok Ads',
+    category: 'Відеореклама',
+    quantity: 120,
+    cost: 600,
+    price: 900,
+  },
+  {
+    id: 4,
+    name: 'Instagram Influencers',
+    category: 'Інфлюенс-маркетинг',
+    quantity: 50,
+    cost: 400,
+    price: 650,
+  },
+  {
+    id: 5,
+    name: 'YouTube Pre-Roll',
+    category: 'Відеореклама',
+    quantity: 90,
+    cost: 700,
+    price: 1000,
+  },
+  {
+    id: 6,
+    name: 'Push-трафік',
+    category: 'Push-сповіщення',
+    quantity: 200,
+    cost: 500,
+    price: 850,
+  },
+  {
+    id: 7,
+    name: 'Email-розсилка',
+    category: 'Email-маркетинг',
+    quantity: 130,
+    cost: 300,
+    price: 550,
+  },
+  {
+    id: 8,
+    name: 'Native Ads',
+    category: 'Нативна реклама',
+    quantity: 110,
+    cost: 600,
+    price: 950,
+  },
+  {
+    id: 9,
+    name: 'SEO-трафік',
+    category: 'Органічний трафік',
+    quantity: 80,
+    cost: 700,
+    price: 1200,
+  },
+  {
+    id: 10,
+    name: 'Telegram-боти',
+    category: 'Месенджер-маркетинг',
+    quantity: 140,
+    cost: 400,
+    price: 750,
+  },
+  {
+    id: 11,
+    name: 'CPA-сітки',
+    category: 'Партнерські мережі',
+    quantity: 200,
+    cost: 1000,
+    price: 1600,
+  },
+  {
+    id: 12,
+    name: 'Popunder Ads',
+    category: 'Попандер реклама',
+    quantity: 300,
+    cost: 500,
+    price: 900,
+  },
+  {
+    id: 13,
+    name: 'In-App Ads',
+    category: 'Мобільна реклама',
+    quantity: 250,
+    cost: 800,
+    price: 1300,
+  },
+  {
+    id: 14,
+    name: 'Facebook Groups',
+    category: 'Соціальні мережі',
+    quantity: 60,
+    cost: 300,
+    price: 500,
+  },
+  {
+    id: 15,
+    name: 'Twitter Ads',
+    category: 'Соціальні мережі',
+    quantity: 100,
+    cost: 500,
+    price: 750,
+  },
+  {
+    id: 16,
+    name: 'LinkedIn B2B',
+    category: 'B2B-реклама',
+    quantity: 50,
+    cost: 1000,
+    price: 1800,
+  },
+  {
+    id: 17,
+    name: 'Snapchat Ads',
+    category: 'Відеореклама',
+    quantity: 80,
+    cost: 600,
+    price: 950,
+  },
+  {
+    id: 18,
+    name: 'Reddit Ads',
+    category: 'Соціальні мережі',
+    quantity: 90,
+    cost: 400,
+    price: 650,
+  },
+  {
+    id: 19,
+    name: 'Pinterest Ads',
+    category: 'Візуальна реклама',
+    quantity: 70,
+    cost: 500,
+    price: 850,
+  },
+  {
+    id: 20,
+    name: 'Quora Ads',
+    category: 'Контентна реклама',
+    quantity: 75,
+    cost: 550,
+    price: 900,
+  },
+  {
+    id: 21,
+    name: 'Adult Traffic',
+    category: 'Дорослий контент',
+    quantity: 500,
+    cost: 1200,
+    price: 1800,
+  },
+  {
+    id: 22,
+    name: 'Sweepstakes Traffic',
+    category: 'Оффери',
+    quantity: 400,
+    cost: 900,
+    price: 1400,
+  },
+  {
+    id: 23,
+    name: 'Gambling Traffic',
+    category: 'Азартні ігри',
+    quantity: 350,
+    cost: 1100,
+    price: 1700,
+  },
+  {
+    id: 24,
+    name: 'Crypto Traffic',
+    category: 'Криптовалюта',
+    quantity: 220,
+    cost: 1300,
+    price: 2000,
+  },
+  {
+    id: 25,
+    name: 'Forex Leads',
+    category: 'Фінансові послуги',
+    quantity: 180,
+    cost: 900,
+    price: 1500,
+  },
+  {
+    id: 26,
+    name: 'App Installs',
+    category: 'Мобільний маркетинг',
+    quantity: 270,
+    cost: 750,
+    price: 1200,
+  },
+  {
+    id: 27,
+    name: 'Dating Traffic',
+    category: 'Знайомства',
+    quantity: 300,
+    cost: 800,
+    price: 1400,
+  },
 ];
 
-const CategorySection = () => {
+const NamesSection = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
+  const [selectCategory, setSelectCategory] = useState('');
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -83,22 +278,40 @@ const CategorySection = () => {
     },
     {
       accessorKey: 'name',
-      header: t('Category.table.name'),
+      header: t('Names.table.name'),
     },
     {
-      accessorKey: 'description',
-      header: t('Category.table.description'),
+      accessorKey: 'category',
+      header: t('Names.table.category'),
+    },
+    {
+      accessorKey: 'quantity',
+      header: t('Names.table.quantity'),
+    },
+    {
+      accessorKey: 'cost',
+      header: t('Names.table.cost'),
+    },
+    {
+      accessorKey: 'price',
+      header: t('Names.table.price'),
     },
     {
       id: 'actions',
-      header: t('Category.table.actions'),
+      header: t('Names.table.actions'),
       cell: ({ row }) => (
-        <WhiteBtn
-          onClick={() => toggleUpdateModal(row.original.name)}
-          text={'Category.table.editBtn'}
-          icon="icon-edit-pencil"
-          iconFill="icon-edit-pencil"
-        />
+        <div className={styles.table_buttons}>
+          <CancelBtn
+            text="Names.table.enterBtn"
+            onClick={() => toggleUpdateModal(row.original.name)}
+          />
+          <WhiteBtn
+            onClick={() => toggleUpdateModal(row.original.name)}
+            text={'Names.table.editBtn'}
+            icon="icon-edit-pencil"
+            iconFill="icon-edit-pencil"
+          />
+        </div>
       ),
     },
   ];
@@ -129,10 +342,22 @@ const CategorySection = () => {
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.accParMenu.category')}</h2>
+        <h2 className={styles.header}>{t('Sidebar.accParMenu.names')}</h2>
         <p className={styles.header_text}>{t('Category.headerText')}</p>
         <div className={styles.buttons_wrap}>
-          <AddBtn onClick={toggleCreateModal} text={'Category.addBtn'} />
+          <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
+          <WhiteBtn
+            onClick={toggleCreateModal}
+            text={'Names.addSetBtn'}
+            icon="icon-add-color"
+            iconFill="icon-add-color"
+          />
+          <CustomSelect
+            label={t('Names.selectText')}
+            options={[t('Names.selectBtn'), t('Names.selectBtn')]}
+            selected={selectCategory}
+            onSelect={setSelectCategory}
+          />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
             text={'Category.searchBtn'}
@@ -246,4 +471,4 @@ const CategorySection = () => {
   );
 };
 
-export default CategorySection;
+export default NamesSection;

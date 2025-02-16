@@ -41,7 +41,7 @@ const DBSettings = () => {
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('Sidebar.mainParMenu.settings')}</h2>
         <p className={styles.header_text}>{t('DBSettings.headerText')}</p>
-        <div className={styles.buttons_wrap}>
+        <div className={styles.button_wrap}>
           <WhiteBtn
             onClick={download}
             text={'DBSettings.downloadBtn'}

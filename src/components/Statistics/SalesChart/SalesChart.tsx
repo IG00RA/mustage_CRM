@@ -15,7 +15,7 @@ import {
 import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
 import { filterSalesData } from '@/helpers/filterData';
-import { CustomSelect } from '@/components/CustomSelect/CustomSelect';
+import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
 import { Sale } from '@/api/sales/data';

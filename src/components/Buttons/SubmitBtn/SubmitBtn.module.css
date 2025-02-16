@@ -13,6 +13,8 @@
   line-height: 1.37;
   font-weight: 600;
   height: 47px;
+  white-space: nowrap;
+  justify-content: center;
 
   &:hover,
   &:focus {

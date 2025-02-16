@@ -24,7 +24,7 @@ export const accParMenu = [
 
   {
     header: 'Sidebar.accParMenu.names',
-    link: 'dashboard1',
+    link: 'names',
     logo: 'icon-file-text',
     logo_hov: 'icon-fill_file-text',
   },

@@ -21,6 +21,7 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18",
     "react-hook-form": "^7.54.2",
+    "react-modal": "^3.16.3",
     "react-toastify": "^11.0.1",
     "tanstack": "^1.0.0",
     "zustand": "^5.0.3"
