@@ -8,7 +8,7 @@ interface ButtonProps {
   onClick: () => void;
   text: string;
   icon: string;
-  iconFill: string;
+  iconFill?: string;
   type?: 'submit' | 'button';
 }
 
@@ -24,12 +24,14 @@ const WhiteBtn: React.FC<ButtonProps> = ({
   return (
     <button type={type} className={styles.button} onClick={onClick}>
       <Icon className={styles.icon} name={icon} width={16} height={16} />
+
       <Icon
         className={styles.icon_hov}
-        name={iconFill}
+        name={iconFill ? iconFill : icon}
         width={16}
         height={16}
       />
+
       {t(text)}
     </button>
   );

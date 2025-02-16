@@ -26,11 +26,6 @@
 
 .buttons_wrap {
   display: flex;
-  gap: 8px;
-}
-
-.buttons_wrap {
-  display: flex;
   gap: 16px;
   margin-top: 24px;
 }
@@ -90,6 +85,10 @@
     font-size: 14px;
     height: 36px;
     gap: 6px;
+    & svg {
+      top: 10px;
+      left: 15px;
+    }
   }
 }
 

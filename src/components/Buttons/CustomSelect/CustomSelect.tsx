@@ -9,6 +9,7 @@ interface SelectProps {
   onSelect: Dispatch<SetStateAction<string>>;
   selected: string;
   label: string;
+  width?: string | number;
 }
 
 export const CustomSelect = ({
@@ -16,6 +17,7 @@ export const CustomSelect = ({
   selected,
   onSelect,
   label,
+  width,
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,7 @@ export const CustomSelect = ({
   }, []);
 
   return (
-    <div className={styles.selectWrapper}>
+    <div className={styles.selectWrapper} style={{ width }}>
       <label className={styles.selectLabel}>{label}</label>
 
       <div className={styles.selectContainer} ref={selectRef}>

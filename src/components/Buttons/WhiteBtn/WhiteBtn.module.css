@@ -25,6 +25,7 @@
   font-weight: 500;
   line-height: 1.58;
   transition: background 0.3s ease;
+  white-space: nowrap;
 
   &:hover,
   &:focus {

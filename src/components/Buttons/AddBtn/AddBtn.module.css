@@ -25,6 +25,7 @@
   font-style: normal;
   font-weight: 500;
   line-height: 1.37;
+white-space: nowrap;
 
   &:hover,
   &:focus {

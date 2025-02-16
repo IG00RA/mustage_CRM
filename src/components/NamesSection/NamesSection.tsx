@@ -21,6 +21,10 @@ import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
 import UpdateCategory from '../ModalComponent/EditCategory/EditCategory';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CreateNames from '../ModalComponent/CreateNames/CreateNames';
+import EditNames from '../ModalComponent/EditNames/EditNames';
+import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
+import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
 
 interface Category {
   id: number;
@@ -254,7 +258,10 @@ const NamesSection = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
+  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
+  const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
+    useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
   const [selectCategory, setSelectCategory] = useState('');
 
@@ -263,8 +270,15 @@ const NamesSection = () => {
     pageSize: 5, // Початковий розмір сторінки
   });
 
+  const toggleAddNamesDescription = () => {
+    setIsOpenAddNamesDescription(!isOpenAddNamesDescription);
+  };
+
   const toggleCreateModal = () => {
     setIsOpenCreate(!isOpenCreate);
+  };
+  const toggleCreateNamesSet = () => {
+    setIsOpenCreateNamesSet(!isOpenCreateNamesSet);
   };
   const toggleUpdateModal = (title = '') => {
     setUpdateTitle(title);
@@ -303,13 +317,12 @@ const NamesSection = () => {
         <div className={styles.table_buttons}>
           <CancelBtn
             text="Names.table.enterBtn"
-            onClick={() => toggleUpdateModal(row.original.name)}
+            onClick={() => toggleAddNamesDescription()}
           />
           <WhiteBtn
             onClick={() => toggleUpdateModal(row.original.name)}
             text={'Names.table.editBtn'}
             icon="icon-edit-pencil"
-            iconFill="icon-edit-pencil"
           />
         </div>
       ),
@@ -347,7 +360,7 @@ const NamesSection = () => {
         <div className={styles.buttons_wrap}>
           <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
           <WhiteBtn
-            onClick={toggleCreateModal}
+            onClick={toggleCreateNamesSet}
             text={'Names.addSetBtn'}
             icon="icon-add-color"
             iconFill="icon-add-color"
@@ -357,6 +370,7 @@ const NamesSection = () => {
             options={[t('Names.selectBtn'), t('Names.selectBtn')]}
             selected={selectCategory}
             onSelect={setSelectCategory}
+            width={298}
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
@@ -453,19 +467,35 @@ const NamesSection = () => {
       <ModalComponent
         isOpen={isOpenCreate}
         onClose={toggleCreateModal}
-        title="Category.modalCreate.title"
-        text="Category.modalCreate.description"
+        title="Names.modalCreate.title"
+        text="Names.modalCreate.description"
       >
-        <CreateCategory />
+        <CreateNames />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenCreateNamesSet}
+        onClose={toggleCreateNamesSet}
+        title="Names.modalCreateSet.title"
+        text="Names.modalCreateSet.description"
+      >
+        <CreateNamesSet />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenAddNamesDescription}
+        onClose={toggleAddNamesDescription}
+        title="Names.modalAddNamesDescription.title"
+        text="Names.modalAddNamesDescription.description"
+      >
+        <AddNamesDescription />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
         onClose={toggleUpdateModal}
-        title="Category.modalUpdate.title"
-        text="Category.modalUpdate.description"
+        title="Names.modalUpdate.title"
+        text="Names.modalUpdate.description"
         editedTitle={updateTitle}
       >
-        <UpdateCategory />
+        <EditNames />
       </ModalComponent>
     </section>
   );

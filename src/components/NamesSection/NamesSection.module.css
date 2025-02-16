@@ -26,13 +26,13 @@
 
 .buttons_wrap {
   display: flex;
-  gap: 8px;
-}
-
-.buttons_wrap {
-  display: flex;
   gap: 16px;
   margin-top: 24px;
+
+  & button svg {
+    top: 13px;
+    left: 16px;
+  }
 }
 
 .table_container {
@@ -96,8 +96,9 @@
     height: 36px;
     gap: 6px;
 
-    & .icon_hov {
-      display: none;
+    & svg {
+      top: 9px;
+      left: 12px;
     }
   }
 }
