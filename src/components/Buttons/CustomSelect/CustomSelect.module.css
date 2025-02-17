@@ -2,6 +2,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .selectLabel {
@@ -10,12 +11,12 @@
   font-style: normal;
   font-weight: 400;
   line-height: 1.57;
+  white-space: nowrap;
 }
 
 .selectContainer {
   position: relative;
   display: inline-block;
-  width: 400px;
 }
 
 .selectBox {

@@ -31,7 +31,7 @@ export const accParMenu = [
 
   {
     header: 'Sidebar.accParMenu.allAcc',
-    link: 'dashboard1',
+    link: 'all_accounts',
     logo: 'icon-users',
     logo_hov: 'icon-fill_users',
   },
