@@ -48,6 +48,12 @@ export default function CreateNames() {
     }));
   };
 
+  const settingsOptions = [
+    'Names.modalCreate.id',
+    'Names.modalCreate.data',
+    'Names.modalCreate.megaLink',
+  ];
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={styles.field}>
@@ -130,7 +136,7 @@ export default function CreateNames() {
         <label className={styles.label}>
           {t('Names.modalCreate.settings')}
         </label>
-        <CustomDragDrop>
+        <CustomDragDrop settingsOptions={settingsOptions}>
           {id => (
             <CustomCheckbox
               checked={checkedSettings[id] || false}

@@ -14,20 +14,17 @@ import { FC, ReactNode, useState } from 'react';
 import Icon from '@/helpers/Icon';
 import { useTranslations } from 'next-intl';
 
-const settingsOptions = [
-  'Names.modalCreate.id',
-  'Names.modalCreate.data',
-  'Names.modalCreate.megaLink',
-];
+type CustomDragDropProps = {
+  settingsOptions: string[];
+  children: (id: string) => ReactNode;
+};
 
-export const CustomDragDrop: FC<{ children: (id: string) => ReactNode }> = ({
+export const CustomDragDrop: FC<CustomDragDropProps> = ({
+  settingsOptions,
   children,
 }) => {
   const t = useTranslations('');
   const [settings, setSettings] = useState(settingsOptions);
-  const [checkedSettings, setCheckedSettings] = useState<
-    Record<string, boolean>
-  >({});
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })

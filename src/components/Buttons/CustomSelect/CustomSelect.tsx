@@ -10,6 +10,7 @@ interface SelectProps {
   selected: string;
   label: string;
   width?: string | number;
+  selectWidth?: string | number;
 }
 
 export const CustomSelect = ({
@@ -18,6 +19,7 @@ export const CustomSelect = ({
   onSelect,
   label,
   width,
+  selectWidth,
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -42,7 +44,11 @@ export const CustomSelect = ({
     <div className={styles.select_wrapper} style={{ width }}>
       <label className={styles.select_label}>{label}</label>
 
-      <div className={styles.select_container} ref={selectRef}>
+      <div
+        className={styles.select_container}
+        style={{ maxWidth: selectWidth }}
+        ref={selectRef}
+      >
         <div
           className={`${styles.select_box} ${isOpen ? styles.open : ''}`}
           onClick={() => setIsOpen(prev => !prev)}

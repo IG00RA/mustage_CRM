@@ -1,6 +1,6 @@
 'use client';
 
-import styles from './Upload.module.css';
+import styles from './UploadSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -11,11 +11,17 @@ import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
 import { toast } from 'react-toastify';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import UploadAccounts from '../ModalComponent/UploadAccounts/UploadAccounts';
+import FormingSet from '../ModalComponent/FormingSet/FormingSet';
 
-const Upload = () => {
+const UploadSection = () => {
   const t = useTranslations();
 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
+  const [isOpenForming, setIsOpenForming] = useState(false);
+
+  const toggleFormingModal = () => {
+    setIsOpenForming(!isOpenForming);
+  };
 
   const toggleUploadModal = () => {
     setIsOpenUpload(!isOpenUpload);
@@ -42,7 +48,7 @@ const Upload = () => {
             icon="icon-upload"
           />
           <WhiteBtn
-            onClick={download}
+            onClick={toggleFormingModal}
             text={'Upload.buttons.createSet'}
             icon="icon-create-set"
           />
@@ -55,8 +61,15 @@ const Upload = () => {
       >
         <UploadAccounts />
       </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenForming}
+        onClose={toggleFormingModal}
+        title="Upload.modalForming.title"
+      >
+        <FormingSet />
+      </ModalComponent>
     </section>
   );
 };
 
-export default Upload;
+export default UploadSection;

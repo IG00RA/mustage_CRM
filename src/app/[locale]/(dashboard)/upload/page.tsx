@@ -1,4 +1,4 @@
-import Upload from '@/components/Upload/Upload';
+import Upload from '@/components/UploadSection/UploadSection';
 
 export default function Db_settings() {
   return <Upload />;

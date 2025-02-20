@@ -23,6 +23,7 @@ import CreateNames from '../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../ModalComponent/EditNames/EditNames';
 import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
 import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
+import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 
 interface Table {
   id: number;
@@ -108,12 +109,7 @@ const data: Table[] = [
 const AllAccounts = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
-  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
-    useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
+  const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [selectCategory, setSelectCategory] = useState('');
 
   const [pagination, setPagination] = useState({
@@ -121,19 +117,8 @@ const AllAccounts = () => {
     pageSize: 5, // Початковий розмір сторінки
   });
 
-  const toggleAddNamesDescription = () => {
-    setIsOpenAddNamesDescription(!isOpenAddNamesDescription);
-  };
-
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
-  const toggleCreateNamesSet = () => {
-    setIsOpenCreateNamesSet(!isOpenCreateNamesSet);
-  };
-  const toggleUpdateModal = (title = '') => {
-    setUpdateTitle(title);
-    setIsOpenUpdate(!isOpenUpdate);
+  const toggleEditModal = () => {
+    setIsOpenEdit(!isOpenEdit);
   };
 
   const columns: ColumnDef<Table>[] = [
@@ -258,7 +243,6 @@ const AllAccounts = () => {
             selected={selectCategory}
             onSelect={setSelectCategory}
             width={331}
-            selectWidth={250}
           />
           <CustomSelect
             label={t('AllAccounts.selects.names')}
@@ -269,7 +253,6 @@ const AllAccounts = () => {
             selected={selectCategory}
             onSelect={setSelectCategory}
             width={331}
-            selectWidth={222}
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
@@ -315,7 +298,7 @@ const AllAccounts = () => {
               iconFill="icon-cloud-download-fill"
             />
             <WhiteBtn
-              onClick={exportToExcel}
+              onClick={toggleEditModal}
               text={'AllAccounts.editBtn'}
               icon="icon-palette"
             />
@@ -379,37 +362,12 @@ const AllAccounts = () => {
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenCreate}
-        onClose={toggleCreateModal}
-        title="Names.modalCreate.title"
-        text="Names.modalCreate.description"
+        isOpen={isOpenEdit}
+        onClose={toggleEditModal}
+        title="AllAccounts.modalUpdate.title"
+        text="AllAccounts.modalUpdate.description"
       >
-        <CreateNames />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenCreateNamesSet}
-        onClose={toggleCreateNamesSet}
-        title="Names.modalCreateSet.title"
-        text="Names.modalCreateSet.description"
-      >
-        <CreateNamesSet />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenAddNamesDescription}
-        onClose={toggleAddNamesDescription}
-        title="Names.modalAddNamesDescription.title"
-        text="Names.modalAddNamesDescription.description"
-      >
-        <AddNamesDescription />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
-        title="Names.modalUpdate.title"
-        text="Names.modalUpdate.description"
-        editedTitle={updateTitle}
-      >
-        <EditNames />
+        <ViewSettings />
       </ModalComponent>
     </section>
   );
