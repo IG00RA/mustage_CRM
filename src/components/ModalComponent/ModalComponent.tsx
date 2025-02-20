@@ -16,7 +16,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  text: string;
+  text?: string;
   editedTitle?: string;
   children: ReactNode;
 }
@@ -47,7 +47,7 @@ export default function ModalComponent({
         />
       </button>
       <h2 className={styles.title}>{`${t(title)} ${editedTitle}`}</h2>
-      <p className={styles.text}>{t(text)}</p>
+      {text && <p className={styles.text}>{t(text)}</p>}
       <div className={styles.fields_wrap}>{children}</div>
     </Modal>
   );

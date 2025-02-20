@@ -55,7 +55,7 @@ interface SortableListProps {
   register: UseFormRegister<any>;
 }
 
-export default function CreateNames() {
+export default function UploadAccounts() {
   const t = useTranslations('');
 
   const [settings, setSettings] = useState(settingsOptions);

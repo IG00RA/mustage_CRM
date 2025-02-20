@@ -11,6 +11,9 @@ import {
   Title,
   Filler,
   Tooltip,
+  TooltipItem,
+  ChartOptions,
+  TooltipModel,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
@@ -74,22 +77,54 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     return ticks;
   }, [maxValue]);
 
-  // Спільні налаштування графіка
-  const commonOptions = {
+  const customTooltip = {
+    enabled: false, // Вимикаємо стандартний tooltip
+    external: (context: {
+      chart: ChartJS;
+      tooltip: TooltipModel<'bar' | 'line'>;
+    }) => {
+      let tooltipEl = document.getElementById('custom-tooltip');
+      const chartContainer = document.getElementById('chart-container');
+
+      if (!tooltipEl) {
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'custom-tooltip';
+        tooltipEl.classList.add(styles.custom_tooltip);
+        chartContainer && chartContainer.appendChild(tooltipEl);
+      }
+
+      const tooltipModel = context.tooltip;
+
+      // Якщо tooltip не має контенту або вийшли за межі графіка - приховати
+      if (!tooltipModel || !tooltipModel.body || tooltipModel.opacity === 0) {
+        tooltipEl.style.opacity = '0';
+        return;
+      }
+
+      const position = context.chart.canvas.getBoundingClientRect();
+      const dataPoint = tooltipModel.dataPoints[0];
+
+      tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${dataPoint.raw}</span>`;
+
+      tooltipEl.style.opacity = '1';
+      tooltipEl.style.left = `${
+        position.left + window.pageXOffset + tooltipModel.caretX
+      }px`;
+      tooltipEl.style.top = `${
+        position.top + window.pageYOffset + tooltipModel.caretY - 44
+      }px`;
+    },
+  };
+
+  const commonOptions: ChartOptions<'bar' | 'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      x: {
-        grid: { display: false },
-      },
-      y: {
-        position: 'right' as const,
-        grid: { display: true },
-        ticks: { display: false },
-      },
+      x: { grid: { display: false } },
+      y: { grid: { display: true }, ticks: { display: false } },
     },
     plugins: {
-      legend: { display: false },
+      tooltip: customTooltip,
     },
   };
 
@@ -108,6 +143,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const dataset = {
     data: filteredSales.map(sale => sale[dataType]),
     backgroundColor: chartType === 'bar' ? '#AEBBFF' : '#5672ff10',
+    hoverBackgroundColor: '#5671ff', // Колір при наведенні
     borderColor: '#AEBBFF',
     borderRadius: 5,
     ...(chartType === 'bar'
@@ -137,7 +173,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   ];
 
   return (
-    <div className={styles.chart_wrap}>
+    <div className={styles.chart_wrap} id="chart-container">
       <h3 className={styles.chart_header}>{t('Statistics.chart.header')}</h3>
       <span className={styles.chart_year_text}>
         (+43%) {t('Statistics.chart.headerText')}

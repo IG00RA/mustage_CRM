@@ -38,41 +38,41 @@ export const accParMenu = [
 
   {
     header: 'Sidebar.accParMenu.upload',
-    link: 'dashboard1',
+    link: 'upload',
     logo: 'icon-import-2',
     logo_hov: 'icon-fill_import-2',
   },
 
   {
     header: 'Sidebar.accParMenu.load',
-    link: 'dashboard1',
+    link: 'load',
     logo: 'icon-export-2',
     logo_hov: 'icon-fill_export-2',
   },
 
   {
     header: 'Sidebar.accParMenu.distribution',
-    link: 'dashboard1',
+    link: 'distribution',
     logo: 'icon-box-2',
     logo_hov: 'icon-fill_box-2',
   },
 
   {
     header: 'Sidebar.accParMenu.replacement',
-    link: 'dashboard1',
+    link: 'replacement',
     logo: 'icon-copy',
     logo_hov: 'icon-fill_copy',
   },
 
   {
     header: 'Sidebar.accParMenu.removeSale',
-    link: 'dashboard1',
+    link: 'removeSale',
     logo: 'icon-trash',
     logo_hov: 'icon-fill_trash',
   },
   {
     header: 'Sidebar.accParMenu.autoFarmControl',
-    link: 'dashboard1',
+    link: 'autoFarmControl',
     logo: 'icon-send-2',
     logo_hov: 'icon-fill_send-2',
   },

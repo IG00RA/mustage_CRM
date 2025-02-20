@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  padding: 6px 12px;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-radius: 12px;
+  border: 1px solid var(--grey);
+  background: var(--background);
+}
+
+.button {
+  display: flex;
+  padding: 4px 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--grey);
+  background: var(--background);
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+
+  transition: border 0.3s ease;
+}
+
+.button:hover {
+  border: 1px solid var(--main_light);
+}
+
+.close {
+  width: 16px;
+  height: 16px;
+}
