@@ -1,0 +1,35 @@
+.field_wrap_main {
+  display: flex;
+  min-width: 830px;
+}
+
+.field_wrap {
+  padding-right: 24px;
+  border-right: 1px solid var(--grey);
+  flex: 1;
+}
+
+.field_wrap_second {
+  flex: 1;
+  padding-left: 24px;
+}
+
+.field_header {
+  margin-bottom: 16px;
+  color: var(--text_dark);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.34;
+}
+
+.buttons_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.buttons_wrap > button:first-child {
+  align-self: flex-start;
+}

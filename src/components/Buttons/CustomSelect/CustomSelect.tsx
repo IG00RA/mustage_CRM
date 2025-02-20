@@ -10,7 +10,6 @@ interface SelectProps {
   selected: string;
   label: string;
   width?: string | number;
-  selectWidth?: string | number;
 }
 
 export const CustomSelect = ({
@@ -19,7 +18,6 @@ export const CustomSelect = ({
   onSelect,
   label,
   width,
-  selectWidth,
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -41,37 +39,39 @@ export const CustomSelect = ({
   }, []);
 
   return (
-    <div className={styles.selectWrapper} style={{ width }}>
-      <label className={styles.selectLabel}>{label}</label>
+    <div className={styles.select_wrapper} style={{ width }}>
+      <label className={styles.select_label}>{label}</label>
 
-      <div
-        className={styles.selectContainer}
-        ref={selectRef}
-        style={{ width: selectWidth }}
-      >
+      <div className={styles.select_container} ref={selectRef}>
         <div
-          className={`${styles.selectBox} ${isOpen ? styles.open : ''}`}
+          className={`${styles.select_box} ${isOpen ? styles.open : ''}`}
           onClick={() => setIsOpen(prev => !prev)}
         >
           {selected || options[0]}
-          <Icon name="icon-angle-down" width={16} height={16} />
+          <Icon name="icon-angle-down" width={16} height={16} color="#A9A9C1" />
         </div>
 
         <ul
-          className={`${styles.selectOptions} ${
-            isOpen ? styles.selectOpen : ''
+          className={`${styles.select_options} ${
+            isOpen ? styles.select_open : ''
           }`}
         >
           {options.map((option, index) => (
             <li
               key={index}
-              className={styles.optionItem}
+              className={styles.option_item}
               onClick={() => {
                 onSelect(option);
                 setIsOpen(false);
               }}
             >
-              {option}
+              <p className={styles.list_text}>{option}</p>
+              <Icon
+                className={styles.list_icon}
+                name="icon-list-check"
+                width={12}
+                height={12}
+              />
             </li>
           ))}
         </ul>

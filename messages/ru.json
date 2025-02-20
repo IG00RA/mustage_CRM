@@ -145,7 +145,15 @@
     "modalCreateSet": {
       "title": "Создание набора",
       "description": "Для создания набора заполните все поля:",
-      "nameField": "Название категории:",
+      "nameField": "Название набора (название наименования):",
+      "nameCategory": "Название категории:",
+      "setPrice": "Цена набора:",
+      "setSettings": "Настройка содержимого набора",
+      "setSettingsName": "Наименование:",
+      "setSettingBtn": "Добавить наименование в набор",
+      "setSettingsQuantity": "Количество:",
+      "setSettingsPrice": "Себестоимость набора:",
+      "setSettingsDescription": "Описание набора:",
       "descriptionField": "Описание категории:",
       "createBtn": "Создать набор"
     },
