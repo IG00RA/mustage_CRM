@@ -43,6 +43,10 @@
   }
 }
 
+.text_selected {
+  color: var(--text_dark);
+}
+
 .select_box:hover {
   border-radius: 12px;
   border: 1px solid var(--main_light);

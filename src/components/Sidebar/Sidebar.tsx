@@ -14,7 +14,7 @@ import {
   mainParMenu,
   otherParMenu,
 } from '@/data/sidebar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const Sidebar = () => {
   const t = useTranslations();
@@ -27,9 +27,28 @@ const Sidebar = () => {
     logout();
   };
 
+  // useEffect для автоматичного відкриття меню, якщо одне з підпосилань активне
+  useEffect(() => {
+    const distributionLinks = [
+      'distribution_settings',
+      'distribution_create',
+      'distribution_all',
+    ];
+    const isAnyDistributionActive = distributionLinks.some(link =>
+      isActiveSub(link)
+    );
+    if (isAnyDistributionActive) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false); // Опціонально: закривати, якщо жодне з підпосилань не активне
+    }
+  }, [pathname]);
+
   // Функція для визначення активного посилання
   const isActive = (link: string): boolean =>
     pathname === `/ru/${link}` && !isOpen;
+
+  const isActiveSub = (link: string): boolean => pathname === `/ru/${link}`;
 
   return (
     <aside className={styles.sidebar}>
@@ -160,11 +179,11 @@ const Sidebar = () => {
               >
                 <Link
                   className={`${styles.option_item} ${
-                    isActive('distributionSettings')
+                    isActiveSub('distribution_settings')
                       ? styles.active_sub_link
                       : ''
                   }`}
-                  href={`/ru/distributionSettings`}
+                  href={`/ru/distribution_settings`}
                 >
                   <div className={styles.list_sub_mark_wrap}>
                     <span className={styles.list_sub_mark}></span>
@@ -182,9 +201,11 @@ const Sidebar = () => {
               >
                 <Link
                   className={`${styles.option_item} ${
-                    isActive('distributionCreate') ? styles.active_sub_link : ''
+                    isActiveSub('distribution_create')
+                      ? styles.active_sub_link
+                      : ''
                   }`}
-                  href={`/ru/distributionCreate`}
+                  href={`/ru/distribution_create`}
                 >
                   <div className={styles.list_sub_mark_wrap}>
                     <span className={styles.list_sub_mark}></span>
@@ -202,9 +223,11 @@ const Sidebar = () => {
               >
                 <Link
                   className={`${styles.option_item} ${
-                    isActive('distributionAll') ? styles.active_sub_link : ''
+                    isActiveSub('distribution_all')
+                      ? styles.active_sub_link
+                      : ''
                   }`}
-                  href={`/ru/distributionAll`}
+                  href={`/ru/distribution_all`}
                 >
                   <div className={styles.list_sub_mark_wrap}>
                     <span className={styles.list_sub_mark}></span>

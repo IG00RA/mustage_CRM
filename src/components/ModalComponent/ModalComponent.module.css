@@ -22,10 +22,15 @@
   z-index: 100;
 }
 
+.header_wrap {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .close_btn {
-  position: absolute;
-  top: 20px;
-  right: 24px;
+  flex-shrink: 0;
 
   &:hover,
   &:focus {
@@ -47,7 +52,10 @@
   font-weight: 700;
   line-height: 1.5;
   margin-bottom: 8px;
-  max-width: 90%;
+
+  & span {
+    white-space: nowrap;
+  }
 }
 
 .text {

@@ -8,7 +8,7 @@ interface SelectProps {
   options: string[];
   onSelect: Dispatch<SetStateAction<string>>;
   selected: string;
-  label: string;
+  label?: string;
   width?: string | number;
   selectWidth?: string | number;
 }
@@ -42,7 +42,7 @@ export const CustomSelect = ({
 
   return (
     <div className={styles.select_wrapper} style={{ width }}>
-      <label className={styles.select_label}>{label}</label>
+      {label && <label className={styles.select_label}>{label}</label>}
 
       <div
         className={styles.select_container}
@@ -50,7 +50,9 @@ export const CustomSelect = ({
         ref={selectRef}
       >
         <div
-          className={`${styles.select_box} ${isOpen ? styles.open : ''}`}
+          className={`${styles.select_box} ${isOpen ? styles.open : ''} ${
+            selected ? styles.text_selected : ''
+          }`}
           onClick={() => setIsOpen(prev => !prev)}
         >
           {selected || options[0]}

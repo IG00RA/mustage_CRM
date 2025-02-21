@@ -38,15 +38,20 @@ export default function ModalComponent({
       className={styles.modal}
       overlayClassName={styles.overlay}
     >
-      <button onClick={onClose} className={styles.close_btn}>
-        <Icon
-          className={styles.close_icon}
-          name="icon-close-modal"
-          width={16}
-          height={16}
-        />
-      </button>
-      <h2 className={styles.title}>{`${t(title)} ${editedTitle}`}</h2>
+      <div className={styles.header_wrap}>
+        <h2 className={styles.title}>
+          <span>{t(title)}</span> <br />
+          {editedTitle}
+        </h2>
+        <button onClick={onClose} className={styles.close_btn}>
+          <Icon
+            className={styles.close_icon}
+            name="icon-close-modal"
+            width={16}
+            height={16}
+          />
+        </button>
+      </div>
       {text && <p className={styles.text}>{t(text)}</p>}
       <div className={styles.fields_wrap}>{children}</div>
     </Modal>

@@ -11,18 +11,11 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import AddBtn from '../Buttons/AddBtn/AddBtn';
-import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
-import CreateNames from '../ModalComponent/CreateNames/CreateNames';
-import EditNames from '../ModalComponent/EditNames/EditNames';
-import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
-import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 
 interface Table {

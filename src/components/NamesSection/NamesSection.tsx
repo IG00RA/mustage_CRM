@@ -12,13 +12,10 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
-import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
-import UpdateCategory from '../ModalComponent/EditCategory/EditCategory';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
 import CreateNames from '../ModalComponent/CreateNames/CreateNames';
