@@ -49,14 +49,8 @@ export const accParMenu = [
     logo: 'icon-export-2',
     logo_hov: 'icon-fill_export-2',
   },
-
-  {
-    header: 'Sidebar.accParMenu.distribution',
-    link: 'distribution',
-    logo: 'icon-box-2',
-    logo_hov: 'icon-fill_box-2',
-  },
-
+];
+export const accParMenuBottom = [
   {
     header: 'Sidebar.accParMenu.replacement',
     link: 'replacement',

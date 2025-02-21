@@ -100,7 +100,7 @@ const LoadSection = () => {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>{t('Load.namesQuantity')}</label>
+              <label className={styles.label}>{t('Load.accQuantity')}</label>
               <input
                 className={`${styles.input} ${
                   errors.nameCategoryField ? styles.input_error : ''
@@ -207,8 +207,7 @@ const LoadSection = () => {
       <ModalComponent
         isOpen={isOpenConfirm}
         onClose={toggleConfirmModal}
-        title="Names.modalUpdate.title"
-        text="Names.modalUpdate.description"
+        title="Load.modalConfirm.title"
       >
         <LoadAccountsConfirm
           category={formData?.nameCategoryField || ''}

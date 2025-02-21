@@ -1,15 +1,43 @@
-.locate_accounts {
-  color: var(--text_light);
+.form {
+  min-width: 456px;
+}
+
+.field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.label {
+  color: var(--text_dark);
   font-size: var(--fs_xsmall);
   font-style: normal;
   font-weight: 400;
   line-height: 1.37;
+}
 
-  & span {
-    color: var(--text_dark);
-    font-size: var(--fs_xsmall);
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.37;
+.text {
+  display: flex;
+  padding: 2px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100px;
+  background: var(--main_lighter);
+  color: var(--main_blue);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.57;
+}
+
+.buttons_wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+
+  & button {
+    flex: 1;
   }
 }

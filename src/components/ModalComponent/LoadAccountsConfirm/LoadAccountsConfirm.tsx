@@ -1,6 +1,5 @@
 import { useTranslations } from 'next-intl';
-import styles from '../ModalComponent.module.css';
-import ownStyles from './LoadAccountsConfirm.module.css';
+import styles from './LoadAccountsConfirm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm, useFormContext } from 'react-hook-form';
@@ -54,23 +53,23 @@ export default function LoadAccountsConfirm({
         <p className={styles.text}>{category}</p>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>{t('Load.selectCategory')}</label>
+        <label className={styles.label}>{t('Load.selectNames')}</label>
         <p className={styles.text}>{names}</p>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>{t('Load.selectCategory')}</label>
+        <label className={styles.label}>{t('Load.accQuantity')}</label>
         <p className={styles.text}>{accQuantity}</p>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>{t('Load.selectCategory')}</label>
+        <label className={styles.label}>{t('Load.seller')}</label>
         <p className={styles.text}>{seller}</p>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>{t('Load.selectCategory')}</label>
+        <label className={styles.label}>{t('Load.sellSum')}</label>
         <p className={styles.text}>{sellSum}</p>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>{t('Load.selectCategory')}</label>
+        <label className={styles.label}>{t('Load.tgNick')}</label>
         <p className={styles.text}>{tgNick}</p>
       </div>
       <div className={styles.buttons_wrap}>

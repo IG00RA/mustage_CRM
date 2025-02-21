@@ -22,6 +22,9 @@
       "upload": "Загрузка аккаунтов",
       "load": "Выгрузка аккаунтов",
       "distribution": "Раздача аккаунтов",
+      "distributionSettings": "Настройки раздачи",
+      "distributionCreate": "Создание раздачи",
+      "distributionAll": "Все раздачи",
       "replacement": "Замена аккаунтов",
       "removeSale": "Убрать аккаунты с продажи",
       "autoFarmControl": "Управление автофармом"
