@@ -1,0 +1,13 @@
+.text {
+  color: var(--text_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  margin-bottom: 24px;
+  margin-top: 24px;
+
+  & span {
+    color: var(--text_dark);
+  }
+}

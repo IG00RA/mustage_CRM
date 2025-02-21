@@ -8,12 +8,14 @@ import { useState, useEffect } from 'react';
 interface SearchInputProps {
   onSearch: (query: string) => void;
   text: string;
+  width?: string;
   options: string[];
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
   onSearch,
   text,
+  width,
   options,
 }) => {
   const t = useTranslations();
@@ -47,7 +49,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   };
 
   return (
-    <div className={styles.searchContainer}>
+    <div className={styles.searchContainer} style={{ width }}>
       <button
         type="button"
         className={styles.button}
@@ -66,6 +68,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         onChange={handleInputChange}
         className={styles.input}
         placeholder={t(text)}
+        style={{ width }}
       />
       {showDropdown && filteredOptions.length > 0 && (
         <ul className={styles.dropdown}>

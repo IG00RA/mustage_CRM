@@ -1,5 +1,5 @@
-import Upload from '@/components/UploadSection/UploadSection';
+import DistributionAll from '@/components/DistributionAll/DistributionAll';
 
 export default function Db_settings() {
-  return <Upload />;
+  return <DistributionAll />;
 }

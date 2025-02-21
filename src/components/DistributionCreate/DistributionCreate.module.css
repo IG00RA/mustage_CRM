@@ -1,96 +1,47 @@
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0 auto;
+.header_container {
+  padding: 24px;
   border-radius: 24px;
   background: var(--background);
-  padding: 24px;
-}
-
-.overlay {
-  background: #21212133;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.header_wrap {
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  align-items: flex-start;
+  box-shadow: var(--box_shadow);
   margin-bottom: 24px;
 }
 
-.close_btn {
-  flex-shrink: 0;
-
-  &:hover,
-  &:focus {
-    .close_icon {
-      fill: var(--main_blue);
-      transform: rotate(90deg);
-    }
-  }
-}
-
-.close_icon {
-  transition: fill 0.3s ease, transform 0.3s ease;
-}
-
-.title {
+.header {
   color: var(--text_dark);
   font-size: var(--fs_large);
   font-style: normal;
   font-weight: 700;
   line-height: 1.5;
-
-  & span {
-    white-space: nowrap;
-  }
+  margin-bottom: 8px;
 }
 
-.text {
+.header_text {
   color: var(--text_light);
   font-size: var(--fs_small);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.58;
-  margin-top: 8px;
+  line-height: 1.57;
+  margin-bottom: 24px;
 }
 
-.fields_wrap {
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.buttons_wrap {
+.selects_wrap {
   display: flex;
+  flex-direction: column;
   gap: 16px;
   width: 100%;
-  margin-top: 32px;
-}
-
-.buttons_wrap button {
-  flex: 1;
-}
-
-.form {
-  min-width: 455px;
+  margin-bottom: 12px;
 }
 
 .field {
+  width: 602px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
   margin-bottom: 16px;
+
+  & > button {
+    align-self: flex-start;
+  }
 }
 
 .label {
@@ -99,10 +50,10 @@
   font-style: normal;
   font-weight: 400;
   line-height: 1.57;
-  margin-bottom: 6px;
 }
 
 .input {
+  flex: 1;
   height: 42px;
   padding: 10px 14px;
   border-radius: 12px;
@@ -147,4 +98,8 @@
   font-weight: 400;
   line-height: 1;
   margin-top: 6px;
+}
+
+.buttons_wrap {
+  margin-top: 24px;
 }

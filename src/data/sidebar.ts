@@ -60,13 +60,13 @@ export const accParMenuBottom = [
 
   {
     header: 'Sidebar.accParMenu.removeSale',
-    link: 'removeSale',
+    link: 'remove_sale',
     logo: 'icon-trash',
     logo_hov: 'icon-fill_trash',
   },
   {
     header: 'Sidebar.accParMenu.autoFarmControl',
-    link: 'autoFarmControl',
+    link: 'auto_farm',
     logo: 'icon-send-2',
     logo_hov: 'icon-fill_send-2',
   },

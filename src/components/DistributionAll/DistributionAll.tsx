@@ -1,6 +1,6 @@
 'use client';
 
-import styles from './DistributionSettings.module.css';
+import styles from './DistributionAll.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import {
@@ -22,89 +22,187 @@ import EditCategory from '../ModalComponent/EditCategory/EditCategory';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
+import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
 
 interface Category {
   id: number;
   name: string;
-  quantity: string;
-  last: string;
+  distributionSettings: string;
+  creationDate: string;
 }
 
 const data: Category[] = [
-  { id: 1, name: 'Щоденна акція', quantity: '15', last: '01.02.2025 10:00' },
-  { id: 2, name: 'Тижневий бонус', quantity: '25', last: '03.02.2025 14:30' },
+  {
+    id: 1,
+    name: 'Гів 16.09.2024',
+    distributionSettings: 'Щотижневий розіграш',
+    creationDate: '12.09.2024 12:00',
+  },
+  {
+    id: 2,
+    name: 'Гів 23.09.2024',
+    distributionSettings: 'Щоденна акція',
+    creationDate: '20.09.2024 10:00',
+  },
   {
     id: 3,
-    name: 'Місячна пропозиція',
-    quantity: '10',
-    last: '05.02.2025 09:15',
+    name: 'Гів 30.09.2024',
+    distributionSettings: 'Тижневий бонус',
+    creationDate: '27.09.2024 14:30',
   },
-  { id: 4, name: 'Спеціальна подія', quantity: '30', last: '07.02.2025 16:45' },
+  {
+    id: 4,
+    name: 'Гів 07.10.2024',
+    distributionSettings: 'Місячна пропозиція',
+    creationDate: '04.10.2024 09:15',
+  },
   {
     id: 5,
-    name: 'Вихідний розпродаж',
-    quantity: '18',
-    last: '09.02.2025 11:00',
+    name: 'Гів 14.10.2024',
+    distributionSettings: 'Спеціальна подія',
+    creationDate: '11.10.2024 16:45',
   },
-  { id: 6, name: 'Нічна знижка', quantity: '12', last: '10.02.2025 23:59' },
-  { id: 7, name: 'Ранкова акція', quantity: '22', last: '11.02.2025 08:30' },
-  { id: 8, name: 'Святковий бонус', quantity: '35', last: '12.02.2025 15:00' },
+  {
+    id: 6,
+    name: 'Гів 21.10.2024',
+    distributionSettings: 'Вихідний розпродаж',
+    creationDate: '18.10.2024 11:00',
+  },
+  {
+    id: 7,
+    name: 'Гів 28.10.2024',
+    distributionSettings: 'Нічна знижка',
+    creationDate: '25.10.2024 23:59',
+  },
+  {
+    id: 8,
+    name: 'Гів 04.11.2024',
+    distributionSettings: 'Ранкова акція',
+    creationDate: '01.11.2024 08:30',
+  },
   {
     id: 9,
-    name: 'Ексклюзивна пропозиція',
-    quantity: '8',
-    last: '13.02.2025 17:20',
+    name: 'Гів 11.11.2024',
+    distributionSettings: 'Святковий бонус',
+    creationDate: '08.11.2024 15:00',
   },
-  { id: 10, name: 'Лояльність', quantity: '20', last: '14.02.2025 12:00' },
-  { id: 11, name: 'Флеш-розпродаж', quantity: '40', last: '15.02.2025 13:10' },
-  { id: 12, name: 'Денна акція', quantity: '17', last: '16.02.2025 14:00' },
-  { id: 13, name: 'Вечірній бонус', quantity: '23', last: '17.02.2025 19:30' },
-  { id: 14, name: 'Тематична подія', quantity: '14', last: '18.02.2025 10:45' },
-  { id: 15, name: 'Сюрприз дня', quantity: '19', last: '19.02.2025 11:30' },
-  { id: 16, name: 'Щасливі години', quantity: '28', last: '20.02.2025 18:00' },
+  {
+    id: 10,
+    name: 'Гів 18.11.2024',
+    distributionSettings: 'Ексклюзивна пропозиція',
+    creationDate: '15.11.2024 17:20',
+  },
+  {
+    id: 11,
+    name: 'Гів 25.11.2024',
+    distributionSettings: 'Лояльність',
+    creationDate: '22.11.2024 12:00',
+  },
+  {
+    id: 12,
+    name: 'Гів 02.12.2024',
+    distributionSettings: 'Флеш-розпродаж',
+    creationDate: '29.11.2024 13:10',
+  },
+  {
+    id: 13,
+    name: 'Гів 09.12.2024',
+    distributionSettings: 'Денна акція',
+    creationDate: '06.12.2024 14:00',
+  },
+  {
+    id: 14,
+    name: 'Гів 16.12.2024',
+    distributionSettings: 'Вечірній бонус',
+    creationDate: '13.12.2024 19:30',
+  },
+  {
+    id: 15,
+    name: 'Гів 23.12.2024',
+    distributionSettings: 'Тематична подія',
+    creationDate: '20.12.2024 10:45',
+  },
+  {
+    id: 16,
+    name: 'Гів 30.12.2024',
+    distributionSettings: 'Сюрприз дня',
+    creationDate: '27.12.2024 11:30',
+  },
   {
     id: 17,
-    name: 'Ранковий розіграш',
-    quantity: '16',
-    last: '21.02.2025 07:00',
+    name: 'Гів 06.01.2025',
+    distributionSettings: 'Щасливі години',
+    creationDate: '03.01.2025 18:00',
   },
   {
     id: 18,
-    name: 'Вечірній сюрприз',
-    quantity: '21',
-    last: '22.02.2025 20:15',
+    name: 'Гів 13.01.2025',
+    distributionSettings: 'Ранковий розіграш',
+    creationDate: '10.01.2025 07:00',
   },
-  { id: 19, name: 'Тижнева лотерея', quantity: '33', last: '23.02.2025 12:00' },
-  { id: 20, name: 'Акція вихідного', quantity: '11', last: '24.02.2025 15:30' },
-  { id: 21, name: 'Секретна знижка', quantity: '27', last: '25.02.2025 09:00' },
+  {
+    id: 19,
+    name: 'Гів 20.01.2025',
+    distributionSettings: 'Вечірній сюрприз',
+    creationDate: '17.01.2025 20:15',
+  },
+  {
+    id: 20,
+    name: 'Гів 27.01.2025',
+    distributionSettings: 'Тижнева лотерея',
+    creationDate: '24.01.2025 12:00',
+  },
+  {
+    id: 21,
+    name: 'Гів 03.02.2025',
+    distributionSettings: 'Акція вихідного',
+    creationDate: '31.01.2025 15:30',
+  },
   {
     id: 22,
-    name: 'Додатковий бонус',
-    quantity: '24',
-    last: '26.02.2025 14:20',
+    name: 'Гів 10.02.2025',
+    distributionSettings: 'Секретна знижка',
+    creationDate: '07.02.2025 09:00',
   },
-  { id: 23, name: 'Швидка акція', quantity: '13', last: '27.02.2025 16:00' },
+  {
+    id: 23,
+    name: 'Гів 17.02.2025',
+    distributionSettings: 'Додатковий бонус',
+    creationDate: '14.02.2025 14:20',
+  },
   {
     id: 24,
-    name: 'Особлива пропозиція',
-    quantity: '29',
-    last: '28.02.2025 10:10',
+    name: 'Гів 24.02.2025',
+    distributionSettings: 'Швидка акція',
+    creationDate: '21.02.2025 16:00',
   },
-  { id: 25, name: 'Денний розіграш', quantity: '15', last: '01.03.2025 13:00' },
-  { id: 26, name: 'Нічна подія', quantity: '31', last: '02.03.2025 22:00' },
+  {
+    id: 25,
+    name: 'Гів 03.03.2025',
+    distributionSettings: 'Особлива пропозиція',
+    creationDate: '28.02.2025 10:10',
+  },
+  {
+    id: 26,
+    name: 'Гів 10.03.2025',
+    distributionSettings: 'Денний розіграш',
+    creationDate: '07.03.2025 13:00',
+  },
   {
     id: 27,
-    name: 'Щотижневий розіграш',
-    quantity: '20',
-    last: '12.09.2024 12:00',
+    name: 'Гів 17.03.2025',
+    distributionSettings: 'Нічна подія',
+    creationDate: '14.03.2025 22:00',
   },
 ];
-const DistributionSettings = () => {
+const DistributionAll = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
+
+  const [selectCategory, setSelectCategory] = useState('');
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -126,29 +224,24 @@ const DistributionSettings = () => {
     },
     {
       accessorKey: 'name',
-      header: t('DistributionSettings.table.name'),
+      header: t('DistributionAll.name'),
     },
     {
-      accessorKey: 'quantity',
-      header: t('DistributionSettings.table.quantity'),
+      accessorKey: 'distributionSettings',
+      header: t('DistributionAll.distributionSettings'),
     },
     {
-      accessorKey: 'last',
-      header: t('DistributionSettings.table.last'),
+      accessorKey: 'creationDate',
+      header: t('DistributionAll.creationDate'),
     },
     {
       id: 'actions',
-      header: t('DistributionSettings.table.actions'),
+      header: t('DistributionAll.action'),
       cell: ({ row }) => (
         <div className={styles.table_buttons}>
-          <CancelBtn
-            text="DistributionSettings.table.btn"
-            onClick={() => toggleUpdateModal(row.original.name)}
-          />
           <WhiteBtn
-            onClick={() => toggleCreateModal()}
-            text={'Names.table.editBtn'}
-            icon="icon-edit-pencil"
+            onClick={() => toggleUpdateModal(row.original.name)}
+            text={'DistributionAll.infoBtn'}
           />
         </div>
       ),
@@ -182,17 +275,16 @@ const DistributionSettings = () => {
     <section className={styles.section}>
       <div className={styles.header_container}>
         <h2 className={styles.header}>
-          {t('Sidebar.accParMenu.distributionSettings')}
+          {t('Sidebar.accParMenu.distributionAll')}
         </h2>
-        <p className={styles.header_text}>
-          {t('DistributionSettings.headerText')}
-          <br />
-          {t('DistributionSettings.headerTextBottom')}
-        </p>
+        <p className={styles.header_text}>{t('DistributionAll.headerText')}</p>
         <div className={styles.buttons_wrap}>
-          <AddBtn
-            onClick={toggleCreateModal}
-            text={'DistributionSettings.addBtn'}
+          <CustomSelect
+            label={t('DistributionAll.distributionSetting')}
+            options={['Еженедельный розыгрыш', 'Еженедневний розыгрыш']}
+            selected={selectCategory}
+            onSelect={setSelectCategory}
+            width={560}
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
@@ -287,16 +379,9 @@ const DistributionSettings = () => {
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenCreate}
-        onClose={toggleCreateModal}
-        title="DistributionSettings.modalCreate.title"
-      >
-        <CreateDistributionSettings />
-      </ModalComponent>
-      <ModalComponent
         isOpen={isOpenUpdate}
         onClose={toggleUpdateModal}
-        title="DistributionSettings.modalUpload.title"
+        title="DistributionAll.modalCreate.title"
         editedTitle={`"${updateTitle}"`}
       >
         <UploadNamesDistribution />
@@ -305,4 +390,4 @@ const DistributionSettings = () => {
   );
 };
 
-export default DistributionSettings;
+export default DistributionAll;

@@ -1,0 +1,162 @@
+.header_container {
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--background);
+  box-shadow: var(--box_shadow);
+  margin-bottom: 24px;
+}
+
+.header {
+  color: var(--text_dark);
+  font-size: var(--fs_large);
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.header_text {
+  color: var(--text_light);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+  margin-bottom: 24px;
+}
+
+.buttons_wrap {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+
+  & button svg {
+    top: 13px;
+    left: 16px;
+  }
+}
+
+.table_container {
+  border-radius: 24px;
+  background: var(--background);
+  box-shadow: var(--box_shadow);
+}
+
+.table {
+  width: calc(100vw - 345px);
+  background: var(--background);
+  border-collapse: collapse;
+}
+
+.thead tr {
+  border-bottom: 1px solid var(--grey);
+}
+
+.tbody tr:last-child {
+  border-bottom: 1px solid var(--grey);
+}
+
+.th,
+.td {
+  padding: 16px;
+  text-align: left;
+  &:first-child {
+    padding-left: 24px;
+  }
+}
+
+.th {
+  color: var(--text_light);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.84;
+  &:first-child {
+    width: 64px;
+  }
+  &:last-child {
+    width: 305px;
+  }
+}
+
+.td {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-weight: 400;
+  line-height: 1.57;
+  &:last-child {
+    padding: 9px 16px;
+  }
+}
+
+.table_buttons {
+  display: flex;
+  gap: 8px;
+  & button {
+    font-size: 14px;
+    padding: 8px 12px;
+    height: 36px;
+    gap: 6px;
+
+    & svg {
+      top: 9px;
+      left: 12px;
+    }
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 16px 24px 24px;
+  gap: 24px;
+}
+
+.pagination_text {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.58;
+}
+
+.pagination_btn_wrap {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination_btn {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+
+  &:hover,
+  &:focus {
+  }
+}
+
+.icon_back {
+  transform: rotate(180deg);
+}
+
+.pagination_btn:disabled .icon_back,
+.pagination_btn:disabled .icon_forward {
+  fill: var(--disabled_grey);
+}
+
+.pagination_select {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: var(--text_dark);
+  font-family: var(--font_sans);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+
+  &:hover,
+  &:focus {
+    border: none;
+    outline: none;
+  }
+}
