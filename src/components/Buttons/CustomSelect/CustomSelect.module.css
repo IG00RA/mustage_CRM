@@ -75,6 +75,7 @@
 }
 
 .select_open.select_options {
+  z-index: 2;
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
