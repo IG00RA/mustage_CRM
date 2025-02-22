@@ -19,138 +19,133 @@ import ModalComponent from '../ModalComponent/ModalComponent';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
+import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
+import SearchResult from '../ModalComponent/SearchResult/SearchResult';
 
-interface Category {
+interface Table {
   id: number;
   name: string;
-  quantity: string;
-  last: string;
+  category: string;
+  seller: string;
+  status: string;
 }
 
-const data: Category[] = [
-  { id: 1, name: 'Щоденна акція', quantity: '15', last: '01.02.2025 10:00' },
-  { id: 2, name: 'Тижневий бонус', quantity: '25', last: '03.02.2025 14:30' },
+const data: Table[] = [
+  {
+    id: 1,
+    name: 'Reece Chung',
+    category: 'Аккаунты Facebook UA-гео ручного фарма',
+    seller: 'Шоп',
+    status: 'Передан',
+  },
+  {
+    id: 2,
+    name: 'Lucian Obrien',
+    category: 'Hegmann, Kreiger and Bayer',
+    seller: 'Максим Куролап',
+    status: 'Не передан',
+  },
   {
     id: 3,
-    name: 'Місячна пропозиція',
-    quantity: '10',
-    last: '05.02.2025 09:15',
+    name: 'farm # 11712 - Chloe Cox',
+    category: 'Facebook PL (самореги)',
+    seller: 'Шоп',
+    status: 'Передан',
   },
-  { id: 4, name: 'Спеціальна подія', quantity: '30', last: '07.02.2025 16:45' },
+  {
+    id: 4,
+    name: 'Dejafarm # 11170 - Mia HayesBrady',
+    category: 'Facebook UA (самореги)',
+    seller: 'Максим Куролап',
+    status: 'Не передан',
+  },
   {
     id: 5,
-    name: 'Вихідний розпродаж',
-    quantity: '18',
-    last: '09.02.2025 11:00',
+    name: '1 farm # 11513 - Harper Perry',
+    category: 'Facebook UA (ручной фарм)',
+    seller: 'Шоп',
+    status: 'Передан',
   },
-  { id: 6, name: 'Нічна знижка', quantity: '12', last: '10.02.2025 23:59' },
-  { id: 7, name: 'Ранкова акція', quantity: '22', last: '11.02.2025 08:30' },
-  { id: 8, name: 'Святковий бонус', quantity: '35', last: '12.02.2025 15:00' },
+  {
+    id: 6,
+    name: 'Reece Chung',
+    category: 'Аккаунты Facebook UA-гео ручного фарма',
+    seller: 'Максим Куролап',
+    status: 'Не передан',
+  },
+  {
+    id: 7,
+    name: 'Lucian Obrien',
+    category: 'Hegmann, Kreiger and Bayer',
+    seller: 'Шоп',
+    status: 'Передан',
+  },
+  {
+    id: 8,
+    name: 'farm # 11712 - Chloe Cox',
+    category: 'Facebook PL (самореги)',
+    seller: 'Максим Куролап',
+    status: 'Не передан',
+  },
   {
     id: 9,
-    name: 'Ексклюзивна пропозиція',
-    quantity: '8',
-    last: '13.02.2025 17:20',
-  },
-  { id: 10, name: 'Лояльність', quantity: '20', last: '14.02.2025 12:00' },
-  { id: 11, name: 'Флеш-розпродаж', quantity: '40', last: '15.02.2025 13:10' },
-  { id: 12, name: 'Денна акція', quantity: '17', last: '16.02.2025 14:00' },
-  { id: 13, name: 'Вечірній бонус', quantity: '23', last: '17.02.2025 19:30' },
-  { id: 14, name: 'Тематична подія', quantity: '14', last: '18.02.2025 10:45' },
-  { id: 15, name: 'Сюрприз дня', quantity: '19', last: '19.02.2025 11:30' },
-  { id: 16, name: 'Щасливі години', quantity: '28', last: '20.02.2025 18:00' },
-  {
-    id: 17,
-    name: 'Ранковий розіграш',
-    quantity: '16',
-    last: '21.02.2025 07:00',
+    name: 'Dejafarm # 11170 - Mia HayesBrady',
+    category: 'Facebook UA (самореги)',
+    seller: 'Шоп',
+    status: 'Передан',
   },
   {
-    id: 18,
-    name: 'Вечірній сюрприз',
-    quantity: '21',
-    last: '22.02.2025 20:15',
-  },
-  { id: 19, name: 'Тижнева лотерея', quantity: '33', last: '23.02.2025 12:00' },
-  { id: 20, name: 'Акція вихідного', quantity: '11', last: '24.02.2025 15:30' },
-  { id: 21, name: 'Секретна знижка', quantity: '27', last: '25.02.2025 09:00' },
-  {
-    id: 22,
-    name: 'Додатковий бонус',
-    quantity: '24',
-    last: '26.02.2025 14:20',
-  },
-  { id: 23, name: 'Швидка акція', quantity: '13', last: '27.02.2025 16:00' },
-  {
-    id: 24,
-    name: 'Особлива пропозиція',
-    quantity: '29',
-    last: '28.02.2025 10:10',
-  },
-  { id: 25, name: 'Денний розіграш', quantity: '15', last: '01.03.2025 13:00' },
-  { id: 26, name: 'Нічна подія', quantity: '31', last: '02.03.2025 22:00' },
-  {
-    id: 27,
-    name: 'Щотижневий розіграш',
-    quantity: '20',
-    last: '12.09.2024 12:00',
+    id: 10,
+    name: '1 farm # 11513 - Harper Perry',
+    category: 'Facebook UA (ручной фарм)',
+    seller: 'Максим Куролап',
+    status: 'Не передан',
   },
 ];
+
 const RemoveSaleSection = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
+  const [isOpenResult, setIsOpenResult] = useState(false);
+  const [selectSell, setSelectSell] = useState('');
+  const [selectLoad, setSelectLoad] = useState('');
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5, // Початковий розмір сторінки
   });
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
-  const toggleUpdateModal = (title = '') => {
-    setUpdateTitle(title);
-    setIsOpenUpdate(!isOpenUpdate);
+  const toggleResultModal = () => {
+    setIsOpenResult(!isOpenResult);
   };
 
-  const columns: ColumnDef<Category>[] = [
+  const columns: ColumnDef<Table>[] = [
     {
       accessorKey: 'id',
       header: 'ID',
     },
     {
       accessorKey: 'name',
-      header: t('DistributionSettings.table.name'),
+      header: t('AllAccounts.table.name'),
     },
     {
-      accessorKey: 'quantity',
-      header: t('DistributionSettings.table.quantity'),
+      accessorKey: 'category',
+      header: t('AllAccounts.table.category'),
     },
     {
-      accessorKey: 'last',
-      header: t('DistributionSettings.table.last'),
+      accessorKey: 'seller',
+      header: t('AllAccounts.table.seller'),
     },
     {
-      id: 'actions',
-      header: t('DistributionSettings.table.actions'),
-      cell: ({ row }) => (
-        <div className={styles.table_buttons}>
-          <CancelBtn
-            text="DistributionSettings.table.btn"
-            onClick={() => toggleUpdateModal(row.original.name)}
-          />
-          <WhiteBtn
-            onClick={() => toggleCreateModal()}
-            text={'Names.table.editBtn'}
-            icon="icon-edit-pencil"
-          />
-        </div>
-      ),
+      accessorKey: 'status',
+      header: t('AllAccounts.table.status'),
     },
   ];
+
+  const exportToExcel = () => {
+    console.log(1233);
+  };
 
   const table = useReactTable({
     data,
@@ -175,21 +170,56 @@ const RemoveSaleSection = () => {
 
   const categoryNames = [...new Set(data.map(category => category.name))];
 
+  const download = () => {};
+  const add = () => {};
+
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>
-          {t('Sidebar.accParMenu.distributionSettings')}
-        </h2>
+        <h2 className={styles.header}>{t('Sidebar.accParMenu.replacement')}</h2>
         <p className={styles.header_text}>
-          {t('DistributionSettings.headerText')}
-          <br />
-          {t('DistributionSettings.headerTextBottom')}
+          {t('RemoveSaleSection.headerText')}
         </p>
-        <div className={styles.buttons_wrap}>
+        <div className={styles.input_wrap}>
+          <label className={styles.label}>{t('RemoveSaleSection.field')}</label>
+          <textarea
+            className={`${styles.input} ${styles.textarea}`}
+            placeholder={t('RemoveSaleSection.fieldName')}
+          />
+        </div>
+        <div className={styles.top_btn_wrap}>
+          <WhiteBtn
+            onClick={toggleResultModal}
+            text={'RemoveSaleSection.searchBtn'}
+            icon="icon-search-btn-fill"
+          />
           <AddBtn
-            onClick={toggleCreateModal}
-            text={'DistributionSettings.addBtn'}
+            onClick={add}
+            icon="icon-trash-btn-white"
+            iconFill="icon-trash-btn-white"
+            text={'RemoveSaleSection.removeBtn'}
+          />
+        </div>
+        <div className={styles.search_wrap}>
+          <CustomSelect
+            label={t('RemoveSaleSection.loadSelect')}
+            options={[
+              t('RemoveSaleSection.descending'),
+              t('RemoveSaleSection.ascending'),
+            ]}
+            selected={selectLoad}
+            onSelect={setSelectLoad}
+            width={331}
+          />
+          <CustomSelect
+            label={t('RemoveSaleSection.sellSelect')}
+            options={[
+              t('RemoveSaleSection.descending'),
+              t('RemoveSaleSection.ascending'),
+            ]}
+            selected={selectSell}
+            onSelect={setSelectSell}
+            width={331}
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
@@ -226,77 +256,85 @@ const RemoveSaleSection = () => {
             ))}
           </tbody>
         </table>
-        <div className={styles.pagination}>
-          <span className={styles.pagination_text}>
-            {t('Category.table.pagination')}
-          </span>
-          <select
-            className={styles.pagination_select}
-            value={pagination.pageSize}
-            onChange={e =>
-              setPagination(prev => ({
-                ...prev,
-                pageSize: Number(e.target.value),
-              }))
-            }
-          >
-            {[5, 10, 20].map(size => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-          <span className={styles.pagination_text}>
-            {pagination.pageIndex * pagination.pageSize + 1}-
-            {Math.min(
-              (pagination.pageIndex + 1) * pagination.pageSize,
-              data.length
-            )}
-            {t('Category.table.pages')}
-            {data.length}
-          </span>
-          <div className={styles.pagination_btn_wrap}>
-            <button
-              className={styles.pagination_btn}
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+        <div className={styles.bottom_wrap}>
+          <div className={styles.download_wrap}>
+            <WhiteBtn
+              onClick={exportToExcel}
+              text={'AllAccounts.downloadBtn'}
+              icon="icon-cloud-download"
+              iconFill="icon-cloud-download-fill"
+            />
+            <WhiteBtn
+              onClick={exportToExcel}
+              text={'AllAccounts.editBtn'}
+              icon="icon-palette"
+            />
+          </div>
+          <div className={styles.pagination}>
+            <span className={styles.pagination_text}>
+              {t('Category.table.pagination')}
+            </span>
+            <select
+              className={styles.pagination_select}
+              value={pagination.pageSize}
+              onChange={e =>
+                setPagination(prev => ({
+                  ...prev,
+                  pageSize: Number(e.target.value),
+                }))
+              }
             >
-              <Icon
-                className={styles.icon_back}
-                name="icon-table_arrow"
-                width={20}
-                height={20}
-              />
-            </button>
-            <button
-              className={styles.pagination_btn}
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <Icon
-                className={styles.icon_forward}
-                name="icon-table_arrow"
-                width={20}
-                height={20}
-              />
-            </button>
+              {[5, 10, 20].map(size => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+            <span className={styles.pagination_text}>
+              {pagination.pageIndex * pagination.pageSize + 1}-
+              {Math.min(
+                (pagination.pageIndex + 1) * pagination.pageSize,
+                data.length
+              )}
+              {t('Category.table.pages')}
+              {data.length}
+            </span>
+            <div className={styles.pagination_btn_wrap}>
+              <button
+                className={styles.pagination_btn}
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <Icon
+                  className={styles.icon_back}
+                  name="icon-table_arrow"
+                  width={20}
+                  height={20}
+                />
+              </button>
+              <button
+                className={styles.pagination_btn}
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <Icon
+                  className={styles.icon_forward}
+                  name="icon-table_arrow"
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenCreate}
-        onClose={toggleCreateModal}
-        title="DistributionSettings.modalCreate.title"
+        isOpen={isOpenResult}
+        onClose={toggleResultModal}
+        title="RemoveSaleSection.modal.title"
+        text="RemoveSaleSection.modal.text"
       >
-        <CreateDistributionSettings />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
-        title="DistributionSettings.modalUpload.title"
-        editedTitle={`"${updateTitle}"`}
-      >
-        <UploadNamesDistribution />
+        <SearchResult />
       </ModalComponent>
     </section>
   );

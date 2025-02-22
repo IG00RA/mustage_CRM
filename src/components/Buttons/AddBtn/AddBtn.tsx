@@ -7,18 +7,31 @@ import styles from './AddBtn.module.css';
 interface ButtonProps {
   onClick: () => void;
   text: string;
+  icon?: string;
+  iconFill?: string;
   type?: 'submit' | 'button';
 }
 
-const AddBtn: React.FC<ButtonProps> = ({ text, onClick, type = 'button' }) => {
+const AddBtn: React.FC<ButtonProps> = ({
+  text,
+  icon,
+  iconFill,
+  onClick,
+  type = 'button',
+}) => {
   const t = useTranslations();
 
   return (
     <button type={type} className={styles.button} onClick={onClick}>
-      <Icon className={styles.icon} name="icon-add" width={16} height={16} />
+      <Icon
+        className={styles.icon}
+        name={icon ? icon : 'icon-add'}
+        width={16}
+        height={16}
+      />
       <Icon
         className={styles.icon_hov}
-        name="icon-add-fill"
+        name={iconFill ? iconFill : 'icon-add-fill'}
         width={16}
         height={16}
       />

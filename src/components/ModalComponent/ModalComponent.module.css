@@ -27,7 +27,6 @@
   gap: 16px;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
 }
 
 .close_btn {
@@ -68,6 +67,7 @@
 }
 
 .fields_wrap {
+  margin-top: 24px;
   max-height: 80vh;
   overflow-y: auto;
 }

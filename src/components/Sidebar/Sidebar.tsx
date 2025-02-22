@@ -21,6 +21,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenSub, setIsOpenSub] = useState(false);
 
   const logout = useAuthStore(state => state.logout);
   const handleLogout = () => {
@@ -39,8 +40,10 @@ const Sidebar = () => {
     );
     if (isAnyDistributionActive) {
       setIsOpen(true);
+      setIsOpenSub(true);
     } else {
       setIsOpen(false); // Опціонально: закривати, якщо жодне з підпосилань не активне
+      setIsOpenSub(false);
     }
   }, [pathname]);
 
@@ -136,7 +139,9 @@ const Sidebar = () => {
             </li>
           ))}
           <li
-            className={`${styles.nav_item} ${isOpen ? styles.active : ''}`}
+            className={`${styles.nav_item} ${
+              isOpen || isOpenSub ? styles.active : ''
+            }`}
             key={'distribution'}
             onClick={() => setIsOpen(prev => !prev)}
           >
