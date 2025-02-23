@@ -75,20 +75,20 @@ export const accParMenuBottom = [
 export const otherParMenu = [
   {
     header: 'Sidebar.otherParMenu.promo',
-    link: 'dashboard1',
+    link: 'promo_code',
     logo: 'icon-ticket',
     logo_hov: 'icon-fill_ticket',
   },
 
   {
     header: 'Sidebar.otherParMenu.users',
-    link: 'dashboard1',
+    link: 'users',
     logo: 'icon-user',
     logo_hov: 'icon-fill_user',
   },
   {
     header: 'Sidebar.otherParMenu.referrals',
-    link: 'dashboard1',
+    link: 'referrals',
     logo: 'icon-briefcase-2',
     logo_hov: 'icon-fill_briefcase-2',
   },
