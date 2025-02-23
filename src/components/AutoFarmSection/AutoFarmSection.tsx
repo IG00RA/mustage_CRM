@@ -16,6 +16,10 @@ import CreateDistributionSettings from '../ModalComponent/CreateDistributionSett
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
 import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
+import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmModal';
+import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
+import ReplenishmentAccountsFarm from '../ModalComponent/ReplenishmentAccountsFarm/ReplenishmentAccountsFarm';
+import EditServerFarmModal from '../ModalComponent/EditServerFarmModal/EditServerFarmModal';
 
 interface Category {
   geo: string;
@@ -359,9 +363,14 @@ const data: Category[] = [
 const AutoFarmSection = () => {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
+  const [isOpenEditType, setIsOpenEditType] = useState(false);
+  const [isOpenServer, setIsOpenServer] = useState(false);
+  const [isOpenReplenishmentAccounts, setIsOpenReplenishmentAccounts] =
+    useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
+  const [updateServerName, setUpdateServerName] = useState('');
+  const [updateTitleSecond, setUpdateTitleSecond] = useState('');
   const [selectGeoAcc, setSelectGeoAcc] = useState('');
   const [selectTypeAcc, setSelectTypeAcc] = useState('');
   const [selectGeoReplenishment, setSelectGeoReplenishment] = useState('');
@@ -369,11 +378,19 @@ const AutoFarmSection = () => {
   const [selectGeoServer, setSelectGeoServer] = useState('');
   const [selectTypeServer, setSelectTypeServer] = useState('');
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
+  const toggleEditTypeModal = () => {
+    setIsOpenEditType(!isOpenEditType);
   };
-  const toggleUpdateModal = (title = '') => {
+  const toggleServerModal = (server = '') => {
+    setUpdateServerName(server);
+    setIsOpenServer(!isOpenServer);
+  };
+  const toggleReplenishmentAccountsModal = () => {
+    setIsOpenReplenishmentAccounts(!isOpenReplenishmentAccounts);
+  };
+  const toggleUpdateModal = (title = '', titleSecond = '') => {
     setUpdateTitle(title);
+    setUpdateTitleSecond(titleSecond);
     setIsOpenUpdate(!isOpenUpdate);
   };
 
@@ -409,12 +426,17 @@ const AutoFarmSection = () => {
       cell: ({ row }) => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={() => toggleCreateModal()}
+            onClick={() =>
+              toggleUpdateModal(
+                `гео - ${row.original.geo}, тип - ${row.original.type}`,
+                row.original.name
+              )
+            }
             text={'AutoFarmSection.tableAcc.btnLoad'}
             icon="icon-upload"
           />
           <WhiteBtn
-            onClick={() => toggleUpdateModal(row.original.name)}
+            onClick={() => toggleEditTypeModal()}
             text={'AutoFarmSection.tableAcc.btnEdit'}
             icon="icon-edit-pencil"
           />
@@ -453,7 +475,7 @@ const AutoFarmSection = () => {
       cell: ({ row }) => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={() => toggleUpdateModal(row.original.name)}
+            onClick={() => toggleServerModal(row.original.serverName)}
             text={'AutoFarmSection.tableAcc.btnEdit'}
             icon="icon-edit-pencil"
           />
@@ -611,7 +633,7 @@ const AutoFarmSection = () => {
           </p>
           <div className={styles.table_add_btn}>
             <AddBtn
-              onClick={toggleCreateModal}
+              onClick={toggleReplenishmentAccountsModal}
               text={'AutoFarmSection.tableReplenishment.btn'}
             />
           </div>
@@ -671,19 +693,36 @@ const AutoFarmSection = () => {
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenCreate}
-        onClose={toggleCreateModal}
-        title="DistributionSettings.modalCreate.title"
+        isOpen={isOpenEditType}
+        onClose={toggleEditTypeModal}
+        title="AutoFarmSection.modalEditType.title"
       >
-        <CreateDistributionSettings />
+        <EditTypeFarmModal />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenReplenishmentAccounts}
+        onClose={toggleReplenishmentAccountsModal}
+        title="AutoFarmSection.modalReplenishmentAcc.title"
+      >
+        <ReplenishmentAccountsFarm />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenServer}
+        onClose={toggleServerModal}
+        editedTitle={`"${updateServerName}"`}
+        title="AutoFarmSection.modalServerType.title"
+      >
+        <EditServerFarmModal />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
         onClose={toggleUpdateModal}
-        title="DistributionSettings.modalUpload.title"
+        title="AutoFarmSection.modalLoad.title"
+        titleSecond="AutoFarmSection.modalLoad.titleSecond"
         editedTitle={`"${updateTitle}"`}
+        editedTitleSecond={`"${updateTitleSecond}"`}
       >
-        <UploadNamesDistribution />
+        <UploadAccountsAutoFarm />
       </ModalComponent>
     </section>
   );

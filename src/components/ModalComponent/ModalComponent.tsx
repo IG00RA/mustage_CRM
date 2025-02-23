@@ -4,8 +4,6 @@ import { useTranslations } from 'next-intl';
 import { useState, ReactNode } from 'react';
 import Modal from 'react-modal';
 import styles from './ModalComponent.module.css';
-import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import Icon from '@/helpers/Icon';
 
 if (typeof window !== 'undefined') {
@@ -16,8 +14,10 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  titleSecond?: string;
   text?: string;
   editedTitle?: string;
+  editedTitleSecond?: string;
   children: ReactNode;
 }
 
@@ -26,6 +26,8 @@ export default function ModalComponent({
   onClose,
   title,
   text,
+  titleSecond,
+  editedTitleSecond,
   editedTitle = '',
   children,
 }: ModalProps) {
@@ -40,8 +42,18 @@ export default function ModalComponent({
     >
       <div className={styles.header_wrap}>
         <h2 className={styles.title}>
-          <span>{t(title)}</span> <br />
-          {editedTitle}
+          <span>{t(title)}</span>
+          {editedTitle && (
+            <>
+              <br /> {editedTitle} <br />
+            </>
+          )}
+          {titleSecond && (
+            <>
+              <span>{t(titleSecond)}</span> <br />
+            </>
+          )}
+          {editedTitleSecond}
         </h2>
         <button onClick={onClose} className={styles.close_btn}>
           <Icon
