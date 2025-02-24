@@ -1,0 +1,16 @@
+.field {
+  & button {
+    align-self: self-start;
+  }
+}
+
+.field_bottom {
+  & button {
+    align-self: self-start;
+    font-size: var(--fs_small);
+  }
+}
+
+.check_wrap {
+  gap: 12px;
+}

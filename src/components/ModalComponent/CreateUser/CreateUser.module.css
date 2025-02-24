@@ -1,0 +1,24 @@
+.text {
+  color: var(--text_dark);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  padding-top: 24px;
+  border-top: 1px solid var(--grey);
+  margin-bottom: 16px;
+  margin-top: 24px;
+}
+
+.field {
+  & button {
+    align-self: self-start;
+  }
+}
+
+.fieldBottom {
+  & button {
+    align-self: self-start;
+    font-size: var(--fs_small);
+  }
+}

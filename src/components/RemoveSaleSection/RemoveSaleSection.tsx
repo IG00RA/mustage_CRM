@@ -176,7 +176,7 @@ const RemoveSaleSection = () => {
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.accParMenu.replacement')}</h2>
+        <h2 className={styles.header}>{t('Sidebar.accParMenu.removeSale')}</h2>
         <p className={styles.header_text}>
           {t('RemoveSaleSection.headerText')}
         </p>

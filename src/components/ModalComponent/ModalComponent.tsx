@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useEffect } from 'react';
 import Modal from 'react-modal';
 import styles from './ModalComponent.module.css';
 import Icon from '@/helpers/Icon';
@@ -32,6 +32,21 @@ export default function ModalComponent({
   children,
 }: ModalProps) {
   const t = useTranslations('');
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = 'auto';
+      document.body.style.touchAction = 'auto';
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+      document.body.style.touchAction = 'auto';
+    };
+  }, [isOpen]);
 
   return (
     <Modal

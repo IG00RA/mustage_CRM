@@ -4,14 +4,20 @@
 }
 
 .field_wrap {
+  width: 390px;
   padding-right: 24px;
   border-right: 1px solid var(--grey);
   flex: 1;
 }
 
 .field_wrap_second {
+  width: 390px;
   flex: 1;
   padding-left: 24px;
+
+  & button {
+    align-self: flex-start;
+  }
 }
 
 .field_header {
@@ -26,10 +32,26 @@
 .buttons_wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 16px;
+  & label {
+    margin: 0;
+  }
 }
 
-.buttons_wrap > button:first-child {
-  align-self: flex-start;
+.data_wrap {
+  display: flex;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  & label {
+    margin: 0;
+  }
+  & input {
+    width: 135px;
+  }
 }
