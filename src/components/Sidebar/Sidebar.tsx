@@ -22,6 +22,8 @@ const Sidebar = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenSub, setIsOpenSub] = useState(false);
+  const [isOpenRefer, setIsOpenRefer] = useState(false);
+  const [isOpenReferSub, setIsOpenReferSub] = useState(false);
 
   const logout = useAuthStore(state => state.logout);
   const handleLogout = () => {
@@ -35,15 +37,24 @@ const Sidebar = () => {
       'distribution_create',
       'distribution_all',
     ];
+    const referralsLinks = ['referrals_all', 'referrals_stat'];
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
     );
+    const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
     if (isAnyDistributionActive) {
       setIsOpen(true);
       setIsOpenSub(true);
     } else {
-      setIsOpen(false); // Опціонально: закривати, якщо жодне з підпосилань не активне
+      setIsOpen(false);
       setIsOpenSub(false);
+    }
+    if (isAnyReferralsActive) {
+      setIsOpenReferSub(true);
+      setIsOpenRefer(true);
+    } else {
+      setIsOpenReferSub(false);
+      setIsOpenRefer(false);
     }
   }, [pathname]);
 
@@ -298,6 +309,89 @@ const Sidebar = () => {
               </Link>
             </li>
           ))}
+          <li
+            className={`${styles.nav_item} ${
+              isOpenReferSub || isOpenRefer ? styles.active : ''
+            }`}
+            key={'referrals'}
+            onClick={() => setIsOpenRefer(prev => !prev)}
+          >
+            <div className={styles.nav_item_link}>
+              <Icon
+                className={styles.logo}
+                name={'icon-briefcase-2'}
+                width={22}
+                height={22}
+              />
+              <Icon
+                className={`${styles.logo_hov} ${styles.logo_hov_referrer}`}
+                name={'icon-fill_briefcase-2'}
+                width={22}
+                height={22}
+              />
+              <p
+                className={`${styles.nav_item_referrer} ${styles.nav_item_text}`}
+              >
+                <span>{t('Sidebar.otherParMenu.referrals')}</span>
+                <span className={styles.referrer_quantity}>32+</span>
+              </p>
+              <Icon
+                className={`${styles.arrow_down} ${
+                  isOpenRefer ? styles.active : ''
+                }`}
+                name="icon-angle-down"
+                width={16}
+                height={16}
+                color="#A9A9C1"
+              />
+            </div>
+            <ul
+              className={`${styles.select_options} ${
+                isOpenRefer ? styles.select_open : ''
+              }`}
+            >
+              <li
+                key={'referralsAll'}
+                // onClick={() => {
+                //   setIsOpenReferSub(false);
+                // }}
+              >
+                <Link
+                  className={`${styles.option_item} ${
+                    isActiveSub('referrals_all') ? styles.active_sub_link : ''
+                  }`}
+                  href={`/ru/referrals_all`}
+                >
+                  <div className={styles.list_sub_mark_wrap}>
+                    <span className={styles.list_sub_mark}></span>
+                  </div>
+                  <p className={styles.list_sub_text}>
+                    {t('Sidebar.otherParMenu.referralsAll')}
+                  </p>
+                </Link>
+              </li>
+              <li
+                key={'referralsStat'}
+                // onClick={() => {
+                //   setIsOpenReferSub(false);
+                // }}
+              >
+                <Link
+                  className={`${styles.option_item} ${
+                    isActiveSub('referrals_stat') ? styles.active_sub_link : ''
+                  }`}
+                  href={`/ru/referrals_stat`}
+                >
+                  <div className={styles.list_sub_mark_wrap}>
+                    <span className={styles.list_sub_mark}></span>
+                  </div>
+                  <p className={styles.list_sub_text}>
+                    {t('Sidebar.otherParMenu.referralsStat')}
+                  </p>
+                </Link>
+              </li>
+            </ul>
+          </li>
         </ul>
       </nav>
     </aside>

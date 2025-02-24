@@ -86,10 +86,10 @@ export const otherParMenu = [
     logo: 'icon-user',
     logo_hov: 'icon-fill_user',
   },
-  {
-    header: 'Sidebar.otherParMenu.referrals',
-    link: 'referrals',
-    logo: 'icon-briefcase-2',
-    logo_hov: 'icon-fill_briefcase-2',
-  },
+  // {
+  //   header: 'Sidebar.otherParMenu.referrals',
+  //   link: 'referrals',
+  //   logo: 'icon-briefcase-2',
+  //   logo_hov: 'icon-fill_briefcase-2',
+  // },
 ];

@@ -33,7 +33,9 @@
     "otherParMenu": {
       "promo": "Промокоды",
       "users": "Пользователи",
-      "referrals": "Реферальная система"
+      "referrals": "Реферальная система",
+      "referralsAll": "Управление рефералами",
+      "referralsStat": "Статистика"
     }
   },
   "Statistics": {
