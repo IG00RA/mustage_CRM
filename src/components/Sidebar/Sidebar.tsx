@@ -20,17 +20,18 @@ const Sidebar = () => {
   const t = useTranslations();
   const pathname = usePathname();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [isOpenSub, setIsOpenSub] = useState(false);
-  const [isOpenRefer, setIsOpenRefer] = useState(false);
-  const [isOpenReferSub, setIsOpenReferSub] = useState(false);
+  // Оновлений стан для підменю
+  const [openMenus, setOpenMenus] = useState({
+    distribution: false,
+    referrals: false,
+  });
 
   const logout = useAuthStore(state => state.logout);
   const handleLogout = () => {
     logout();
   };
 
-  // useEffect для автоматичного відкриття меню, якщо одне з підпосилань активне
+  // Оновлений useEffect для автоматичного відкриття підменю
   useEffect(() => {
     const distributionLinks = [
       'distribution_settings',
@@ -38,29 +39,23 @@ const Sidebar = () => {
       'distribution_all',
     ];
     const referralsLinks = ['referrals_all', 'referrals_stat'];
+
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
     );
     const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
-    if (isAnyDistributionActive) {
-      setIsOpen(true);
-      setIsOpenSub(true);
-    } else {
-      setIsOpen(false);
-      setIsOpenSub(false);
-    }
-    if (isAnyReferralsActive) {
-      setIsOpenReferSub(true);
-      setIsOpenRefer(true);
-    } else {
-      setIsOpenReferSub(false);
-      setIsOpenRefer(false);
-    }
+
+    setOpenMenus({
+      distribution: isAnyDistributionActive,
+      referrals: isAnyReferralsActive,
+    });
   }, [pathname]);
 
   // Функція для визначення активного посилання
-  const isActive = (link: string): boolean =>
-    pathname === `/ru/${link}` && !isOpen;
+  const isActive = (link: string): boolean => {
+    const menuKey = link.split('_')[0] as 'distribution' | 'referrals';
+    return pathname === `/ru/${link}` && !openMenus[menuKey];
+  };
 
   const isActiveSub = (link: string): boolean => pathname === `/ru/${link}`;
 
@@ -151,10 +146,15 @@ const Sidebar = () => {
           ))}
           <li
             className={`${styles.nav_item} ${
-              isOpen || isOpenSub ? styles.active : ''
+              openMenus.distribution ? styles.active : ''
             }`}
             key={'distribution'}
-            onClick={() => setIsOpen(prev => !prev)}
+            onClick={() =>
+              setOpenMenus(prev => ({
+                ...prev,
+                distribution: !prev.distribution,
+              }))
+            }
           >
             <div className={styles.nav_item_link}>
               <Icon
@@ -174,7 +174,7 @@ const Sidebar = () => {
               </span>
               <Icon
                 className={`${styles.arrow_down} ${
-                  isOpen ? styles.active : ''
+                  openMenus.distribution ? styles.active : ''
                 }`}
                 name="icon-angle-down"
                 width={16}
@@ -184,14 +184,14 @@ const Sidebar = () => {
             </div>
             <ul
               className={`${styles.select_options} ${
-                isOpen ? styles.select_open : ''
+                openMenus.distribution ? styles.select_open : ''
               }`}
             >
               <li
                 key={'distributionSettings'}
-                onClick={() => {
-                  setIsOpen(false);
-                }}
+                onClick={() =>
+                  setOpenMenus(prev => ({ ...prev, distribution: false }))
+                }
               >
                 <Link
                   className={`${styles.option_item} ${
@@ -211,9 +211,9 @@ const Sidebar = () => {
               </li>
               <li
                 key={'distributionCreate'}
-                onClick={() => {
-                  setIsOpen(false);
-                }}
+                onClick={() =>
+                  setOpenMenus(prev => ({ ...prev, distribution: false }))
+                }
               >
                 <Link
                   className={`${styles.option_item} ${
@@ -233,9 +233,9 @@ const Sidebar = () => {
               </li>
               <li
                 key={'distributionAll'}
-                onClick={() => {
-                  setIsOpen(false);
-                }}
+                onClick={() =>
+                  setOpenMenus(prev => ({ ...prev, distribution: false }))
+                }
               >
                 <Link
                   className={`${styles.option_item} ${
@@ -311,10 +311,12 @@ const Sidebar = () => {
           ))}
           <li
             className={`${styles.nav_item} ${
-              isOpenReferSub || isOpenRefer ? styles.active : ''
+              openMenus.referrals ? styles.active : ''
             }`}
             key={'referrals'}
-            onClick={() => setIsOpenRefer(prev => !prev)}
+            onClick={() =>
+              setOpenMenus(prev => ({ ...prev, referrals: !prev.referrals }))
+            }
           >
             <div className={styles.nav_item_link}>
               <Icon
@@ -337,7 +339,7 @@ const Sidebar = () => {
               </p>
               <Icon
                 className={`${styles.arrow_down} ${
-                  isOpenRefer ? styles.active : ''
+                  openMenus.referrals ? styles.active : ''
                 }`}
                 name="icon-angle-down"
                 width={16}
@@ -347,14 +349,14 @@ const Sidebar = () => {
             </div>
             <ul
               className={`${styles.select_options} ${
-                isOpenRefer ? styles.select_open : ''
+                openMenus.referrals ? styles.select_open : ''
               }`}
             >
               <li
                 key={'referralsAll'}
-                // onClick={() => {
-                //   setIsOpenReferSub(false);
-                // }}
+                onClick={() =>
+                  setOpenMenus(prev => ({ ...prev, referrals: false }))
+                }
               >
                 <Link
                   className={`${styles.option_item} ${
@@ -372,9 +374,9 @@ const Sidebar = () => {
               </li>
               <li
                 key={'referralsStat'}
-                // onClick={() => {
-                //   setIsOpenReferSub(false);
-                // }}
+                onClick={() =>
+                  setOpenMenus(prev => ({ ...prev, referrals: false }))
+                }
               >
                 <Link
                   className={`${styles.option_item} ${

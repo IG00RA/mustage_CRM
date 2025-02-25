@@ -163,27 +163,24 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const exportToExcel = useExportToExcel({ sales: filteredSales, dateRange });
 
   const dateRangeOptions = [
-    { value: 'today', label: 'togglerDataToday' },
-    { value: 'yesterday', label: 'togglerDataYesterday' },
-    { value: 'week', label: 'togglerDataWeek' },
-    { value: 'month', label: 'togglerDataMonth' },
-    { value: 'quarter', label: 'togglerDataQuarter' },
-    { value: 'year', label: 'togglerDataYear' },
-    { value: 'custom', label: 'togglerDataCustom', icon: true },
+    { value: 'today', label: 'today' },
+    { value: 'yesterday', label: 'yesterday' },
+    { value: 'week', label: 'week' },
+    { value: 'month', label: 'month' },
+    { value: 'quarter', label: 'quarter' },
+    { value: 'year', label: 'year' },
+    { value: 'custom', label: 'allTime', icon: true },
   ];
 
   return (
     <div className={styles.chart_wrap} id="chart-container">
-      <h3 className={styles.chart_header}>{t('Statistics.chart.header')}</h3>
-      <span className={styles.chart_year_text}>
-        (+43%) {t('Statistics.chart.headerText')}
-      </span>
+      <h3 className={styles.chart_header}>{t('ReferralsStat.chart.header')}</h3>
 
       {/* Тоглери для вибору типу даних та діапазону дат */}
       <div className={styles.chart_togglers_wrap}>
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>
-            {t('Statistics.chart.toggler.togglerType')}
+            {t('ReferralsStat.chart.type')}
           </span>
           <div className={styles.chart_toggler_buttons}>
             <button
@@ -192,7 +189,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
                 dataType === 'amount' ? styles.active : ''
               }`}
             >
-              {t('Statistics.chart.toggler.togglerSum')}
+              {t('ReferralsStat.chart.sell')}
             </button>
             <button
               onClick={() => setDataType('quantity')}
@@ -200,7 +197,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
                 dataType === 'quantity' ? styles.active : ''
               }`}
             >
-              {t('Statistics.chart.toggler.togglerQuantity')}
+              {t('ReferralsStat.chart.replenishment')}
             </button>
           </div>
         </div>
@@ -218,10 +215,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
                   dateRange === value ? styles.active : ''
                 }`}
               >
-                {icon && (
-                  <Icon name="icon-stat_calendar_grey" width={14} height={14} />
-                )}
-                {t(`Statistics.chart.toggler.${label}`)}
+                {t(`ReferralsStat.chart.${label}`)}
               </button>
             ))}
           </div>
@@ -230,6 +224,27 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
 
       <div className={styles.chart_category_wrap}>
         <CustomSelect
+          label={t('ReferralsStat.referral')}
+          options={['Все рефералы']}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+          width={338}
+        />
+        <CustomSelect
+          label={t('ReferralsStat.tableTop.refParam')}
+          options={['rnfirst']}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+          width={338}
+        />
+        <CustomSelect
+          label={t('ReferralsStat.chart.characteristic')}
+          options={['Сумма']}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+          width={339}
+        />
+        <CustomSelect
           label={t('Statistics.chart.toggler.togglerCategory')}
           options={[
             t('Statistics.chart.toggler.togglerChooseCategory'),
@@ -237,6 +252,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
           ]}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
+          width={516}
         />
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerName')}
@@ -246,6 +262,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
           ]}
           selected={selectedName}
           onSelect={setSelectedName}
+          width={516}
         />
       </div>
 

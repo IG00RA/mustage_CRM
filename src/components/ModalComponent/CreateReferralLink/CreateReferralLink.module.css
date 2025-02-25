@@ -1,0 +1,32 @@
+.field_wrap_main {
+  display: flex;
+  min-width: 830px;
+}
+
+.field_wrap {
+  width: 390px;
+  padding-right: 24px;
+  border-right: 1px solid var(--grey);
+  flex: 1;
+}
+
+.field_wrap_second {
+  width: 390px;
+  flex: 1;
+  padding-left: 24px;
+}
+
+.buttons_wrap {
+  display: flex;
+  gap: 16px;
+  & label {
+    margin-bottom: 6px;
+  }
+  & > div {
+    flex: 1;
+  }
+}
+
+.label {
+  margin-bottom: 16px;
+}

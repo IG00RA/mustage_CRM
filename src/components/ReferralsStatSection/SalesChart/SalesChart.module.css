@@ -11,7 +11,7 @@
   font-style: normal;
   font-weight: 700;
   line-height: 1.56;
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
 .chart_year_text {
@@ -82,8 +82,9 @@
 
 .chart_category_wrap {
   display: flex;
-  gap: 16px;
-  margin-bottom: 48px;
+  gap: 16px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
 .chart_label {

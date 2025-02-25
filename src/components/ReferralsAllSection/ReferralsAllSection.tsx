@@ -20,344 +20,319 @@ import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmM
 import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
 import ReplenishmentAccountsFarm from '../ModalComponent/ReplenishmentAccountsFarm/ReplenishmentAccountsFarm';
 import EditServerFarmModal from '../ModalComponent/EditServerFarmModal/EditServerFarmModal';
+import SearchInput from '../Buttons/SearchInput/SearchInput';
+import CreateReferral from '../ModalComponent/CreateReferral/CreateReferral';
+import WithdrawalPay from '../ModalComponent/WithdrawalPay/WithdrawalPay';
 
 interface Category {
-  geo: string;
-  type: string;
-  servers: string;
-  accountsInUse: string;
-  readyAccounts: string;
-  name: string;
-  shortageAccounts: string;
-  serverName: string;
-  serverStatus: string;
-  statusUpdated: string;
+  fullName: string; // Полное имя
+  telegram: string; // Telegram
+  email: string; // E-mail
+  geo: string; // ГЕО
+  type: string; // Тип
+  servers: string; // Серверов
+  accountsInUse: string; // Аккаунтов в работе
+  readyAccounts: string; // Готовых аккаунтов
+  name: string; // Наименование
 }
 
 const data: Category[] = [
   {
+    fullName: 'Рэндом Нэйм',
+    telegram: 'https://t.me/rn_first',
+    email: 'first_person@gmail.com',
     geo: 'UA',
     type: '7 дней',
     servers: '20',
-    accountsInUse: '1025',
-    readyAccounts: '850',
+    accountsInUse: '1520',
+    readyAccounts: '782',
     name: 'Facebook UA-автофарм 7-дней',
-    shortageAccounts: '80',
-    serverName: 'srv01',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '21.09.2024 19:25',
   },
   {
+    fullName: 'Олена Петрова',
+    telegram: 'https://t.me/olena_p',
+    email: 'olena.petrova@gmail.com',
     geo: 'UA',
     type: '14 дней',
     servers: '15',
     accountsInUse: '750',
     readyAccounts: '600',
     name: 'Facebook UA-автофарм 14-дней',
-    shortageAccounts: '50',
-    serverName: 'srv02',
-    serverStatus: 'Работает',
-    statusUpdated: '22.09.2024 10:15',
   },
   {
+    fullName: 'Іван Шевчук',
+    telegram: 'https://t.me/ivan_sh',
+    email: 'ivan.shevchuk@gmail.com',
     geo: 'UA',
     type: '30 дней',
     servers: '25',
     accountsInUse: '1200',
     readyAccounts: '950',
     name: 'Facebook UA-автофарм 30-дней',
-    shortageAccounts: '120',
-    serverName: 'srv03',
-    serverStatus: 'Ожидание',
-    statusUpdated: '23.09.2024 14:30',
   },
   {
+    fullName: 'Софія Коваленко',
+    telegram: 'https://t.me/sofia_k',
+    email: 'sofia.kovalenko@gmail.com',
     geo: 'PL',
     type: '7 дней',
     servers: '18',
     accountsInUse: '900',
     readyAccounts: '700',
     name: 'Facebook PL-автофарм 7-дней',
-    shortageAccounts: '90',
-    serverName: 'srv04',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '24.09.2024 09:00',
   },
   {
+    fullName: 'Дмитро Бондар',
+    telegram: 'https://t.me/dmytro_b',
+    email: 'dmytro.bondar@gmail.com',
     geo: 'PL',
     type: '14 дней',
     servers: '22',
     accountsInUse: '1100',
     readyAccounts: '880',
     name: 'Facebook PL-автофарм 14-дней',
-    shortageAccounts: '70',
-    serverName: 'srv05',
-    serverStatus: 'Работает',
-    statusUpdated: '25.09.2024 16:45',
   },
   {
+    fullName: 'Марія Грищенко',
+    telegram: 'https://t.me/maria_g',
+    email: 'maria.gryshchenko@gmail.com',
     geo: 'PL',
     type: '30 дней',
     servers: '30',
     accountsInUse: '1300',
     readyAccounts: '1000',
     name: 'Facebook PL-автофарм 30-дней',
-    shortageAccounts: '150',
-    serverName: 'srv06',
-    serverStatus: 'Ожидание',
-    statusUpdated: '26.09.2024 12:00',
   },
   {
+    fullName: 'Павло Ткачук',
+    telegram: 'https://t.me/pavlo_t',
+    email: 'pavlo.tkachuk@gmail.com',
     geo: 'DE',
     type: '7 дней',
     servers: '17',
     accountsInUse: '800',
     readyAccounts: '650',
     name: 'Facebook DE-автофарм 7-дней',
-    shortageAccounts: '60',
-    serverName: 'srv07',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '27.09.2024 08:30',
   },
   {
+    fullName: 'Юлія Савчук',
+    telegram: 'https://t.me/yulia_s',
+    email: 'yulia.savchuk@gmail.com',
     geo: 'DE',
     type: '14 дней',
     servers: '23',
     accountsInUse: '950',
     readyAccounts: '720',
     name: 'Facebook DE-автофарм 14-дней',
-    shortageAccounts: '85',
-    serverName: 'srv08',
-    serverStatus: 'Работает',
-    statusUpdated: '28.09.2024 15:20',
   },
   {
+    fullName: 'Олександр Яременко',
+    telegram: 'https://t.me/oleksandr_y',
+    email: 'oleksandr.yaremenko@gmail.com',
     geo: 'DE',
     type: '30 дней',
     servers: '28',
     accountsInUse: '1400',
     readyAccounts: '1100',
     name: 'Facebook DE-автофарм 30-дней',
-    shortageAccounts: '130',
-    serverName: 'srv09',
-    serverStatus: 'Ожидание',
-    statusUpdated: '29.09.2024 11:10',
   },
   {
+    fullName: 'Наталія Сидоренко',
+    telegram: 'https://t.me/natalia_s',
+    email: 'natalia.sydorenko@gmail.com',
     geo: 'US',
     type: '7 дней',
     servers: '19',
     accountsInUse: '850',
     readyAccounts: '680',
     name: 'Facebook US-автофарм 7-дней',
-    shortageAccounts: '75',
-    serverName: 'srv10',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '30.09.2024 17:00',
   },
   {
+    fullName: 'Віталій Руденко',
+    telegram: 'https://t.me/vitaliy_r',
+    email: 'vitaliy.rudenko@gmail.com',
     geo: 'US',
     type: '14 дней',
     servers: '21',
     accountsInUse: '1000',
     readyAccounts: '800',
     name: 'Facebook US-автофарм 14-дней',
-    shortageAccounts: '90',
-    serverName: 'srv11',
-    serverStatus: 'Работает',
-    statusUpdated: '01.10.2024 13:25',
   },
   {
+    fullName: 'Тетяна Мороз',
+    telegram: 'https://t.me/tetyana_m',
+    email: 'tetyana.moroz@gmail.com',
     geo: 'US',
     type: '30 дней',
     servers: '27',
     accountsInUse: '1500',
     readyAccounts: '1200',
     name: 'Facebook US-автофарм 30-дней',
-    shortageAccounts: '140',
-    serverName: 'srv12',
-    serverStatus: 'Ожидание',
-    statusUpdated: '02.10.2024 09:40',
   },
   {
+    fullName: 'Сергій Кравець',
+    telegram: 'https://t.me/serhiy_k',
+    email: 'serhiy.kravets@gmail.com',
     geo: 'UA',
     type: '7 дней',
     servers: '16',
     accountsInUse: '700',
     readyAccounts: '550',
     name: 'Instagram UA-автофарм 7-дней',
-    shortageAccounts: '65',
-    serverName: 'srv13',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '03.10.2024 18:15',
   },
   {
+    fullName: 'Катерина Дубова',
+    telegram: 'https://t.me/kateryna_d',
+    email: 'kateryna.dubova@gmail.com',
     geo: 'UA',
     type: '14 дней',
     servers: '24',
     accountsInUse: '1150',
     readyAccounts: '900',
     name: 'Instagram UA-автофарм 14-дней',
-    shortageAccounts: '100',
-    serverName: 'srv14',
-    serverStatus: 'Работает',
-    statusUpdated: '04.10.2024 14:00',
   },
   {
+    fullName: 'Андрій Мельник',
+    telegram: 'https://t.me/andriy_m',
+    email: 'andriy.melnyk@gmail.com',
     geo: 'UA',
     type: '30 дней',
     servers: '29',
     accountsInUse: '1350',
     readyAccounts: '1050',
     name: 'Instagram UA-автофарм 30-дней',
-    shortageAccounts: '125',
-    serverName: 'srv15',
-    serverStatus: 'Ожидание',
-    statusUpdated: '05.10.2024 10:30',
   },
   {
+    fullName: 'Марія Зайцева',
+    telegram: 'https://t.me/maria_z',
+    email: 'maria.zaytseva@gmail.com',
     geo: 'PL',
     type: '7 дней',
     servers: '14',
     accountsInUse: '650',
     readyAccounts: '500',
     name: 'Instagram PL-автофарм 7-дней',
-    shortageAccounts: '55',
-    serverName: 'srv16',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '06.10.2024 16:50',
   },
   {
+    fullName: 'Олена Григоренко',
+    telegram: 'https://t.me/olena_g',
+    email: 'olena.grygorenko@gmail.com',
     geo: 'PL',
     type: '14 дней',
     servers: '20',
     accountsInUse: '950',
     readyAccounts: '760',
     name: 'Instagram PL-автофарм 14-дней',
-    shortageAccounts: '80',
-    serverName: 'srv17',
-    serverStatus: 'Работает',
-    statusUpdated: '07.10.2024 12:20',
   },
   {
+    fullName: 'Максим Куролап',
+    telegram: 'https://t.me/maksym_k',
+    email: 'maksym.kurolap@gmail.com',
     geo: 'PL',
     type: '30 дней',
     servers: '26',
     accountsInUse: '1250',
     readyAccounts: '980',
     name: 'Instagram PL-автофарм 30-дней',
-    shortageAccounts: '110',
-    serverName: 'srv18',
-    serverStatus: 'Ожидание',
-    statusUpdated: '08.10.2024 08:45',
   },
   {
+    fullName: 'Людмила Гордієнко',
+    telegram: 'https://t.me/lyudmyla_g',
+    email: 'lyudmyla.gordiienko@gmail.com',
     geo: 'DE',
     type: '7 дней',
     servers: '15',
     accountsInUse: '720',
     readyAccounts: '580',
     name: 'Instagram DE-автофарм 7-дней',
-    shortageAccounts: '60',
-    serverName: 'srv19',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '09.10.2024 15:10',
   },
   {
+    fullName: 'Роман Левчук',
+    telegram: 'https://t.me/roman_l',
+    email: 'roman.levchuk@gmail.com',
     geo: 'DE',
     type: '14 дней',
     servers: '22',
     accountsInUse: '1050',
     readyAccounts: '820',
     name: 'Instagram DE-автофарм 14-дней',
-    shortageAccounts: '95',
-    serverName: 'srv20',
-    serverStatus: 'Работает',
-    statusUpdated: '10.10.2024 11:00',
   },
   {
+    fullName: 'Вікторія Олійник',
+    telegram: 'https://t.me/viktoriya_o',
+    email: 'viktoriya.oliynyk@gmail.com',
     geo: 'DE',
     type: '30 дней',
     servers: '28',
     accountsInUse: '1450',
     readyAccounts: '1150',
     name: 'Instagram DE-автофарм 30-дней',
-    shortageAccounts: '135',
-    serverName: 'srv21',
-    serverStatus: 'Ожидание',
-    statusUpdated: '11.10.2024 17:30',
   },
   {
+    fullName: 'Михайло Соколов',
+    telegram: 'https://t.me/mykhaylo_s',
+    email: 'mykhaylo.sokolov@gmail.com',
     geo: 'US',
     type: '7 дней',
     servers: '18',
     accountsInUse: '780',
     readyAccounts: '620',
     name: 'Instagram US-автофарм 7-дней',
-    shortageAccounts: '70',
-    serverName: 'srv22',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '12.10.2024 13:15',
   },
   {
+    fullName: 'Дарина Лозова',
+    telegram: 'https://t.me/daryna_l',
+    email: 'daryna.lozova@gmail.com',
     geo: 'US',
     type: '14 дней',
     servers: '23',
     accountsInUse: '1100',
     readyAccounts: '870',
     name: 'Instagram US-автофарм 14-дней',
-    shortageAccounts: '100',
-    serverName: 'srv23',
-    serverStatus: 'Работает',
-    statusUpdated: '13.10.2024 09:50',
   },
   {
+    fullName: 'Євген Козлов',
+    telegram: 'https://t.me/yevhen_k',
+    email: 'yevhen.kozlov@gmail.com',
     geo: 'US',
     type: '30 дней',
     servers: '30',
     accountsInUse: '1550',
     readyAccounts: '1250',
     name: 'Instagram US-автофарм 30-дней',
-    shortageAccounts: '145',
-    serverName: 'srv24',
-    serverStatus: 'Ожидание',
-    statusUpdated: '14.10.2024 16:25',
   },
   {
+    fullName: 'Ірина Білик',
+    telegram: 'https://t.me/iryna_b',
+    email: 'iryna.bilyk@gmail.com',
     geo: 'UA',
     type: '7 дней',
     servers: '17',
     accountsInUse: '670',
     readyAccounts: '530',
     name: 'Twitter UA-автофарм 7-дней',
-    shortageAccounts: '60',
-    serverName: 'srv25',
-    serverStatus: 'Прокси не работает',
-    statusUpdated: '15.10.2024 12:40',
   },
   {
+    fullName: 'Артем Дорошенко',
+    telegram: 'https://t.me/artem_d',
+    email: 'artem.doroshenko@gmail.com',
     geo: 'UA',
     type: '14 дней',
     servers: '21',
     accountsInUse: '980',
     readyAccounts: '790',
     name: 'Twitter UA-автофарм 14-дней',
-    shortageAccounts: '85',
-    serverName: 'srv26',
-    serverStatus: 'Работает',
-    statusUpdated: '16.10.2024 08:55',
   },
   {
+    fullName: 'Оксана Власенко',
+    telegram: 'https://t.me/oksana_v',
+    email: 'oksana.vlasenko@gmail.com',
     geo: 'UA',
     type: '30 дней',
     servers: '25',
     accountsInUse: '1300',
     readyAccounts: '1000',
     name: 'Twitter UA-автофарм 30-дней',
-    shortageAccounts: '120',
-    serverName: 'srv27',
-    serverStatus: 'Ожидание',
-    statusUpdated: '17.10.2024 15:00',
   },
 ];
 const ReferralsAllSection = () => {
@@ -365,60 +340,35 @@ const ReferralsAllSection = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenEditType, setIsOpenEditType] = useState(false);
   const [isOpenServer, setIsOpenServer] = useState(false);
-  const [isOpenReplenishmentAccounts, setIsOpenReplenishmentAccounts] =
-    useState(false);
+  const [isOpenWithdrawal, setIsOpenWithdrawal] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
-  const [updateServerName, setUpdateServerName] = useState('');
-  const [updateTitleSecond, setUpdateTitleSecond] = useState('');
-  const [selectGeoAcc, setSelectGeoAcc] = useState('');
-  const [selectTypeAcc, setSelectTypeAcc] = useState('');
-  const [selectGeoReplenishment, setSelectGeoReplenishment] = useState('');
-  const [selectTypeReplenishment, setSelectTypeReplenishment] = useState('');
   const [selectGeoServer, setSelectGeoServer] = useState('');
-  const [selectTypeServer, setSelectTypeServer] = useState('');
+  const [isOpenResult, setIsOpenResult] = useState(false);
+  const [isOpenCreate, setIsOpenCreate] = useState(false);
 
-  const toggleEditTypeModal = () => {
-    setIsOpenEditType(!isOpenEditType);
+  const toggleCreateModal = () => {
+    setIsOpenCreate(!isOpenCreate);
   };
-  const toggleServerModal = (server = '') => {
-    setUpdateServerName(server);
-    setIsOpenServer(!isOpenServer);
+  const toggleWithdrawalModal = () => {
+    setIsOpenWithdrawal(!isOpenWithdrawal);
   };
-  const toggleReplenishmentAccountsModal = () => {
-    setIsOpenReplenishmentAccounts(!isOpenReplenishmentAccounts);
-  };
+
   const toggleUpdateModal = (title = '', titleSecond = '') => {
-    setUpdateTitle(title);
-    setUpdateTitleSecond(titleSecond);
     setIsOpenUpdate(!isOpenUpdate);
   };
 
   const mainColumns: ColumnDef<Category>[] = [
     {
-      accessorKey: 'geo',
-      header: t('AutoFarmSection.geoTable'),
+      accessorKey: 'fullName',
+      header: t('ReferralsAll.tableTop.fullName'),
     },
     {
-      accessorKey: 'type',
-      header: t('AutoFarmSection.type'),
+      accessorKey: 'telegram',
+      header: t('ReferralsAll.tableTop.telegram'),
     },
     {
-      accessorKey: 'servers',
-      header: t('AutoFarmSection.tableAcc.servers'),
-    },
-    {
-      accessorKey: 'accountsInUse',
-      header: t('AutoFarmSection.tableAcc.workAcc'),
-    },
-    {
-      accessorKey: 'readyAccounts',
-      header: t('AutoFarmSection.tableAcc.doneAcc'),
-    },
-
-    {
-      accessorKey: 'name',
-      header: t('AutoFarmSection.names'),
+      accessorKey: 'email',
+      header: t('ReferralsAll.tableTop.email'),
     },
     {
       id: 'actions',
@@ -426,17 +376,7 @@ const ReferralsAllSection = () => {
       cell: ({ row }) => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={() =>
-              toggleUpdateModal(
-                `гео - ${row.original.geo}, тип - ${row.original.type}`,
-                row.original.name
-              )
-            }
-            text={'AutoFarmSection.tableAcc.btnLoad'}
-            icon="icon-upload"
-          />
-          <WhiteBtn
-            onClick={() => toggleEditTypeModal()}
+            onClick={() => toggleUpdateModal()}
             text={'AutoFarmSection.tableAcc.btnEdit'}
             icon="icon-edit-pencil"
           />
@@ -445,29 +385,24 @@ const ReferralsAllSection = () => {
     },
   ];
 
-  const shortageColumns: ColumnDef<Category>[] = [
-    { accessorKey: 'geo', header: t('AutoFarmSection.geoTable') },
-    { accessorKey: 'type', header: t('AutoFarmSection.type') },
-    {
-      accessorKey: 'shortageAccounts',
-      header: t('AutoFarmSection.tableReplenishment.lackAcc'),
-    },
-  ];
-
   const serverColumns: ColumnDef<Category>[] = [
-    { accessorKey: 'geo', header: t('AutoFarmSection.geoTable') },
-    { accessorKey: 'type', header: t('AutoFarmSection.type') },
+    { accessorKey: 'geo', header: t('ReferralsAll.tableBottom.geo') },
+    { accessorKey: 'type', header: t('ReferralsAll.tableBottom.type') },
     {
-      accessorKey: 'serverName',
-      header: t('AutoFarmSection.tableServers.name'),
+      accessorKey: 'servers',
+      header: t('ReferralsAll.tableBottom.servers'),
     },
     {
-      accessorKey: 'serverStatus',
-      header: t('AutoFarmSection.tableServers.status'),
+      accessorKey: 'accountsInUse',
+      header: t('ReferralsAll.tableBottom.accountsInUse'),
     },
     {
-      accessorKey: 'statusUpdated',
-      header: t('AutoFarmSection.tableServers.statusDate'),
+      accessorKey: 'readyAccounts',
+      header: t('ReferralsAll.tableBottom.readyAccounts'),
+    },
+    {
+      accessorKey: 'name',
+      header: t('ReferralsAll.tableBottom.name'),
     },
     {
       id: 'actions',
@@ -475,7 +410,12 @@ const ReferralsAllSection = () => {
       cell: ({ row }) => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={() => toggleServerModal(row.original.serverName)}
+            onClick={() => toggleWithdrawalModal()}
+            text={'AutoFarmSection.tableAcc.btnLoad'}
+            icon="icon-upload"
+          />
+          <WhiteBtn
+            onClick={() => toggleCreateModal()}
             text={'AutoFarmSection.tableAcc.btnEdit'}
             icon="icon-edit-pencil"
           />
@@ -502,45 +442,35 @@ const ReferralsAllSection = () => {
     },
   });
 
-  const shortageTable = useReactTable({
-    data,
-    columns: shortageColumns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   const serverTable = useReactTable({
     data,
     columns: serverColumns,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const toggleResultModal = () => {
+    setIsOpenResult(!isOpenResult);
+  };
+
+  const categoryNames = [...new Set(data.map(category => category.fullName))];
+
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>
-          {t('Sidebar.accParMenu.autoFarmControl')}
-        </h2>
-        <p className={styles.header_text}>{t('AutoFarmSection.headerText')}</p>
-      </div>
-      <div className={styles.table_container_first}>
-        <h3 className={styles.table_header}>
-          {t('AutoFarmSection.tableAcc.header')}
-        </h3>
-        <div className={styles.buttons_wrap}>
-          <CustomSelect
-            label={`${t('AutoFarmSection.geo')}:`}
-            options={Array.from(new Set(data.map(item => item.geo)))}
-            selected={selectGeoAcc}
-            onSelect={setSelectGeoAcc}
-            width={296}
-          />
-          <CustomSelect
-            label={`${t('AutoFarmSection.type')}:`}
-            options={Array.from(new Set(data.map(item => item.type)))}
-            selected={selectTypeAcc}
-            onSelect={setSelectTypeAcc}
-            width={296}
-          />
+        <div className={styles.header_wrap}>
+          <h2 className={styles.header}>{t('ReferralsAll.header')}</h2>
+          <p className={styles.header_text}>{t('ReferralsAll.headerText')}</p>
+          <div className={styles.buttons_wrap}>
+            <AddBtn
+              onClick={toggleCreateModal}
+              text={'ReferralsAll.refCreate'}
+            />
+            <SearchInput
+              onSearch={query => setGlobalFilter(query)}
+              text={'Category.searchBtn'}
+              options={categoryNames}
+            />
+          </div>
         </div>
         <div className={styles.table_wrapper}>
           <table className={styles.table}>
@@ -575,154 +505,96 @@ const ReferralsAllSection = () => {
           </table>
         </div>
       </div>
-      <div className={styles.tables_wrapper}>
-        <div className={styles.table_container}>
-          <h3 className={styles.table_header}>
-            {t('AutoFarmSection.tableReplenishment.header')}
-          </h3>
+      <div className={styles.header_container}>
+        <div className={styles.header_wrap}>
+          <h3 className={styles.header}>{t('ReferralsAll.headerBottom')}</h3>
+          <p className={styles.header_text}>
+            {t('ReferralsAll.headerTextBottom')}
+          </p>
           <div className={styles.buttons_wrap}>
             <CustomSelect
-              label={`${t('AutoFarmSection.geo')}:`}
-              options={Array.from(new Set(data.map(item => item.geo)))}
-              selected={selectGeoReplenishment}
-              onSelect={setSelectGeoReplenishment}
-              width={140}
+              label={t('ReferralsStat.referral')}
+              options={['Все рефералы']}
+              selected={selectGeoServer}
+              onSelect={setSelectGeoServer}
+              width={338}
             />
             <CustomSelect
-              label={`${t('AutoFarmSection.type')}:`}
-              options={Array.from(new Set(data.map(item => item.type)))}
-              selected={selectTypeReplenishment}
-              onSelect={setSelectTypeReplenishment}
-              width={140}
+              label={t('ReferralsAll.sum')}
+              options={['По убыванию']}
+              selected={selectGeoServer}
+              onSelect={setSelectGeoServer}
+              width={338}
             />
-          </div>
-          <div className={styles.replenishment_table_wrapper}>
-            <table className={styles.table}>
-              <thead className={styles.thead}>
-                {shortageTable.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className={styles.th} key={header.id}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className={styles.tbody}>
-                {shortageTable.getRowModel().rows.map(row => (
-                  <tr className={styles.tr} key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className={styles.td} key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className={styles.table_text}>
-            {t('AutoFarmSection.tableReplenishment.amount')} <span>320</span>
-          </p>
-          <div className={styles.table_add_btn}>
-            <AddBtn
-              onClick={toggleReplenishmentAccountsModal}
-              text={'AutoFarmSection.tableReplenishment.btn'}
+            <CustomSelect
+              label={t('ReferralsAll.status')}
+              options={['Не оплачена']}
+              selected={selectGeoServer}
+              onSelect={setSelectGeoServer}
+              width={339}
+            />
+            <CustomSelect
+              label={t('ReferralsAll.date')}
+              options={['По убыванию']}
+              selected={selectGeoServer}
+              onSelect={setSelectGeoServer}
+              width={516}
+            />
+            <CustomSelect
+              label={t('ReferralsAll.paySystem')}
+              options={['Все платежные системы']}
+              selected={selectGeoServer}
+              onSelect={setSelectGeoServer}
+              width={516}
             />
           </div>
         </div>
-        <div className={styles.table_container}>
-          <h3 className={styles.table_header}>
-            {t('AutoFarmSection.tableServers.header')}
-          </h3>
-          <div className={styles.buttons_wrap}>
-            <CustomSelect
-              label={`${t('AutoFarmSection.geo')}:`}
-              options={Array.from(new Set(data.map(item => item.geo)))}
-              selected={selectGeoServer}
-              onSelect={setSelectGeoServer}
-              width={330}
-            />
-            <CustomSelect
-              label={`${t('AutoFarmSection.type')}:`}
-              options={Array.from(new Set(data.map(item => item.type)))}
-              selected={selectTypeServer}
-              onSelect={setSelectTypeServer}
-              width={330}
-            />
-          </div>
-          <div className={styles.server_table_wrapper}>
-            <table className={styles.table}>
-              <thead className={styles.thead}>
-                {serverTable.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className={styles.th} key={header.id}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className={styles.tbody}>
-                {serverTable.getRowModel().rows.map(row => (
-                  <tr className={styles.tr} key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className={styles.td} key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className={styles.server_table_wrapper}>
+          <table className={styles.table}>
+            <thead className={styles.thead}>
+              {serverTable.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th className={styles.th} key={header.id}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className={styles.tbody}>
+              {serverTable.getRowModel().rows.map(row => (
+                <tr className={styles.tr} key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <td className={styles.td} key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenEditType}
-        onClose={toggleEditTypeModal}
-        title="AutoFarmSection.modalEditType.title"
+        isOpen={isOpenCreate}
+        onClose={toggleCreateModal}
+        title="ReferralsAll.modalCreate.title"
       >
-        <EditTypeFarmModal />
+        <CreateReferral />
       </ModalComponent>
       <ModalComponent
-        isOpen={isOpenReplenishmentAccounts}
-        onClose={toggleReplenishmentAccountsModal}
-        title="AutoFarmSection.modalReplenishmentAcc.title"
+        isOpen={isOpenWithdrawal}
+        onClose={toggleWithdrawalModal}
+        title="ReferralsAll.modalPay.title"
       >
-        <ReplenishmentAccountsFarm />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenServer}
-        onClose={toggleServerModal}
-        editedTitle={`"${updateServerName}"`}
-        title="AutoFarmSection.modalServerType.title"
-      >
-        <EditServerFarmModal />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
-        title="AutoFarmSection.modalLoad.title"
-        titleSecond="AutoFarmSection.modalLoad.titleSecond"
-        editedTitle={`"${updateTitle}"`}
-        editedTitleSecond={`"${updateTitleSecond}"`}
-      >
-        <UploadAccountsAutoFarm />
+        <WithdrawalPay />
       </ModalComponent>
     </section>
   );
