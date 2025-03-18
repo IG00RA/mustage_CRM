@@ -34,20 +34,65 @@ export async function login(formData: FormData) {
   const data = await response.json();
   const token = data.access_token;
 
-  // Збереження токену в HTTP-only куках
+  // Збереження токену в HTTP-only куках на 30 днів
   const cookieStore = await cookies();
   cookieStore.set('auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
+    maxAge: 30 * 24 * 60 * 60, // 30 днів у секундах
   });
 
   redirect('/ru/dashboard');
 }
 
 export async function logout() {
+  // Отримуємо токен з куків для авторизації запиту на бекенд
   const cookieStore = await cookies();
-  cookieStore.delete('auth_token');
+  const authToken = cookieStore.get('auth_token');
+
+  if (!authToken?.value) {
+    // Якщо токену немає, просто перенаправляємо на сторінку логіну
+    redirect('/ru/login');
+    return;
+  }
+
+  try {
+    // Викликаємо API логауту на бекенді
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_HOST_BACK}/logout`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken.value}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    // Перевіряємо відповідь від бекенду
+    if (response.ok) {
+      const data = await response.json();
+
+      // Перевіряємо успішність логауту
+      if (data.message === 'Logged out') {
+        // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді
+        cookieStore.delete('auth_token');
+        // Переміщуємо редирект поза блок try/catch
+      } else {
+        // Якщо повідомлення не відповідає очікуваному, повертаємо помилку
+        return { error: 'Unexpected response from server' };
+      }
+    } else {
+      // Якщо статус відповіді не 200, повертаємо помилку
+      return { error: 'Logout failed on server' };
+    }
+  } catch (error) {
+    console.error('Error during API logout call:', error);
+    return { error: 'Error during logout process' };
+  }
+
+  // Редирект виконується поза блоком try/catch
   redirect('/ru/login');
 }

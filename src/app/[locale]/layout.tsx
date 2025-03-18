@@ -98,7 +98,7 @@ export const generateMetadata = async ({
       description: metadataValues.description,
       images: [
         {
-          url: '/opengraph-image.png',
+          url: '/assets/opengraph-image.png',
           width: 1200,
           height: 630,
           alt: metadataValues.title,
@@ -111,7 +111,7 @@ export const generateMetadata = async ({
       type: 'website',
       images: [
         {
-          url: '/opengraph-image.png',
+          url: '/assets/opengraph-image.png',
           width: 1200,
           height: 630,
           alt: metadataValues.title,
@@ -120,13 +120,13 @@ export const generateMetadata = async ({
     },
     icons: {
       icon: [
-        { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
-        { url: '/favicon.svg', type: 'image/svg+xml' },
-        { url: '/favicon.ico', type: 'image/x-icon' },
-        { url: '/apple-touch-icon.png', sizes: '180x180' },
+        { url: '/assets/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+        { url: '/assets/favicon.svg', type: 'image/svg+xml' },
+        { url: '/assets/favicon.ico', type: 'image/x-icon' },
+        { url: '/assets/apple-touch-icon.png', sizes: '180x180' },
       ],
     },
-    manifest: `/site.webmanifest`,
+    manifest: `/assets/site.webmanifest`,
   };
 };
 

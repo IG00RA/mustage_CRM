@@ -25,7 +25,6 @@ export default function LoginForm() {
 
   const [state, formAction] = useActionState(wrappedLogin, { error: null });
 
-  // Показуємо помилки через toast
   useEffect(() => {
     if (state?.error) {
       toast.error(state.error);
