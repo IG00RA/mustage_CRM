@@ -17,7 +17,7 @@ const useExportToExcel = ({ sales, dateRange }: UseExportToExcelParams) => {
 
     // Додаємо дані
     sales.forEach(sale => {
-      sheet.addRow([sale.period, sale.quantity, sale.amount]);
+      sheet.addRow([sale.period, sale.quantity, `$${sale.amount.toFixed(2)}`]);
     });
 
     const buffer = await workbook.xlsx.writeBuffer();

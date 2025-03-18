@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,19 +11,17 @@ import {
   Title,
   Filler,
   Tooltip,
-  TooltipItem,
   ChartOptions,
   TooltipModel,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
-import { filterSalesData } from '@/helpers/filterData';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
-import { Sale } from '@/api/sales/data';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
+import { useSalesStore } from '@/store/salesStore';
+import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 
 ChartJS.register(
   CategoryScale,
@@ -36,38 +34,175 @@ ChartJS.register(
   Tooltip
 );
 
-interface SalesChartProps {
-  salesData: Sale[];
-}
-
-const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
+const SalesChart: React.FC = () => {
   const t = useTranslations();
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
-  const [dateRange, setDateRange] = useState('today');
+  const [dateRange, setDateRange] = useState<string>('today');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [fetchKey, setFetchKey] = useState<string>('today');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedName, setSelectedName] = useState('');
+  const {
+    chartSales,
+    loading,
+    error,
+    fetchHourlyReport,
+    fetchDailyReport,
+    fetchMonthlyReport,
+  } = useSalesStore();
 
-  // Відфільтровані дані за вибраним діапазоном
-  const filteredSales = useMemo(
-    () => filterSalesData(dateRange, salesData),
-    [dateRange, salesData]
-  );
+  const formatAmount = (value: number) =>
+    dataType === 'amount' ? `$${value.toFixed(2)}` : value;
 
-  // Параметри для бар-чарту:
-  const barWidth = 32; // ширина стовпця
-  const gapWidth = 50; // відстань між стовпцями
-  // Обчислюємо мінімальну ширину внутрішнього контейнера:
+  const dateParams = useMemo(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const last7DaysStart = new Date(today);
+    last7DaysStart.setDate(today.getDate() - 6);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfQuarter = new Date(
+      today.getFullYear(),
+      Math.floor(today.getMonth() / 3) * 3,
+      1
+    );
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+
+    return {
+      todayStr,
+      yesterdayStr: yesterday.toISOString().split('T')[0],
+      last7DaysStartStr: last7DaysStart.toISOString().split('T')[0],
+      startOfMonthStr: startOfMonth.toISOString().split('T')[0],
+      startOfQuarterStr: startOfQuarter.toISOString().split('T')[0],
+      startOfYearStr: startOfYear.toISOString().split('T')[0],
+    };
+  }, []);
+
+  // Групування даних по тижнях для "Квартал"
+  const groupByWeek = (
+    sales: { period: string; amount: number; quantity: number }[]
+  ) => {
+    const weeklyData: { [week: string]: { amount: number; quantity: number } } =
+      {};
+
+    sales.forEach(sale => {
+      const date = new Date(sale.period);
+      const year = date.getFullYear();
+      const weekNumber =
+        Math.floor((date.getDate() - 1 + ((date.getDay() + 6) % 7)) / 7) + 1; // Номер тижня в місяці
+      const weekKey = `${year}-W${weekNumber.toString().padStart(2, '0')}`;
+
+      if (!weeklyData[weekKey]) {
+        weeklyData[weekKey] = { amount: 0, quantity: 0 };
+      }
+      weeklyData[weekKey].amount += sale.amount;
+      weeklyData[weekKey].quantity += sale.quantity;
+    });
+
+    return Object.entries(weeklyData).map(([period, data]) => ({
+      period,
+      amount: data.amount,
+      quantity: data.quantity,
+    }));
+  };
+
+  const fetchSalesData = async (
+    range: string,
+    start?: string,
+    end?: string
+  ) => {
+    const {
+      todayStr,
+      yesterdayStr,
+      last7DaysStartStr,
+      startOfMonthStr,
+      startOfQuarterStr,
+      startOfYearStr,
+    } = dateParams;
+
+    console.log('Fetching:', range, 'Start:', start, 'End:', end);
+
+    switch (range) {
+      case 'today':
+        await fetchHourlyReport(todayStr);
+        break;
+      case 'yesterday':
+        await fetchHourlyReport(yesterdayStr); // Погодинний звіт за вчора
+        break;
+      case 'week':
+        await fetchDailyReport(last7DaysStartStr, todayStr); // Останні 7 днів
+        break;
+      case 'month':
+        await fetchDailyReport(startOfMonthStr, todayStr);
+        break;
+      case 'quarter': {
+        await fetchDailyReport(startOfQuarterStr, todayStr);
+        const groupedSales = groupByWeek(chartSales);
+        useSalesStore.setState({ chartSales: groupedSales });
+        break;
+      }
+      case 'year':
+        await fetchMonthlyReport(startOfYearStr, todayStr);
+        break;
+      case 'custom':
+        if (start && end) {
+          await fetchDailyReport(start, end);
+        }
+        break;
+    }
+  };
+
+  // Початкове завантаження та оновлення при зміні стану
+  useEffect(() => {
+    const key =
+      dateRange === 'custom'
+        ? `${dateRange}-${customStartDate}-${customEndDate}`
+        : dateRange;
+
+    // Початкове завантаження лише якщо chartSales порожній
+    if (chartSales.length === 0 && !loading && !error) {
+      fetchSalesData('today');
+      setFetchKey('today');
+    } else if (fetchKey !== key) {
+      // Оновлення при зміні періоду
+      fetchSalesData(dateRange, customStartDate, customEndDate);
+      setFetchKey(key);
+    }
+  }, [
+    dateRange,
+    customStartDate,
+    customEndDate,
+    fetchKey,
+    chartSales.length,
+    loading,
+    error,
+    dateParams,
+  ]);
+
+  const handleDateRangeChange = (newRange: string) => {
+    setDateRange(newRange);
+    // Виклик fetchSalesData перенесено в useEffect, щоб уникнути дублювання
+  };
+
+  const handleCustomDateChange = (start: string, end: string) => {
+    setCustomStartDate(start);
+    setCustomEndDate(end);
+    // Виклик fetchSalesData перенесено в useEffect
+  };
+
+  const barWidth = 32;
+  const gapWidth = 50;
   const chartMinWidth =
-    filteredSales.length > 0 ? filteredSales.length * (barWidth + gapWidth) : 0;
+    chartSales.length > 0 ? chartSales.length * (barWidth + gapWidth) : 0;
 
-  // Розрахунок максимуму для осі y (використовується для відображення фіксованих міток)
   const maxValue = useMemo(() => {
-    const values = filteredSales.map(sale => sale[dataType]);
+    const values = chartSales.map(sale => sale[dataType]);
     return values.length > 0 ? Math.max(...values) : 0;
-  }, [filteredSales, dataType]);
+  }, [chartSales, dataType]);
 
-  // Генеруємо набір міток для y-осі (наприклад, 5 інтервалів)
   const tickCount = 5;
   const tickValues = useMemo(() => {
     const ticks = [];
@@ -78,7 +213,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   }, [maxValue]);
 
   const customTooltip = {
-    enabled: false, // Вимикаємо стандартний tooltip
+    enabled: false,
     external: (context: {
       chart: ChartJS;
       tooltip: TooltipModel<'bar' | 'line'>;
@@ -94,8 +229,6 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
       }
 
       const tooltipModel = context.tooltip;
-
-      // Якщо tooltip не має контенту або вийшли за межі графіка - приховати
       if (!tooltipModel || !tooltipModel.body || tooltipModel.opacity === 0) {
         tooltipEl.style.opacity = '0';
         return;
@@ -103,9 +236,9 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
 
       const position = context.chart.canvas.getBoundingClientRect();
       const dataPoint = tooltipModel.dataPoints[0];
+      const formattedValue = formatAmount(dataPoint.raw as number);
 
-      tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${dataPoint.raw}</span>`;
-
+      tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${formattedValue}</span>`;
       tooltipEl.style.opacity = '1';
       tooltipEl.style.left = `${
         position.left + window.pageXOffset + tooltipModel.caretX
@@ -123,27 +256,19 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
       x: { grid: { display: false } },
       y: { grid: { display: true }, ticks: { display: false } },
     },
-    plugins: {
-      tooltip: customTooltip,
-    },
+    plugins: { tooltip: customTooltip },
   };
 
   const lineOptions = {
     ...commonOptions,
-    elements: {
-      point: { radius: 0 },
-      line: { tension: 0.3 },
-    },
+    elements: { point: { radius: 0 }, line: { tension: 0.3 } },
   };
-
-  const barOptions = {
-    ...commonOptions,
-  };
+  const barOptions = { ...commonOptions };
 
   const dataset = {
-    data: filteredSales.map(sale => sale[dataType]),
+    data: chartSales.map(sale => sale[dataType]),
     backgroundColor: chartType === 'bar' ? '#AEBBFF' : '#5672ff10',
-    hoverBackgroundColor: '#5671ff', // Колір при наведенні
+    hoverBackgroundColor: '#5671ff',
     borderColor: '#AEBBFF',
     borderRadius: 5,
     ...(chartType === 'bar'
@@ -152,15 +277,13 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   };
 
   const chartData = {
-    labels: filteredSales.map(sale => sale.period),
+    labels: chartSales.map(sale => sale.period),
     datasets: [dataset],
   };
 
-  // Вибір налаштувань залежно від типу графіка
   const options = chartType === 'bar' ? barOptions : lineOptions;
 
-  // Хук для експорту даних у Excel
-  const exportToExcel = useExportToExcel({ sales: filteredSales, dateRange });
+  const exportToExcel = useExportToExcel({ sales: chartSales, dateRange });
 
   const dateRangeOptions = [
     { value: 'today', label: 'togglerDataToday' },
@@ -172,6 +295,14 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     { value: 'custom', label: 'togglerDataCustom', icon: true },
   ];
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className={styles.chart_wrap} id="chart-container">
       <h3 className={styles.chart_header}>{t('Statistics.chart.header')}</h3>
@@ -179,7 +310,6 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         (+43%) {t('Statistics.chart.headerText')}
       </span>
 
-      {/* Тоглери для вибору типу даних та діапазону дат */}
       <div className={styles.chart_togglers_wrap}>
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>
@@ -213,7 +343,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
             {dateRangeOptions.map(({ value, label, icon }) => (
               <button
                 key={value}
-                onClick={() => setDateRange(value)}
+                onClick={() => handleDateRangeChange(value)}
                 className={`${styles.chart_button} ${
                   dateRange === value ? styles.active : ''
                 }`}
@@ -227,6 +357,27 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
           </div>
         </div>
       </div>
+
+      {dateRange === 'custom' && (
+        <div className={styles.custom_date_range}>
+          <input
+            type="date"
+            value={customStartDate}
+            onChange={e =>
+              handleCustomDateChange(e.target.value, customEndDate)
+            }
+            placeholder="Start Date"
+          />
+          <input
+            type="date"
+            value={customEndDate}
+            onChange={e =>
+              handleCustomDateChange(customStartDate, e.target.value)
+            }
+            placeholder="End Date"
+          />
+        </div>
+      )}
 
       <div className={styles.chart_category_wrap}>
         <CustomSelect
@@ -251,12 +402,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
 
       <div className={styles.chart_wrapper}>
         <div className={styles.chart_container}>
-          <div
-            className={styles.chart_box}
-            style={{
-              minWidth: chartMinWidth,
-            }}
-          >
+          <div className={styles.chart_box} style={{ minWidth: chartMinWidth }}>
             {chartType === 'bar' ? (
               <Bar data={chartData} options={options} />
             ) : (
@@ -267,7 +413,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         <div className={styles.fixed_y_axis}>
           {tickValues.map((val, idx) => (
             <span className={styles.axis_item} key={idx}>
-              {val}
+              {formatAmount(val)}
             </span>
           ))}
         </div>
@@ -280,7 +426,6 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
           icon="icon-cloud-download"
           iconFill="icon-cloud-download-fill"
         />
-
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>
             {t('Statistics.chart.chartView')}
