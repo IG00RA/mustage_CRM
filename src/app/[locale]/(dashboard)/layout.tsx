@@ -1,7 +1,6 @@
 import '../../../styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import PrivateRoute from '@/components/PrivateRoute/PrivateRoute';
 import Sidebar from '@/components/Sidebar/Sidebar';
 
 import styles from './Dashboard.module.css';
@@ -19,13 +18,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PrivateRoute>
-      <div className={styles.main_wrap}>
-        <Sidebar />
-        <main className={styles.main}>
-          <div className={styles.main_container}>{children}</div>
-        </main>
-      </div>
-    </PrivateRoute>
+    <div className={styles.main_wrap}>
+      <Sidebar />
+      <main className={styles.main}>
+        <div className={styles.main_container}>{children}</div>
+      </main>
+    </div>
   );
 }

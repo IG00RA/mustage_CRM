@@ -1,36 +1,36 @@
 'use client';
 
-import { useAuthStore } from '@/store/authStore';
+import { useActionState, useTransition } from 'react'; // Додаємо useTransition
+import { login } from '@/actions/auth';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import styles from './LoginForm.module.css';
 import logo from '@/img/logo.svg';
 
 export default function LoginForm() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const login = useAuthStore(state => state.login);
-  const user = useAuthStore(state => state.user);
-  const router = useRouter();
   const t = useTranslations();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username && password) {
-      login(username);
-      router.push('/ru/dashboard');
-    }
+  // Стан для збереження значення логіну
+  const [usernameValue, setUsernameValue] = useState('');
+  // Стан для відстеження завантаження
+  const [isPending, startTransition] = useTransition();
+
+  // Обгортка для Server Action
+  const wrappedLogin = async (state: { error: any }, formData: FormData) => {
+    const result = await login(formData);
+    return result;
   };
 
-  useEffect(() => {
-    if (user) {
-      router.replace('/ru/dashboard');
-    }
-  }, [user, router]);
+  const [state, formAction] = useActionState(wrappedLogin, { error: null });
 
-  if (user) return null;
+  // Показуємо помилки через toast
+  useEffect(() => {
+    if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
 
   return (
     <section className={styles.section}>
@@ -45,7 +45,10 @@ export default function LoginForm() {
         />
         <h2 className={styles.header}>{t('LoginForm.loginHeader')}</h2>
         <h4 className={styles.header_text}>{t('LoginForm.loginText')}</h4>
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form
+          action={formData => startTransition(() => formAction(formData))} // Використовуємо useTransition
+          className={styles.form}
+        >
           <label htmlFor="username" className={styles.label}>
             {t('LoginForm.username')}
           </label>
@@ -53,9 +56,10 @@ export default function LoginForm() {
             className={styles.input}
             type="text"
             id="username"
+            name="username"
             placeholder={t('LoginForm.placeholder')}
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            value={usernameValue} // Контролюємо значення
+            onChange={e => setUsernameValue(e.target.value)} // Оновлюємо стан
             required
           />
           <label htmlFor="password" className={styles.label}>
@@ -65,13 +69,16 @@ export default function LoginForm() {
             id="password"
             className={styles.input}
             type="password"
+            name="password"
             placeholder={t('LoginForm.placeholder')}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
             required
           />
-          <button className={styles.button} type="submit">
-            {t('LoginForm.loginButton')}
+          <button className={styles.button} type="submit" disabled={isPending}>
+            {isPending ? (
+              <span className={`${styles.loader}`}></span>
+            ) : (
+              t('LoginForm.loginButton')
+            )}
           </button>
         </form>
       </div>

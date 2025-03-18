@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
-import { useAuthStore } from '@/store/authStore';
+import { logout } from '@/actions/auth';
 import Image from 'next/image';
 import avatar from '@/img/sidebar/avatar.png';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
+import logo from '@/img/logo.svg';
+
 import {
   accParMenu,
   accParMenuBottom,
@@ -25,11 +27,6 @@ const Sidebar = () => {
     distribution: false,
     referrals: false,
   });
-
-  const logout = useAuthStore(state => state.logout);
-  const handleLogout = () => {
-    logout();
-  };
 
   // Оновлений useEffect для автоматичного відкриття підменю
   useEffect(() => {
@@ -61,7 +58,10 @@ const Sidebar = () => {
 
   return (
     <aside className={styles.sidebar}>
-      {/* <Link href="/" className={styles.logo_wrap}>
+      <form action={logout}>
+        <button type="submit">Вийти</button>
+      </form>
+      <Link href="/" className={styles.logo_wrap}>
         <Image
           src={logo}
           alt="Mustage CRM logo"
@@ -71,7 +71,7 @@ const Sidebar = () => {
           sizes="100vw"
         />
         <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
-      </Link> */}
+      </Link>
       <div className={styles.user_wrap}>
         <Image
           src={avatar}
@@ -86,7 +86,6 @@ const Sidebar = () => {
           <p className={styles.role}>Admin</p>
         </div>
       </div>
-
       <h3 className={styles.parTitle}>{t('Sidebar.mainPar')}</h3>
       <nav className={styles.nav}>
         <ul role="menu">
@@ -116,7 +115,6 @@ const Sidebar = () => {
           ))}
         </ul>
       </nav>
-
       <h3 className={styles.parTitle}>{t('Sidebar.accPar')}</h3>
       <nav className={styles.nav}>
         <ul role="menu">
@@ -281,7 +279,6 @@ const Sidebar = () => {
           ))}
         </ul>
       </nav>
-
       <h3 className={styles.parTitle}>{t('Sidebar.otherPar')}</h3>
       <nav className={styles.nav}>
         <ul role="menu">

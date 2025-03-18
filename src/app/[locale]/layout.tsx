@@ -77,15 +77,14 @@ const localeMetadata: Record<
 type Props = {
   params: Promise<{ locale: string }>;
 };
-
 export const generateMetadata = async ({
   params,
 }: Props): Promise<Metadata> => {
   const { locale } = await params;
-  const metadataValues = localeMetadata[locale] || localeMetadata.uk;
-
+  const metadataValues = localeMetadata[locale] || localeMetadata.ru;
+  const url = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || ''),
+    metadataBase: new URL(url), // Базовий URL
     title: metadataValues.title,
     description: metadataValues.description,
     keywords: metadataValues.keywords,
@@ -99,7 +98,7 @@ export const generateMetadata = async ({
       description: metadataValues.description,
       images: [
         {
-          url: '/assets/opengraph-image.png',
+          url: '/opengraph-image.png',
           width: 1200,
           height: 630,
           alt: metadataValues.title,
@@ -112,7 +111,7 @@ export const generateMetadata = async ({
       type: 'website',
       images: [
         {
-          url: '/assets/opengraph-image.png',
+          url: '/opengraph-image.png',
           width: 1200,
           height: 630,
           alt: metadataValues.title,
@@ -121,13 +120,13 @@ export const generateMetadata = async ({
     },
     icons: {
       icon: [
-        { url: '/assets/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
-        { url: '/assets/favicon.svg', type: 'image/svg+xml' },
-        { url: '/assets/favicon.ico', type: 'image/x-icon' },
-        { url: '/assets/apple-touch-icon.png', sizes: '180x180' },
+        { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', type: 'image/x-icon' },
+        { url: '/apple-touch-icon.png', sizes: '180x180' },
       ],
     },
-    manifest: '/assets/site.webmanifest',
+    manifest: `/site.webmanifest`,
   };
 };
 
