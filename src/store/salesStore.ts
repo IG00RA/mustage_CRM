@@ -6,6 +6,10 @@ type SalesState = {
   chartSales: Sale[]; // Дані для SalesChart
   loading: boolean;
   error: string | null;
+  dateRange: string;
+  setDateRange: (range: string) => void;
+  customPeriodLabel: string;
+  setCustomPeriodLabel: (period: string) => void;
   fetchSalesSummary: () => Promise<void>;
   fetchHourlyReport: (date?: string) => Promise<void>;
   fetchDailyReport: (startDate: string, endDate: string) => Promise<void>;
@@ -23,7 +27,10 @@ export const useSalesStore = create<SalesState>(set => ({
   chartSales: [],
   loading: false,
   error: null,
-
+  dateRange: 'today',
+  setDateRange: range => set({ dateRange: range }),
+  customPeriodLabel: '',
+  setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
   fetchSalesSummary: async () => {
     set({ loading: true, error: null });
     try {

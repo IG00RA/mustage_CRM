@@ -1,20 +1,6 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Filler,
-  Tooltip,
-  ChartOptions,
-  TooltipModel,
-} from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
@@ -22,39 +8,31 @@ import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import { useSalesStore } from '@/store/salesStore';
 import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Filler,
-  Tooltip
-);
+import ChartDisplay from './ChartDisplay';
 
 const SalesChart: React.FC = () => {
   const t = useTranslations();
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
-  const [dateRange, setDateRange] = useState<string>('today');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [fetchKey, setFetchKey] = useState<string>('today');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedName, setSelectedName] = useState('');
+  const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
+
   const {
     chartSales,
     loading,
     error,
+    dateRange,
+    setDateRange,
+    customPeriodLabel,
+    setCustomPeriodLabel,
     fetchHourlyReport,
     fetchDailyReport,
     fetchMonthlyReport,
   } = useSalesStore();
-
-  const formatAmount = (value: number) =>
-    dataType === 'amount' ? `$${value.toFixed(2)}` : value;
 
   const dateParams = useMemo(() => {
     const today = new Date();
@@ -81,7 +59,6 @@ const SalesChart: React.FC = () => {
     };
   }, []);
 
-  // Групування даних по тижнях для "Квартал"
   const groupByWeek = (
     sales: { period: string; amount: number; quantity: number }[]
   ) => {
@@ -92,7 +69,7 @@ const SalesChart: React.FC = () => {
       const date = new Date(sale.period);
       const year = date.getFullYear();
       const weekNumber =
-        Math.floor((date.getDate() - 1 + ((date.getDay() + 6) % 7)) / 7) + 1; // Номер тижня в місяці
+        Math.floor((date.getDate() - 1 + ((date.getDay() + 6) % 7)) / 7) + 1;
       const weekKey = `${year}-W${weekNumber.toString().padStart(2, '0')}`;
 
       if (!weeklyData[weekKey]) {
@@ -109,6 +86,165 @@ const SalesChart: React.FC = () => {
     }));
   };
 
+  const formatDateInput = (value: string): string => {
+    // Видаляємо все, крім цифр
+    const numbers = value.replace(/\D/g, '');
+    let formatted = '';
+
+    if (numbers.length >= 2) {
+      const day = numbers.slice(0, 2);
+      formatted += day;
+      if (numbers.length >= 4) {
+        const month = numbers.slice(2, 4);
+        formatted += `.${month}`;
+        if (numbers.length >= 8) {
+          const year = numbers.slice(4, 8);
+          formatted += `.${year}`;
+        } else if (numbers.length > 4) {
+          formatted += `.${numbers.slice(4)}`;
+        }
+      } else if (numbers.length > 2) {
+        formatted += `.${numbers.slice(2)}`;
+      }
+    } else {
+      formatted = numbers;
+    }
+
+    return formatted;
+  };
+
+  const isValidDate = (dateStr: string): boolean => {
+    if (dateStr.length !== 10 || dateStr.includes('_')) return false;
+    const [day, month, year] = dateStr.split('.').map(Number);
+    const date = new Date(year, month - 1, day);
+    return (
+      date.getDate() === day &&
+      date.getMonth() === month - 1 &&
+      date.getFullYear() === year
+    );
+  };
+
+  const handleCustomDateInput = (type: 'start' | 'end', value: string) => {
+    const numbers = value.replace(/\D/g, '').slice(0, 8); // Обмежуємо до 8 цифр (DDMMYYYY)
+    let formattedValue = formatDateInput(numbers);
+
+    // Валідація дня, місяця, року лише для повністю введених частин
+    if (formattedValue.length >= 2) {
+      let [day, month, year] = formattedValue.split('.');
+      if (day && day.length === 2) {
+        const dayNum = parseInt(day);
+        if (dayNum > 31) day = '31';
+        else if (dayNum < 1) day = '01';
+      }
+      if (month && month.length === 2) {
+        const monthNum = parseInt(month);
+        if (monthNum > 12) month = '12';
+        else if (monthNum < 1) month = '01';
+      }
+      if (year && year.length === 4) {
+        const yearNum = parseInt(year);
+        const currentYear = new Date().getFullYear();
+        const maxYear = currentYear + 10;
+        if (yearNum < 2000) year = '2000';
+        else if (yearNum > maxYear) year = String(maxYear);
+      }
+      formattedValue = [day, month, year].filter(Boolean).join('.');
+    }
+
+    if (type === 'start') {
+      setCustomStartDate(formattedValue);
+      if (formattedValue.length === 10 && isValidDate(formattedValue)) {
+        if (customEndDate.length === 10 && isValidDate(customEndDate)) {
+          const startDateObj = new Date(
+            formattedValue.split('.').reverse().join('-')
+          );
+          const endDateObj = new Date(
+            customEndDate.split('.').reverse().join('-')
+          );
+          if (startDateObj < endDateObj) {
+            setCustomPeriodLabel(`${formattedValue} - ${customEndDate}`);
+            setIsCustomDateOpen(false);
+            fetchSalesData(
+              'custom',
+              formattedValue.split('.').reverse().join('-'),
+              customEndDate.split('.').reverse().join('-')
+            );
+            setFetchKey(`custom-${formattedValue}-${customEndDate}`);
+          } else {
+            const nextDay = new Date(startDateObj);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const nextDayStr = `${String(nextDay.getDate()).padStart(
+              2,
+              '0'
+            )}.${String(nextDay.getMonth() + 1).padStart(
+              2,
+              '0'
+            )}.${nextDay.getFullYear()}`;
+            setCustomEndDate(nextDayStr);
+            // Додаємо запит даних після коригування
+            if (isValidDate(nextDayStr)) {
+              setCustomPeriodLabel(`${formattedValue} - ${nextDayStr}`);
+              setIsCustomDateOpen(false);
+              fetchSalesData(
+                'custom',
+                formattedValue.split('.').reverse().join('-'),
+                nextDayStr.split('.').reverse().join('-')
+              );
+              setFetchKey(`custom-${formattedValue}-${nextDayStr}`);
+            }
+          }
+        }
+      }
+    } else {
+      setCustomEndDate(formattedValue);
+      if (
+        formattedValue.length === 10 &&
+        isValidDate(formattedValue) &&
+        customStartDate.length === 10 &&
+        isValidDate(customStartDate)
+      ) {
+        const startDateObj = new Date(
+          customStartDate.split('.').reverse().join('-')
+        );
+        const endDateObj = new Date(
+          formattedValue.split('.').reverse().join('-')
+        );
+        if (startDateObj < endDateObj) {
+          setCustomPeriodLabel(`${customStartDate} - ${formattedValue}`);
+          setIsCustomDateOpen(false);
+          fetchSalesData(
+            'custom',
+            customStartDate.split('.').reverse().join('-'),
+            formattedValue.split('.').reverse().join('-')
+          );
+          setFetchKey(`custom-${customStartDate}-${formattedValue}`);
+        } else {
+          const nextDay = new Date(startDateObj);
+          nextDay.setDate(nextDay.getDate() + 1);
+          const nextDayStr = `${String(nextDay.getDate()).padStart(
+            2,
+            '0'
+          )}.${String(nextDay.getMonth() + 1).padStart(
+            2,
+            '0'
+          )}.${nextDay.getFullYear()}`;
+          setCustomEndDate(nextDayStr);
+          // Додаємо запит даних після коригування
+          if (isValidDate(nextDayStr)) {
+            setCustomPeriodLabel(`${customStartDate} - ${nextDayStr}`);
+            setIsCustomDateOpen(false);
+            fetchSalesData(
+              'custom',
+              customStartDate.split('.').reverse().join('-'),
+              nextDayStr.split('.').reverse().join('-')
+            );
+            setFetchKey(`custom-${customStartDate}-${nextDayStr}`);
+          }
+        }
+      }
+    }
+  };
+
   const fetchSalesData = async (
     range: string,
     start?: string,
@@ -123,17 +259,15 @@ const SalesChart: React.FC = () => {
       startOfYearStr,
     } = dateParams;
 
-    console.log('Fetching:', range, 'Start:', start, 'End:', end);
-
     switch (range) {
       case 'today':
         await fetchHourlyReport(todayStr);
         break;
       case 'yesterday':
-        await fetchHourlyReport(yesterdayStr); // Погодинний звіт за вчора
+        await fetchHourlyReport(yesterdayStr);
         break;
       case 'week':
-        await fetchDailyReport(last7DaysStartStr, todayStr); // Останні 7 днів
+        await fetchDailyReport(last7DaysStartStr, todayStr);
         break;
       case 'month':
         await fetchDailyReport(startOfMonthStr, todayStr);
@@ -155,20 +289,17 @@ const SalesChart: React.FC = () => {
     }
   };
 
-  // Початкове завантаження та оновлення при зміні стану
   useEffect(() => {
     const key =
       dateRange === 'custom'
         ? `${dateRange}-${customStartDate}-${customEndDate}`
         : dateRange;
 
-    // Початкове завантаження лише якщо chartSales порожній
     if (chartSales.length === 0 && !loading && !error) {
       fetchSalesData('today');
       setFetchKey('today');
-    } else if (fetchKey !== key) {
-      // Оновлення при зміні періоду
-      fetchSalesData(dateRange, customStartDate, customEndDate);
+    } else if (fetchKey !== key && dateRange !== 'custom') {
+      fetchSalesData(dateRange);
       setFetchKey(key);
     }
   }, [
@@ -184,104 +315,20 @@ const SalesChart: React.FC = () => {
 
   const handleDateRangeChange = (newRange: string) => {
     setDateRange(newRange);
-    // Виклик fetchSalesData перенесено в useEffect, щоб уникнути дублювання
+    setIsCustomDateOpen(false);
+    setCustomPeriodLabel('');
+    setCustomStartDate('');
+    setCustomEndDate('');
   };
 
-  const handleCustomDateChange = (start: string, end: string) => {
-    setCustomStartDate(start);
-    setCustomEndDate(end);
-    // Виклик fetchSalesData перенесено в useEffect
-  };
-
-  const barWidth = 32;
-  const gapWidth = 50;
-  const chartMinWidth =
-    chartSales.length > 0 ? chartSales.length * (barWidth + gapWidth) : 0;
-
-  const maxValue = useMemo(() => {
-    const values = chartSales.map(sale => sale[dataType]);
-    return values.length > 0 ? Math.max(...values) : 0;
-  }, [chartSales, dataType]);
-
-  const tickCount = 5;
-  const tickValues = useMemo(() => {
-    const ticks = [];
-    for (let i = 0; i <= tickCount; i++) {
-      ticks.push(Math.round((maxValue / tickCount) * i));
+  const handleCustomButtonClick = () => {
+    setDateRange('custom');
+    setIsCustomDateOpen(!isCustomDateOpen);
+    if (isCustomDateOpen) {
+      setCustomStartDate('');
+      setCustomEndDate('');
     }
-    return ticks;
-  }, [maxValue]);
-
-  const customTooltip = {
-    enabled: false,
-    external: (context: {
-      chart: ChartJS;
-      tooltip: TooltipModel<'bar' | 'line'>;
-    }) => {
-      let tooltipEl = document.getElementById('custom-tooltip');
-      const chartContainer = document.getElementById('chart-container');
-
-      if (!tooltipEl) {
-        tooltipEl = document.createElement('div');
-        tooltipEl.id = 'custom-tooltip';
-        tooltipEl.classList.add(styles.custom_tooltip);
-        chartContainer && chartContainer.appendChild(tooltipEl);
-      }
-
-      const tooltipModel = context.tooltip;
-      if (!tooltipModel || !tooltipModel.body || tooltipModel.opacity === 0) {
-        tooltipEl.style.opacity = '0';
-        return;
-      }
-
-      const position = context.chart.canvas.getBoundingClientRect();
-      const dataPoint = tooltipModel.dataPoints[0];
-      const formattedValue = formatAmount(dataPoint.raw as number);
-
-      tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${formattedValue}</span>`;
-      tooltipEl.style.opacity = '1';
-      tooltipEl.style.left = `${
-        position.left + window.pageXOffset + tooltipModel.caretX
-      }px`;
-      tooltipEl.style.top = `${
-        position.top + window.pageYOffset + tooltipModel.caretY - 44
-      }px`;
-    },
   };
-
-  const commonOptions: ChartOptions<'bar' | 'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { grid: { display: false } },
-      y: { grid: { display: true }, ticks: { display: false } },
-    },
-    plugins: { tooltip: customTooltip },
-  };
-
-  const lineOptions = {
-    ...commonOptions,
-    elements: { point: { radius: 0 }, line: { tension: 0.3 } },
-  };
-  const barOptions = { ...commonOptions };
-
-  const dataset = {
-    data: chartSales.map(sale => sale[dataType]),
-    backgroundColor: chartType === 'bar' ? '#AEBBFF' : '#5672ff10',
-    hoverBackgroundColor: '#5671ff',
-    borderColor: '#AEBBFF',
-    borderRadius: 5,
-    ...(chartType === 'bar'
-      ? { barThickness: barWidth, maxBarThickness: barWidth }
-      : { fill: true }),
-  };
-
-  const chartData = {
-    labels: chartSales.map(sale => sale.period),
-    datasets: [dataset],
-  };
-
-  const options = chartType === 'bar' ? barOptions : lineOptions;
 
   const exportToExcel = useExportToExcel({ sales: chartSales, dateRange });
 
@@ -292,16 +339,7 @@ const SalesChart: React.FC = () => {
     { value: 'month', label: 'togglerDataMonth' },
     { value: 'quarter', label: 'togglerDataQuarter' },
     { value: 'year', label: 'togglerDataYear' },
-    { value: 'custom', label: 'togglerDataCustom', icon: true },
   ];
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <div className={styles.chart_wrap} id="chart-container">
@@ -334,13 +372,12 @@ const SalesChart: React.FC = () => {
             </button>
           </div>
         </div>
-
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>
             {t('Statistics.chart.toggler.togglerData')}
           </span>
           <div className={styles.chart_toggler_buttons}>
-            {dateRangeOptions.map(({ value, label, icon }) => (
+            {dateRangeOptions.map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => handleDateRangeChange(value)}
@@ -348,36 +385,50 @@ const SalesChart: React.FC = () => {
                   dateRange === value ? styles.active : ''
                 }`}
               >
-                {icon && (
-                  <Icon name="icon-stat_calendar_grey" width={14} height={14} />
-                )}
                 {t(`Statistics.chart.toggler.${label}`)}
               </button>
             ))}
+            <div className={styles.chart_toggler_button_wrap}>
+              <button
+                key={'custom'}
+                onClick={handleCustomButtonClick}
+                className={`${styles.chart_button} ${
+                  dateRange === 'custom' ? styles.active : ''
+                }`}
+              >
+                <Icon name="icon-stat_calendar_grey" width={14} height={14} />
+                {dateRange === 'custom' && customPeriodLabel
+                  ? customPeriodLabel
+                  : t(`Statistics.chart.toggler.togglerDataCustom`)}
+              </button>
+
+              {dateRange === 'custom' && isCustomDateOpen && (
+                <div className={styles.custom_date_range}>
+                  <input
+                    type="text"
+                    value={customStartDate}
+                    className={styles.custom_date_range_input}
+                    onChange={e =>
+                      handleCustomDateInput('start', e.target.value)
+                    }
+                    placeholder="dd.mm.yyyy"
+                    maxLength={10}
+                  />
+                  -
+                  <input
+                    type="text"
+                    value={customEndDate}
+                    className={styles.custom_date_range_input}
+                    onChange={e => handleCustomDateInput('end', e.target.value)}
+                    placeholder="dd.mm.yyyy"
+                    maxLength={10}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      {dateRange === 'custom' && (
-        <div className={styles.custom_date_range}>
-          <input
-            type="date"
-            value={customStartDate}
-            onChange={e =>
-              handleCustomDateChange(e.target.value, customEndDate)
-            }
-            placeholder="Start Date"
-          />
-          <input
-            type="date"
-            value={customEndDate}
-            onChange={e =>
-              handleCustomDateChange(customStartDate, e.target.value)
-            }
-            placeholder="End Date"
-          />
-        </div>
-      )}
 
       <div className={styles.chart_category_wrap}>
         <CustomSelect
@@ -400,24 +451,11 @@ const SalesChart: React.FC = () => {
         />
       </div>
 
-      <div className={styles.chart_wrapper}>
-        <div className={styles.chart_container}>
-          <div className={styles.chart_box} style={{ minWidth: chartMinWidth }}>
-            {chartType === 'bar' ? (
-              <Bar data={chartData} options={options} />
-            ) : (
-              <Line data={chartData} options={options} />
-            )}
-          </div>
-        </div>
-        <div className={styles.fixed_y_axis}>
-          {tickValues.map((val, idx) => (
-            <span className={styles.axis_item} key={idx}>
-              {formatAmount(val)}
-            </span>
-          ))}
-        </div>
-      </div>
+      <ChartDisplay
+        chartSales={chartSales}
+        chartType={chartType}
+        dataType={dataType}
+      />
 
       <div className={styles.bottom_wrap}>
         <WhiteBtn

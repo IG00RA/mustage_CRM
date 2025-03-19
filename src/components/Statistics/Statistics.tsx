@@ -7,19 +7,11 @@ import SalesSummary from './SalesSummary/SalesSummary';
 import SalesChart from './SalesChart/SalesChart';
 
 const Statistics = () => {
-  const { sales, loading, error, fetchSalesSummary } = useSalesStore();
+  const { sales, fetchSalesSummary } = useSalesStore();
 
   useEffect(() => {
-    fetchSalesSummary(); // Лише для SalesSummary
+    fetchSalesSummary();
   }, [fetchSalesSummary]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <section className={styles.section}>

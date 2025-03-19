@@ -53,6 +53,10 @@
   border: 1px solid var(--grey);
 }
 
+.chart_toggler_button_wrap {
+  position: relative;
+}
+
 .chart_button {
   padding: 6px 12px;
   border-radius: 8px;
@@ -78,6 +82,47 @@
 .chart_button.active {
   background: var(--grey_light);
   color: var(--text_dark);
+}
+
+.custom_date_range {
+  position: absolute;
+  bottom: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border-radius: 12px;
+  background-color: #fff;
+  z-index: 10;
+}
+
+.custom_date_range_input {
+  width: 125px;
+  border-radius: 12px;
+  border: 1px solid var(--Grey, #e1e1ec);
+  background: #fff;
+  box-shadow: 0px 4px 6px 0px rgba(109, 100, 197, 0.1);
+  color: var(--text_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  padding: 8px 16px;
+  transition: border 0.3s ease;
+  &:hover,
+  &:focus {
+    outline: none;
+    border: 1px solid var(--main_light);
+  }
+  &::placeholder {
+    color: var(--text_light);
+    font-size: var(--fs_xsmall);
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.37;
+  }
 }
 
 .chart_category_wrap {
