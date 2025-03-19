@@ -1,20 +1,45 @@
 import { create } from 'zustand';
 import { Sale } from '@/api/sales/data';
 
+interface Category {
+  account_category_id: number;
+  account_category_name: string;
+  description: string | null;
+}
+
+interface Subcategory {
+  account_subcategory_id: number;
+  account_subcategory_name: string;
+  account_category_id: number;
+  price: number;
+  cost_price: number;
+  description: string | null;
+}
+
 type SalesState = {
   sales: Sale[];
   chartSales: Sale[];
   loading: boolean;
   error: string | null;
   dateRange: string;
-  setDateRange: (range: string) => void;
   customPeriodLabel: string;
+  categories: Category[];
+  subcategories: Subcategory[];
+  setDateRange: (range: string) => void;
   setCustomPeriodLabel: (period: string) => void;
   fetchSalesSummary: () => Promise<void>;
   fetchReport: (
     reportType: 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom',
-    params: { date?: string; startDate?: string; endDate?: string }
+    params: {
+      date?: string;
+      startDate?: string;
+      endDate?: string;
+      category_id?: number;
+      subcategory_id?: number;
+    }
   ) => Promise<void>;
+  fetchCategories: () => Promise<void>;
+  fetchSubcategories: (categoryId?: number) => Promise<void>;
 };
 
 export const useSalesStore = create<SalesState>(set => ({
@@ -23,8 +48,10 @@ export const useSalesStore = create<SalesState>(set => ({
   loading: false,
   error: null,
   dateRange: 'today',
-  setDateRange: range => set({ dateRange: range }),
   customPeriodLabel: '',
+  categories: [],
+  subcategories: [],
+  setDateRange: range => set({ dateRange: range }),
   setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
 
   fetchSalesSummary: async () => {
@@ -69,6 +96,14 @@ export const useSalesStore = create<SalesState>(set => ({
     set({ loading: true, error: null });
     try {
       let endpoint = '';
+      const queryParams = new URLSearchParams();
+      // Перевіряємо, чи передані обидва параметри, і обираємо лише один
+      if (params.subcategory_id) {
+        queryParams.append('subcategory_id', String(params.subcategory_id));
+      } else if (params.category_id) {
+        queryParams.append('category_id', String(params.category_id));
+      }
+
       switch (reportType) {
         case 'hourly':
           endpoint = `/sales/hourly-report?date=${
@@ -86,10 +121,13 @@ export const useSalesStore = create<SalesState>(set => ({
           break;
         case 'custom':
           endpoint = `/sales/daily-report?start_date=${params.startDate}&end_date=${params.endDate}`;
-          break; // Можна розширити для інших типів у майбутньому
+          break;
       }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}${endpoint}`,
+        `${
+          process.env.NEXT_PUBLIC_HOST_BACK
+        }${endpoint}&${queryParams.toString()}`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -105,6 +143,48 @@ export const useSalesStore = create<SalesState>(set => ({
         })
       );
       set({ chartSales, loading: false });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+
+  fetchCategories: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_BACK}/categories?limit=100`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data: Category[] = await response.json();
+      set({ categories: data, loading: false });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+
+  fetchSubcategories: async (categoryId?: number) => {
+    set({ loading: true, error: null });
+    try {
+      const url = categoryId
+        ? `${process.env.NEXT_PUBLIC_HOST_BACK}/subcategories?category_id=${categoryId}&limit=100`
+        : `${process.env.NEXT_PUBLIC_HOST_BACK}/subcategories?limit=100`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to fetch subcategories');
+      const data: Subcategory[] = await response.json();
+      set({ subcategories: data, loading: false });
     } catch (error) {
       set({
         loading: false,

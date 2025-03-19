@@ -9,6 +9,7 @@ import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import { useSalesStore } from '@/store/salesStore';
 import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 import ChartDisplay from './ChartDisplay';
+import Loader from '@/components/Loader/Loader';
 
 const SalesChart: React.FC = () => {
   const t = useTranslations();
@@ -16,10 +17,11 @@ const SalesChart: React.FC = () => {
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedName, setSelectedName] = useState('');
   const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
-  const [yearlyChange, setYearlyChange] = useState<number | null>(null); // Для зберігання відсотка зміни
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [yearlyChange, setYearlyChange] = useState<number | null>(null);
+  const [showLoader, setShowLoader] = useState<boolean>(true);
 
   const {
     chartSales,
@@ -29,8 +31,18 @@ const SalesChart: React.FC = () => {
     setDateRange,
     customPeriodLabel,
     setCustomPeriodLabel,
+    categories,
+    subcategories,
     fetchReport,
+    fetchCategories,
+    fetchSubcategories,
   } = useSalesStore();
+
+  useEffect(() => {
+    if (chartSales.length !== 0) {
+      setShowLoader(false);
+    }
+  }, [chartSales]);
 
   const dateParams = useMemo(() => {
     const today = new Date();
@@ -56,9 +68,26 @@ const SalesChart: React.FC = () => {
       startOfMonthStr: startOfMonth.toISOString().split('T')[0],
       startOfQuarterStr: startOfQuarter.toISOString().split('T')[0],
       startOfYearStr: startOfYear.toISOString().split('T')[0],
-      lastYearDateStr: lastYearDate.toISOString().split('T')[0], // Дата за минулий рік
+      lastYearDateStr: lastYearDate.toISOString().split('T')[0],
     };
   }, []);
+
+  // Початкове завантаження категорій
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+  }, [categories.length, fetchCategories]);
+
+  // Завантаження підкатегорій при зміні категорії
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchSubcategories(parseInt(selectedCategory));
+    } else {
+      fetchSubcategories(); // Завантажуємо всі підкатегорії, якщо категорія не вибрана
+      setSelectedSubcategory(''); // Скидаємо підкатегорію
+    }
+  }, [selectedCategory, fetchSubcategories]);
 
   const groupByWeek = (
     sales: { period: string; amount: number; quantity: number }[]
@@ -168,29 +197,47 @@ const SalesChart: React.FC = () => {
         startOfYearStr,
       } = dateParams;
 
+      const params: {
+        date?: string;
+        startDate?: string;
+        endDate?: string;
+        category_id?: number;
+        subcategory_id?: number;
+      } = {};
+
+      // Логіка вибору параметрів: підкатегорія має пріоритет
+      if (selectedSubcategory) {
+        params.subcategory_id = parseInt(selectedSubcategory);
+      } else if (selectedCategory) {
+        params.category_id = parseInt(selectedCategory);
+      }
+
       switch (range) {
         case 'today':
-          await fetchReport('hourly', { date: todayStr });
+          await fetchReport('hourly', { date: todayStr, ...params });
           break;
         case 'yesterday':
-          await fetchReport('hourly', { date: yesterdayStr });
+          await fetchReport('hourly', { date: yesterdayStr, ...params });
           break;
         case 'week':
           await fetchReport('daily', {
             startDate: last7DaysStartStr,
             endDate: todayStr,
+            ...params,
           });
           break;
         case 'month':
           await fetchReport('daily', {
             startDate: startOfMonthStr,
             endDate: todayStr,
+            ...params,
           });
           break;
         case 'quarter': {
           await fetchReport('daily', {
             startDate: startOfQuarterStr,
             endDate: todayStr,
+            ...params,
           });
           const currentSales = useSalesStore.getState().chartSales;
           const groupedSales = groupByWeek(currentSales);
@@ -201,16 +248,21 @@ const SalesChart: React.FC = () => {
           await fetchReport('monthly', {
             startDate: startOfYearStr,
             endDate: todayStr,
+            ...params,
           });
           break;
         case 'custom':
           if (start && end) {
-            await fetchReport('custom', { startDate: start, endDate: end });
+            await fetchReport('custom', {
+              startDate: start,
+              endDate: end,
+              ...params,
+            });
           }
           break;
       }
     },
-    [dateParams]
+    [dateParams, selectedCategory, selectedSubcategory, fetchReport]
   );
 
   // Функція для обчислення відсоткової зміни порівняно з минулим роком
@@ -244,7 +296,7 @@ const SalesChart: React.FC = () => {
 
     // Повертаємо дані за сьогодні після обчислення
     await fetchReport('hourly', { date: todayStr });
-  }, [dateParams]);
+  }, [dateParams, fetchReport]);
 
   const prevDateRangeRef = useRef(dateRange);
 
@@ -256,14 +308,26 @@ const SalesChart: React.FC = () => {
     }
   }, [chartSales.length, loading, error, fetchSalesData, fetchYearlyChange]);
 
-  // Реагуємо на зміну dateRange
+  // Оновлення даних при зміні dateRange
   useEffect(() => {
     if (dateRange !== 'custom' && dateRange !== prevDateRangeRef.current) {
       fetchSalesData(dateRange);
-      if (dateRange === 'today') fetchYearlyChange(); // Оновлюємо відсоток для 'today'
+      if (dateRange === 'today') fetchYearlyChange();
       prevDateRangeRef.current = dateRange;
     }
   }, [dateRange, fetchSalesData, fetchYearlyChange]);
+
+  // Оновлення даних при зміні категорії або підкатегорії
+  useEffect(() => {
+    fetchSalesData(dateRange, customStartDate, customEndDate);
+  }, [
+    selectedCategory,
+    selectedSubcategory,
+    fetchSalesData,
+    dateRange,
+    customStartDate,
+    customEndDate,
+  ]);
 
   const handleDateRangeChange = (newRange: string) => {
     setDateRange(newRange);
@@ -292,6 +356,33 @@ const SalesChart: React.FC = () => {
     { value: 'quarter', label: 'togglerDataQuarter' },
     { value: 'year', label: 'togglerDataYear' },
   ];
+
+  // Обробник вибору категорії
+  const handleCategorySelect = (value: string) => {
+    const selectedCat = categories.find(
+      cat => cat.account_category_name === value
+    );
+    const newCategoryId = selectedCat
+      ? String(selectedCat.account_category_id)
+      : '';
+
+    // Якщо категорія змінюється і підкатегорія була обрана, скидаємо підкатегорію
+    if (newCategoryId !== selectedCategory && selectedSubcategory) {
+      setSelectedSubcategory('');
+    }
+
+    setSelectedCategory(newCategoryId);
+  };
+
+  // Обробник вибору підкатегорії
+  const handleSubcategorySelect = (value: string) => {
+    const selectedSub = subcategories.find(
+      sub => sub.account_subcategory_name === value
+    );
+    setSelectedSubcategory(
+      selectedSub ? String(selectedSub.account_subcategory_id) : ''
+    );
+  };
 
   return (
     <div className={styles.chart_wrap} id="chart-container">
@@ -387,28 +478,44 @@ const SalesChart: React.FC = () => {
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerCategory')}
           options={[
-            t('Statistics.chart.toggler.togglerChooseCategory'),
-            t('Statistics.chart.toggler.togglerChooseCategory'),
+            t('Statistics.chart.toggler.togglerAllCategory'),
+            ...categories.map(cat => cat.account_category_name),
           ]}
-          selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          selected={
+            selectedCategory
+              ? categories.find(
+                  cat => cat.account_category_id === parseInt(selectedCategory)
+                )?.account_category_name || ''
+              : t('Statistics.chart.toggler.togglerChooseCategory')
+          }
+          onSelect={handleCategorySelect} // Використовуємо новий обробник
         />
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerName')}
           options={[
-            t('Statistics.chart.toggler.togglerChooseName'),
-            t('Statistics.chart.toggler.togglerChooseName'),
+            t('Statistics.chart.toggler.togglerAllName'),
+            ...subcategories.map(sub => sub.account_subcategory_name),
           ]}
-          selected={selectedName}
-          onSelect={setSelectedName}
+          selected={
+            selectedSubcategory
+              ? subcategories.find(
+                  sub =>
+                    sub.account_subcategory_id === parseInt(selectedSubcategory)
+                )?.account_subcategory_name || ''
+              : t('Statistics.chart.toggler.togglerChooseName')
+          }
+          onSelect={handleSubcategorySelect} // Використовуємо новий обробник
         />
       </div>
 
+      {showLoader && <Loader />}
+      {error && <div>Error: {error}</div>}
       <ChartDisplay
         chartSales={chartSales}
         chartType={chartType}
         dataType={dataType}
       />
+
       <div className={styles.bottom_wrap}>
         <WhiteBtn
           onClick={exportToExcel}

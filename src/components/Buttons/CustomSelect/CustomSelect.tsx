@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styles from './CustomSelect.module.css';
 import Icon from '@/helpers/Icon';
 
 interface SelectProps {
   options: string[];
-  onSelect: Dispatch<SetStateAction<string>>;
+  onSelect: (value: string) => void;
   selected: string;
   label?: string;
   width?: string | number;

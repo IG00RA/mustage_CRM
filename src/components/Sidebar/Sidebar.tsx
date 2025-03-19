@@ -58,17 +58,6 @@ const Sidebar = () => {
 
   return (
     <aside className={styles.sidebar}>
-      <form action={logout}>
-        <button className={styles.log_out_btn} type="submit">
-          <Icon
-            className={styles.log_out_icon}
-            name={'icon-log-out'}
-            color="#a9a9c1"
-            width={16}
-            height={16}
-          />
-        </button>
-      </form>
       <Link href="/" className={styles.logo_wrap}>
         <Image
           src={logo}
@@ -81,18 +70,31 @@ const Sidebar = () => {
         <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
       </Link>
       <div className={styles.user_wrap}>
-        <Image
-          src={avatar}
-          alt="Mustage CRM user"
-          className={styles.user_logo}
-          width={0}
-          height={0}
-          sizes="100vw"
-        />
-        <div className={styles.nick_wrap}>
-          <h2 className={styles.nick}>Hudson Alvarez</h2>
-          <p className={styles.role}>Admin</p>
+        <div className={styles.user_image_wrap}>
+          <Image
+            src={avatar}
+            alt="Mustage CRM user"
+            className={styles.user_logo}
+            width={0}
+            height={0}
+            sizes="100vw"
+          />
+          <div className={styles.nick_wrap}>
+            <h2 className={styles.nick}>Hudson Alvarez</h2>
+            <p className={styles.role}>Admin</p>
+          </div>
         </div>
+        <form action={logout}>
+          <button className={styles.log_out_btn} type="submit">
+            <Icon
+              className={styles.log_out_icon}
+              name={'icon-log-out'}
+              color="#a9a9c1"
+              width={16}
+              height={16}
+            />
+          </button>
+        </form>
       </div>
       <h3 className={styles.parTitle}>{t('Sidebar.mainPar')}</h3>
       <nav className={styles.nav}>

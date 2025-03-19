@@ -32,12 +32,19 @@
 
 .user_wrap {
   display: flex;
-  padding: 16px 20px;
+  padding: 16px;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   border-radius: 16px;
   background: rgba(145, 158, 171, 0.08);
   margin: 0 4px 2px;
+}
+
+.user_image_wrap {
+  align-items: center;
+  display: flex;
+  gap: 8px;
 }
 
 .user_logo {

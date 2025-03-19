@@ -62,8 +62,10 @@
         "togglerDataCustom": "Ввести период",
         "togglerDataYear": "Год",
         "togglerCategory": "Категории:",
+        "togglerAllCategory": "Все категории",
         "togglerChooseCategory": "Выберите категорию",
         "togglerName": "Наименование:",
+        "togglerAllName": "Все наименования",
         "togglerChooseName": "Выберите наименование"
       },
       "buttonText": "Скачать xlsx-отчет",
