@@ -59,7 +59,15 @@ const Sidebar = () => {
   return (
     <aside className={styles.sidebar}>
       <form action={logout}>
-        <button type="submit">Вийти</button>
+        <button className={styles.log_out_btn} type="submit">
+          <Icon
+            className={styles.log_out_icon}
+            name={'icon-log-out'}
+            color="#a9a9c1"
+            width={16}
+            height={16}
+          />
+        </button>
       </form>
       <Link href="/" className={styles.logo_wrap}>
         <Image

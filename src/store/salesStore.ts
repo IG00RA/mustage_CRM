@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { Sale } from '@/api/sales/data';
 
 type SalesState = {
-  sales: Sale[]; // Дані для SalesSummary (Today, Week, Month)
-  chartSales: Sale[]; // Дані для SalesChart
+  sales: Sale[];
+  chartSales: Sale[];
   loading: boolean;
   error: string | null;
   dateRange: string;
@@ -11,14 +11,9 @@ type SalesState = {
   customPeriodLabel: string;
   setCustomPeriodLabel: (period: string) => void;
   fetchSalesSummary: () => Promise<void>;
-  fetchHourlyReport: (date?: string) => Promise<void>;
-  fetchDailyReport: (startDate: string, endDate: string) => Promise<void>;
-  fetchMonthlyReport: (startDate: string, endDate: string) => Promise<void>;
-  fetchYearlyReport: (startDate: string, endDate: string) => Promise<void>;
-  fetchCustomReport: (
-    startDate: string,
-    endDate: string,
-    type: 'daily' | 'monthly' | 'yearly'
+  fetchReport: (
+    reportType: 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom',
+    params: { date?: string; startDate?: string; endDate?: string }
   ) => Promise<void>;
 };
 
@@ -31,6 +26,7 @@ export const useSalesStore = create<SalesState>(set => ({
   setDateRange: range => set({ dateRange: range }),
   customPeriodLabel: '',
   setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
+
   fetchSalesSummary: async () => {
     set({ loading: true, error: null });
     try {
@@ -41,11 +37,7 @@ export const useSalesStore = create<SalesState>(set => ({
           headers: { 'Content-Type': 'application/json' },
         }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch summary data');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch summary data');
       const data = await response.json();
       const sales: Sale[] = [
         {
@@ -64,7 +56,6 @@ export const useSalesStore = create<SalesState>(set => ({
           quantity: data.month.sales_count,
         },
       ];
-
       set({ sales, loading: false });
     } catch (error) {
       set({
@@ -74,140 +65,29 @@ export const useSalesStore = create<SalesState>(set => ({
     }
   },
 
-  fetchHourlyReport: async (date = new Date().toISOString().split('T')[0]) => {
+  fetchReport: async (reportType, params) => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}/sales/hourly-report?date=${date}`,
-        { method: 'GET', headers: { 'Content-Type': 'application/json' } }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch hourly report');
+      let endpoint = '';
+      switch (reportType) {
+        case 'hourly':
+          endpoint = `/sales/hourly-report?date=${
+            params.date || new Date().toISOString().split('T')[0]
+          }`;
+          break;
+        case 'daily':
+          endpoint = `/sales/daily-report?start_date=${params.startDate}&end_date=${params.endDate}`;
+          break;
+        case 'monthly':
+          endpoint = `/sales/monthly-report?start_date=${params.startDate}&end_date=${params.endDate}`;
+          break;
+        case 'yearly':
+          endpoint = `/sales/yearly-report?start_date=${params.startDate}&end_date=${params.endDate}`;
+          break;
+        case 'custom':
+          endpoint = `/sales/daily-report?start_date=${params.startDate}&end_date=${params.endDate}`;
+          break; // Можна розширити для інших типів у майбутньому
       }
-
-      const data = await response.json();
-      const chartSales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, any]) => ({
-          period,
-          amount: report.total_amount,
-          quantity: report.sales_count,
-        })
-      );
-
-      set({ chartSales, loading: false });
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-
-  fetchDailyReport: async (startDate: string, endDate: string) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}/sales/daily-report?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'GET', headers: { 'Content-Type': 'application/json' } }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch daily report');
-      }
-
-      const data = await response.json();
-      const chartSales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, any]) => ({
-          period,
-          amount: report.total_amount,
-          quantity: report.sales_count,
-        })
-      );
-
-      set({ chartSales, loading: false });
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-
-  fetchMonthlyReport: async (startDate: string, endDate: string) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}/sales/monthly-report?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'GET', headers: { 'Content-Type': 'application/json' } }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch monthly report');
-      }
-
-      const data = await response.json();
-      const chartSales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, any]) => ({
-          period,
-          amount: report.total_amount,
-          quantity: report.sales_count,
-        })
-      );
-
-      set({ chartSales, loading: false });
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-
-  fetchYearlyReport: async (startDate: string, endDate: string) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}/sales/yearly-report?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'GET', headers: { 'Content-Type': 'application/json' } }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch yearly report');
-      }
-
-      const data = await response.json();
-      const chartSales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, any]) => ({
-          period,
-          amount: report.total_amount,
-          quantity: report.sales_count,
-        })
-      );
-
-      set({ chartSales, loading: false });
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-
-  fetchCustomReport: async (
-    startDate: string,
-    endDate: string,
-    type: 'daily' | 'monthly' | 'yearly'
-  ) => {
-    set({ loading: true, error: null });
-    try {
-      const endpoint =
-        type === 'daily'
-          ? `/sales/daily-report?start_date=${startDate}&end_date=${endDate}`
-          : type === 'monthly'
-          ? `/sales/monthly-report?start_date=${startDate}&end_date=${endDate}`
-          : `/sales/yearly-report?start_date=${startDate}&end_date=${endDate}`;
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_BACK}${endpoint}`,
         {
@@ -215,11 +95,7 @@ export const useSalesStore = create<SalesState>(set => ({
           headers: { 'Content-Type': 'application/json' },
         }
       );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${type} report`);
-      }
-
+      if (!response.ok) throw new Error(`Failed to fetch ${reportType} report`);
       const data = await response.json();
       const chartSales: Sale[] = Object.entries(data).map(
         ([period, report]: [string, any]) => ({
@@ -228,7 +104,6 @@ export const useSalesStore = create<SalesState>(set => ({
           quantity: report.sales_count,
         })
       );
-
       set({ chartSales, loading: false });
     } catch (error) {
       set({
