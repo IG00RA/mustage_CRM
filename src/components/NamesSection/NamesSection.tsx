@@ -2,7 +2,13 @@
 
 import styles from './NamesSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -22,237 +28,66 @@ import CreateNames from '../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../ModalComponent/EditNames/EditNames';
 import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
 import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
+import { useSalesStore } from '@/store/salesStore';
+import Loader from '../Loader/Loader';
 
-interface Category {
-  id: number;
-  name: string;
-  category: string;
-  quantity: number;
-  cost: number;
+interface Subcategory {
+  account_subcategory_id: number;
+  account_subcategory_name: string;
+  account_category_id: number;
   price: number;
+  cost_price: number;
+  description: string | null;
 }
 
-const data: Category[] = [
-  {
-    id: 1,
-    name: 'Facebook Ads',
-    category: 'Таргетована реклама',
-    quantity: 100,
-    cost: 500,
-    price: 700,
-  },
-  {
-    id: 2,
-    name: 'Google Ads',
-    category: 'Контекстна реклама',
-    quantity: 150,
-    cost: 800,
-    price: 1100,
-  },
-  {
-    id: 3,
-    name: 'TikTok Ads',
-    category: 'Відеореклама',
-    quantity: 120,
-    cost: 600,
-    price: 900,
-  },
-  {
-    id: 4,
-    name: 'Instagram Influencers',
-    category: 'Інфлюенс-маркетинг',
-    quantity: 50,
-    cost: 400,
-    price: 650,
-  },
-  {
-    id: 5,
-    name: 'YouTube Pre-Roll',
-    category: 'Відеореклама',
-    quantity: 90,
-    cost: 700,
-    price: 1000,
-  },
-  {
-    id: 6,
-    name: 'Push-трафік',
-    category: 'Push-сповіщення',
-    quantity: 200,
-    cost: 500,
-    price: 850,
-  },
-  {
-    id: 7,
-    name: 'Email-розсилка',
-    category: 'Email-маркетинг',
-    quantity: 130,
-    cost: 300,
-    price: 550,
-  },
-  {
-    id: 8,
-    name: 'Native Ads',
-    category: 'Нативна реклама',
-    quantity: 110,
-    cost: 600,
-    price: 950,
-  },
-  {
-    id: 9,
-    name: 'SEO-трафік',
-    category: 'Органічний трафік',
-    quantity: 80,
-    cost: 700,
-    price: 1200,
-  },
-  {
-    id: 10,
-    name: 'Telegram-боти',
-    category: 'Месенджер-маркетинг',
-    quantity: 140,
-    cost: 400,
-    price: 750,
-  },
-  {
-    id: 11,
-    name: 'CPA-сітки',
-    category: 'Партнерські мережі',
-    quantity: 200,
-    cost: 1000,
-    price: 1600,
-  },
-  {
-    id: 12,
-    name: 'Popunder Ads',
-    category: 'Попандер реклама',
-    quantity: 300,
-    cost: 500,
-    price: 900,
-  },
-  {
-    id: 13,
-    name: 'In-App Ads',
-    category: 'Мобільна реклама',
-    quantity: 250,
-    cost: 800,
-    price: 1300,
-  },
-  {
-    id: 14,
-    name: 'Facebook Groups',
-    category: 'Соціальні мережі',
-    quantity: 60,
-    cost: 300,
-    price: 500,
-  },
-  {
-    id: 15,
-    name: 'Twitter Ads',
-    category: 'Соціальні мережі',
-    quantity: 100,
-    cost: 500,
-    price: 750,
-  },
-  {
-    id: 16,
-    name: 'LinkedIn B2B',
-    category: 'B2B-реклама',
-    quantity: 50,
-    cost: 1000,
-    price: 1800,
-  },
-  {
-    id: 17,
-    name: 'Snapchat Ads',
-    category: 'Відеореклама',
-    quantity: 80,
-    cost: 600,
-    price: 950,
-  },
-  {
-    id: 18,
-    name: 'Reddit Ads',
-    category: 'Соціальні мережі',
-    quantity: 90,
-    cost: 400,
-    price: 650,
-  },
-  {
-    id: 19,
-    name: 'Pinterest Ads',
-    category: 'Візуальна реклама',
-    quantity: 70,
-    cost: 500,
-    price: 850,
-  },
-  {
-    id: 20,
-    name: 'Quora Ads',
-    category: 'Контентна реклама',
-    quantity: 75,
-    cost: 550,
-    price: 900,
-  },
-  {
-    id: 21,
-    name: 'Adult Traffic',
-    category: 'Дорослий контент',
-    quantity: 500,
-    cost: 1200,
-    price: 1800,
-  },
-  {
-    id: 22,
-    name: 'Sweepstakes Traffic',
-    category: 'Оффери',
-    quantity: 400,
-    cost: 900,
-    price: 1400,
-  },
-  {
-    id: 23,
-    name: 'Gambling Traffic',
-    category: 'Азартні ігри',
-    quantity: 350,
-    cost: 1100,
-    price: 1700,
-  },
-  {
-    id: 24,
-    name: 'Crypto Traffic',
-    category: 'Криптовалюта',
-    quantity: 220,
-    cost: 1300,
-    price: 2000,
-  },
-  {
-    id: 25,
-    name: 'Forex Leads',
-    category: 'Фінансові послуги',
-    quantity: 180,
-    cost: 900,
-    price: 1500,
-  },
-  {
-    id: 26,
-    name: 'App Installs',
-    category: 'Мобільний маркетинг',
-    quantity: 270,
-    cost: 750,
-    price: 1200,
-  },
-  {
-    id: 27,
-    name: 'Dating Traffic',
-    category: 'Знайомства',
-    quantity: 300,
-    cost: 800,
-    price: 1400,
-  },
-];
+interface Category {
+  account_category_id: number;
+  account_category_name: string;
+  description: string | null;
+}
 
 const NamesSection = () => {
   const t = useTranslations();
+  const {
+    subcategories,
+    categories,
+    fetchSubcategories,
+    fetchCategories,
+    loading,
+    error,
+  } = useSalesStore();
+  const didFetchRef = useRef(false);
+  const [showLoader, setShowLoader] = useState<boolean>(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (
+        !didFetchRef.current &&
+        subcategories.length === 0 &&
+        !loading &&
+        !error
+      ) {
+        didFetchRef.current = true;
+        fetchSubcategories().catch(err => {
+          console.error('Fetch subcategories failed:', err);
+          didFetchRef.current = false;
+        });
+      }
+      if (categories.length === 0 && !loading && !error) {
+        fetchCategories().catch(err => {
+          console.error('Fetch categories failed:', err);
+        });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchSubcategories, fetchCategories]);
+
+  useEffect(() => {
+    if (subcategories.length > 0 && showLoader) {
+      setShowLoader(false);
+    }
+  }, [subcategories, showLoader]);
+
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
@@ -260,71 +95,139 @@ const NamesSection = () => {
   const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
     useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
-  const [selectCategory, setSelectCategory] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  );
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 5, // Початковий розмір сторінки
+    pageSize: 5,
   });
 
-  const toggleAddNamesDescription = () => {
-    setIsOpenAddNamesDescription(!isOpenAddNamesDescription);
-  };
+  const toggleAddNamesDescription = useCallback(() => {
+    setIsOpenAddNamesDescription(prev => !prev);
+  }, []);
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
-  const toggleCreateNamesSet = () => {
-    setIsOpenCreateNamesSet(!isOpenCreateNamesSet);
-  };
-  const toggleUpdateModal = (title = '') => {
+  const toggleCreateModal = useCallback(() => {
+    setIsOpenCreate(prev => !prev);
+  }, []);
+
+  const toggleCreateNamesSet = useCallback(() => {
+    setIsOpenCreateNamesSet(prev => !prev);
+  }, []);
+
+  const openUpdateModal = useCallback((title = '') => {
     setUpdateTitle(title);
-    setIsOpenUpdate(!isOpenUpdate);
-  };
+    setIsOpenUpdate(true);
+  }, []);
 
-  const columns: ColumnDef<Category>[] = [
-    {
-      accessorKey: 'id',
-      header: 'ID',
-    },
-    {
-      accessorKey: 'name',
-      header: t('Names.table.name'),
-    },
-    {
-      accessorKey: 'category',
-      header: t('Names.table.category'),
-    },
-    {
-      accessorKey: 'quantity',
-      header: t('Names.table.quantity'),
-    },
-    {
-      accessorKey: 'cost',
-      header: t('Names.table.cost'),
-    },
-    {
-      accessorKey: 'price',
-      header: t('Names.table.price'),
-    },
-    {
-      id: 'actions',
-      header: t('Names.table.actions'),
-      cell: ({ row }) => (
-        <div className={styles.table_buttons}>
-          <CancelBtn
-            text="Names.table.enterBtn"
-            onClick={() => toggleAddNamesDescription()}
-          />
-          <WhiteBtn
-            onClick={() => toggleUpdateModal(row.original.name)}
-            text={'Names.table.editBtn'}
-            icon="icon-edit-pencil"
-          />
-        </div>
+  const closeUpdateModal = useCallback(() => {
+    setIsOpenUpdate(false);
+  }, []);
+
+  const data = useMemo(
+    () =>
+      subcategories.map(subcategory => ({
+        account_subcategory_id: subcategory.account_subcategory_id,
+        account_subcategory_name: subcategory.account_subcategory_name,
+        account_category_id: subcategory.account_category_id,
+        price: subcategory.price,
+        cost_price: subcategory.cost_price,
+        description: subcategory.description,
+      })),
+    [subcategories]
+  );
+
+  const categoryOptions = useMemo(
+    () => [
+      t('Names.selectAllBtn'),
+      ...categories.map(cat => cat.account_category_name),
+    ],
+    [categories, t]
+  );
+
+  const categoryMap = useMemo(
+    () =>
+      new Map(
+        categories.map(category => [
+          category.account_category_id,
+          category.account_category_name,
+        ])
       ),
+    [categories]
+  );
+
+  const handleCategorySelect = useCallback(
+    (categoryName: string) => {
+      if (categoryName === t('Names.selectAllBtn')) {
+        setSelectedCategoryId(null);
+      } else {
+        const selectedCategory = categories.find(
+          cat => cat.account_category_name === categoryName
+        );
+        setSelectedCategoryId(
+          selectedCategory ? String(selectedCategory.account_category_id) : null
+        );
+      }
     },
-  ];
+    [categories, t]
+  );
+
+  const columns = useMemo<ColumnDef<Subcategory>[]>(
+    () => [
+      { accessorKey: 'account_subcategory_id', header: 'ID' },
+      {
+        accessorKey: 'account_subcategory_name',
+        header: t('Names.table.name'),
+      },
+      {
+        accessorKey: 'account_category_id',
+        header: t('Names.table.category'),
+        cell: ({ row }) => {
+          const categoryName = categoryMap.get(
+            row.original.account_category_id
+          );
+          return categoryName || row.original.account_category_id;
+        },
+        filterFn: (row, columnId, filterValue) => {
+          // Перевіряємо точну відповідність числового значення
+          const rowValue = row.getValue(columnId) as number;
+          const filterNum = Number(filterValue);
+          return rowValue === filterNum;
+        },
+      },
+      { accessorKey: 'cost_price', header: t('Names.table.cost') },
+      { accessorKey: 'price', header: t('Names.table.price') },
+      {
+        id: 'actions',
+        header: t('Names.table.actions'),
+        cell: ({ row }) => (
+          <div className={styles.table_buttons}>
+            <CancelBtn
+              text="Names.table.enterBtn"
+              onClick={toggleAddNamesDescription}
+            />
+            <WhiteBtn
+              onClick={() =>
+                openUpdateModal(row.original.account_subcategory_name)
+              }
+              text={'Names.table.editBtn'}
+              icon="icon-edit-pencil"
+            />
+          </div>
+        ),
+      },
+    ],
+    [t, categoryMap, toggleAddNamesDescription, openUpdateModal]
+  );
+
+  const columnFilters = useMemo(
+    () =>
+      selectedCategoryId
+        ? [{ id: 'account_category_id', value: selectedCategoryId }]
+        : [],
+    [selectedCategoryId]
+  );
 
   const table = useReactTable({
     data,
@@ -335,8 +238,11 @@ const NamesSection = () => {
     state: {
       globalFilter,
       pagination,
+      columnFilters,
     },
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     filterFns: {
       global: (row, columnId, filterValue) => {
         if (!filterValue) return true;
@@ -344,10 +250,14 @@ const NamesSection = () => {
         return cellValue.includes(filterValue.toLowerCase());
       },
     },
-    onPaginationChange: setPagination,
   });
 
-  const categoryNames = [...new Set(data.map(category => category.name))];
+  const subcategoryNames = useMemo(
+    () => [
+      ...new Set(data.map(subcategory => subcategory.account_subcategory_name)),
+    ],
+    [data]
+  );
 
   return (
     <section className={styles.section}>
@@ -364,19 +274,24 @@ const NamesSection = () => {
           />
           <CustomSelect
             label={t('Names.selectText')}
-            options={[t('Names.selectBtn'), t('Names.selectBtn')]}
-            selected={selectCategory}
-            onSelect={setSelectCategory}
+            options={categoryOptions}
+            selected={
+              selectedCategoryId
+                ? categoryMap.get(parseInt(selectedCategoryId)) || ''
+                : t('Names.selectBtn')
+            }
+            onSelect={handleCategorySelect}
             width={298}
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
             text={'Category.searchBtn'}
-            options={categoryNames}
+            options={subcategoryNames}
           />
         </div>
       </div>
       <div className={styles.table_container}>
+        {showLoader && <Loader error={error} />}
         <table className={styles.table}>
           <thead className={styles.thead}>
             {table.getHeaderGroups().map(headerGroup => (
@@ -415,6 +330,7 @@ const NamesSection = () => {
               setPagination(prev => ({
                 ...prev,
                 pageSize: Number(e.target.value),
+                pageIndex: 0,
               }))
             }
           >
@@ -428,10 +344,10 @@ const NamesSection = () => {
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(
               (pagination.pageIndex + 1) * pagination.pageSize,
-              data.length
+              table.getFilteredRowModel().rows.length
             )}
             {t('Category.table.pages')}
-            {data.length}
+            {table.getFilteredRowModel().rows.length}
           </span>
           <div className={styles.pagination_btn_wrap}>
             <button
@@ -487,7 +403,7 @@ const NamesSection = () => {
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
+        onClose={closeUpdateModal}
         title="Names.modalUpdate.title"
         text="Names.modalUpdate.description"
         editedTitle={updateTitle}

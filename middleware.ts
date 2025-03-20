@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get('auth_token');
+  const token = request.cookies.get('access_token');
 
   // Публічні шляхи, які доступні без токена
   const publicPaths = ['/login', '/register', '/forgot-password'];
@@ -37,11 +37,11 @@ export function middleware(request: NextRequest) {
   }
 
   // Для всіх інших маршрутів перевіряємо наявність токена
-  if (!token?.value) {
-    const locale = request.nextUrl.locale || routing.defaultLocale;
-    const loginUrl = new URL(`/${locale}/login`, request.url);
-    return NextResponse.redirect(loginUrl);
-  }
+  // if (!token?.value) {
+  //   const locale = request.nextUrl.locale || routing.defaultLocale;
+  //   const loginUrl = new URL(`/${locale}/login`, request.url);
+  //   return NextResponse.redirect(loginUrl);
+  // }
 
   // Якщо токен є, передаємо керування next-intl
   return intlMiddleware(request);

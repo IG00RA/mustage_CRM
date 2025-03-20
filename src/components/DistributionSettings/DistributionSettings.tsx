@@ -18,7 +18,7 @@ import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
-import EditCategory from '../ModalComponent/EditCategory/EditCategory';
+import EditCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';

@@ -54,6 +54,19 @@
   flex-shrink: 0;
 }
 
+.log_out_btn {
+  &:hover,
+  &:focus {
+    & .log_out_icon {
+      fill: var(--main_blue);
+    }
+  }
+}
+
+.log_out_icon {
+  transition: fill 0.3s ease;
+}
+
 /* .nick_wrap {
   display: flex;
 } */

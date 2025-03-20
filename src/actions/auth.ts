@@ -7,7 +7,6 @@ export async function login(formData: FormData) {
   const username = formData.get('username');
   const password = formData.get('password');
 
-  // Базова валідація на сервері
   if (!username || !password) {
     return { error: 'Username and password are required' };
   }
@@ -18,7 +17,9 @@ export async function login(formData: FormData) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ login: username, password }),
+    credentials: 'include', // ✅ Дозволяє браузеру зберігати кукі
   });
+  console.log(response);
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -31,27 +32,14 @@ export async function login(formData: FormData) {
     }
   }
 
-  const data = await response.json();
-  const token = data.access_token;
-
-  // Збереження токену в HTTP-only куках на 30 днів
-  const cookieStore = await cookies();
-  cookieStore.set('auth_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/',
-    maxAge: 30 * 24 * 60 * 60, // 30 днів у секундах
-  });
-
+  // ✅ Кукі автоматично збережуться в браузері
   redirect('/ru/dashboard');
 }
 
 export async function logout() {
   // Отримуємо токен з куків для авторизації запиту на бекенд
   const cookieStore = await cookies();
-  const authToken = cookieStore.get('auth_token');
-
+  const authToken = cookieStore.get('access_token');
   if (!authToken?.value) {
     // Якщо токену немає, просто перенаправляємо на сторінку логіну
     redirect('/ru/login');
@@ -65,20 +53,17 @@ export async function logout() {
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${authToken.value}`,
           'Content-Type': 'application/json',
         },
       }
     );
-
     // Перевіряємо відповідь від бекенду
     if (response.ok) {
       const data = await response.json();
-
       // Перевіряємо успішність логауту
       if (data.message === 'Logged out') {
         // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді
-        cookieStore.delete('auth_token');
+        cookieStore.delete('access_token');
         // Переміщуємо редирект поза блок try/catch
       } else {
         // Якщо повідомлення не відповідає очікуваному, повертаємо помилку

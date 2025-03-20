@@ -17,7 +17,7 @@ import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
-import UpdateCategory from '../ModalComponent/EditCategory/EditCategory';
+import UpdateCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
 import { useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
 
@@ -71,7 +71,6 @@ const CategorySection = () => {
     setIsOpenUpdate(false);
   };
 
-  // Мемоізуємо data, щоб уникнути повторних обчислень
   const data: Category[] = useMemo(
     () =>
       categories.map(category => ({
@@ -235,7 +234,7 @@ const CategorySection = () => {
         title="Category.modalCreate.title"
         text="Category.modalCreate.description"
       >
-        <CreateCategory />
+        <CreateCategory onClose={toggleCreateModal} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
