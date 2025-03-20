@@ -61,9 +61,14 @@ const CategorySection = () => {
   });
 
   const toggleCreateModal = () => setIsOpenCreate(prev => !prev);
-  const toggleUpdateModal = (title = '') => {
+
+  const openUpdateModal = (title = '') => {
     setUpdateTitle(title);
-    setIsOpenUpdate(prev => !prev);
+    setIsOpenUpdate(true);
+  };
+
+  const closeUpdateModal = () => {
+    setIsOpenUpdate(false);
   };
 
   // Мемоізуємо data, щоб уникнути повторних обчислень
@@ -92,7 +97,7 @@ const CategorySection = () => {
       header: t('Category.table.actions'),
       cell: ({ row }) => (
         <WhiteBtn
-          onClick={() => toggleUpdateModal(row.original.name)}
+          onClick={() => openUpdateModal(row.original.name)}
           text={'Category.table.editBtn'}
           icon="icon-edit-pencil"
           iconFill="icon-edit-pencil"
@@ -234,7 +239,7 @@ const CategorySection = () => {
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
+        onClose={closeUpdateModal}
         title="Category.modalUpdate.title"
         text="Category.modalUpdate.description"
         editedTitle={updateTitle}
