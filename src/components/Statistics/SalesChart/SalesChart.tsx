@@ -649,8 +649,8 @@ const SalesChart: React.FC = () => {
         />
       </div>
 
-      {showLoader && <Loader />}
-      {error && <div>Error: {error}</div>}
+      {showLoader && <Loader error={error} />}
+
       <ChartDisplay
         chartSales={chartSales}
         chartType={chartType}

@@ -84,7 +84,11 @@ const Sidebar = () => {
             <p className={styles.role}>Admin</p>
           </div>
         </div>
-        <form action={logout}>
+        <form
+          action={async (formData: FormData) => {
+            await logout();
+          }}
+        >
           <button className={styles.log_out_btn} type="submit">
             <Icon
               className={styles.log_out_icon}

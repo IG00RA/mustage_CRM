@@ -2,7 +2,7 @@
 
 import styles from './CategorySection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -12,13 +12,14 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
-import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
 import UpdateCategory from '../ModalComponent/EditCategory/EditCategory';
+import { useSalesStore } from '@/store/salesStore';
+import Loader from '../Loader/Loader';
 
 interface Category {
   id: number;
@@ -26,69 +27,66 @@ interface Category {
   description: string;
 }
 
-const data: Category[] = [
-  { id: 1, name: 'Категория 1', description: 'Описание категории 1' },
-  { id: 2, name: 'Категория 2', description: 'Описание категории 2' },
-  { id: 3, name: 'Категория 3', description: 'Описание категории 3' },
-  { id: 4, name: 'Категория 4', description: 'Описание категории 4' },
-  { id: 5, name: 'Категория 5', description: 'Описание категории 5' },
-  { id: 6, name: 'Категория 6', description: 'Описание категории 6' },
-  { id: 7, name: 'Категория 7', description: 'Описание категории 7' },
-  { id: 8, name: 'Категория 8', description: 'Описание категории 8' },
-  { id: 9, name: 'Категория 9', description: 'Описание категории 9' },
-  { id: 10, name: 'Категория 10', description: 'Описание категории 10' },
-  { id: 11, name: 'Категория 11', description: 'Описание категории 11' },
-  { id: 12, name: 'Категория 12', description: 'Описание категории 12' },
-  { id: 13, name: 'Категория 13', description: 'Описание категории 13' },
-  { id: 14, name: 'Категория 14', description: 'Описание категории 14' },
-  { id: 15, name: 'Категория 15', description: 'Описание категории 15' },
-  { id: 16, name: 'Категория 16', description: 'Описание категории 16' },
-  { id: 17, name: 'Категория 17', description: 'Описание категории 17' },
-  { id: 18, name: 'Категория 18', description: 'Описание категории 18' },
-  { id: 19, name: 'Категория 19', description: 'Описание категории 19' },
-  { id: 20, name: 'Категория 20', description: 'Описание категории 20' },
-  { id: 21, name: 'Категория 21', description: 'Описание категории 21' },
-  { id: 22, name: 'Категория 22', description: 'Описание категории 22' },
-  { id: 23, name: 'Категория 23', description: 'Описание категории 23' },
-  { id: 24, name: 'Категория 24', description: 'Описание категории 24' },
-  { id: 25, name: 'Категория 25', description: 'Описание категории 25' },
-  { id: 26, name: 'Категория 26', description: 'Описание категории 26' },
-  { id: 27, name: 'Категория 27', description: 'Описание категории 27' },
-];
-
 const CategorySection = () => {
   const t = useTranslations();
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
+  const { categories, fetchCategories, loading, error } = useSalesStore();
+  const didFetchRef = useRef(false);
+  const [showLoader, setShowLoader] = useState<boolean>(true);
 
-  const [pagination, setPagination] = useState({
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (
+        !didFetchRef.current &&
+        categories.length === 0 &&
+        !loading &&
+        !error
+      ) {
+        didFetchRef.current = true;
+        fetchCategories().catch(err => {
+          console.error('Fetch failed:', err);
+          didFetchRef.current = false;
+        });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const [globalFilter, setGlobalFilter] = React.useState('');
+  const [isOpenCreate, setIsOpenCreate] = React.useState(false);
+  const [isOpenUpdate, setIsOpenUpdate] = React.useState(false);
+  const [updateTitle, setUpdateTitle] = React.useState('');
+  const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 5, // Початковий розмір сторінки
+    pageSize: 5,
   });
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
+  const toggleCreateModal = () => setIsOpenCreate(prev => !prev);
   const toggleUpdateModal = (title = '') => {
     setUpdateTitle(title);
-    setIsOpenUpdate(!isOpenUpdate);
+    setIsOpenUpdate(prev => !prev);
   };
 
+  // Мемоізуємо data, щоб уникнути повторних обчислень
+  const data: Category[] = useMemo(
+    () =>
+      categories.map(category => ({
+        id: category.account_category_id,
+        name: category.account_category_name,
+        description: category.description || '',
+      })),
+    [categories]
+  );
+
+  useEffect(() => {
+    if (categories.length !== 0) {
+      setShowLoader(false);
+    }
+  }, [categories]);
+
   const columns: ColumnDef<Category>[] = [
-    {
-      accessorKey: 'id',
-      header: 'ID',
-    },
-    {
-      accessorKey: 'name',
-      header: t('Category.table.name'),
-    },
-    {
-      accessorKey: 'description',
-      header: t('Category.table.description'),
-    },
+    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'name', header: t('Category.table.name') },
+    { accessorKey: 'description', header: t('Category.table.description') },
     {
       id: 'actions',
       header: t('Category.table.actions'),
@@ -109,10 +107,7 @@ const CategorySection = () => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-      pagination,
-    },
+    state: { globalFilter, pagination },
     onGlobalFilterChange: setGlobalFilter,
     filterFns: {
       global: (row, columnId, filterValue) => {
@@ -124,7 +119,10 @@ const CategorySection = () => {
     onPaginationChange: setPagination,
   });
 
-  const categoryNames = [...new Set(data.map(category => category.name))];
+  const categoryNames = useMemo(
+    () => [...new Set(data.map(category => category.name))],
+    [data]
+  );
 
   return (
     <section className={styles.section}>
@@ -141,6 +139,7 @@ const CategorySection = () => {
         </div>
       </div>
       <div className={styles.table_container}>
+        {showLoader && <Loader error={error} />}
         <table className={styles.table}>
           <thead className={styles.thead}>
             {table.getHeaderGroups().map(headerGroup => (
