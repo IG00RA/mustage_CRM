@@ -22,10 +22,12 @@ type SalesState = {
   loading: boolean;
   error: string | null;
   dateRange: string;
+  yearlyChange: number | null;
   customPeriodLabel: string;
   categories: Category[];
   subcategories: Subcategory[];
   setDateRange: (range: string) => void;
+  setYearlyChange: (change: number) => void;
   setCustomPeriodLabel: (period: string) => void;
   fetchSalesSummary: () => Promise<void>;
   fetchReport: (
@@ -47,10 +49,12 @@ export const useSalesStore = create<SalesState>(set => ({
   chartSales: [],
   loading: false,
   error: null,
+  yearlyChange: null,
   dateRange: 'today',
   customPeriodLabel: '',
   categories: [],
   subcategories: [],
+  setYearlyChange: change => set({ yearlyChange: change }),
   setDateRange: range => set({ dateRange: range }),
   setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
 

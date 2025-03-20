@@ -20,7 +20,6 @@ const SalesChart: React.FC = () => {
   const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
-  const [yearlyChange, setYearlyChange] = useState<number | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
   const {
@@ -28,11 +27,13 @@ const SalesChart: React.FC = () => {
     loading,
     error,
     dateRange,
-    setDateRange,
+    yearlyChange,
     customPeriodLabel,
-    setCustomPeriodLabel,
     categories,
     subcategories,
+    setYearlyChange,
+    setDateRange,
+    setCustomPeriodLabel,
     fetchReport,
     fetchCategories,
     fetchSubcategories,
@@ -72,20 +73,18 @@ const SalesChart: React.FC = () => {
     };
   }, []);
 
-  // Початкове завантаження категорій
   useEffect(() => {
     if (categories.length === 0) {
       fetchCategories();
     }
   }, [categories.length, fetchCategories]);
 
-  // Завантаження підкатегорій при зміні категорії
   useEffect(() => {
     if (selectedCategory) {
       fetchSubcategories(parseInt(selectedCategory));
     } else {
-      fetchSubcategories(); // Завантажуємо всі підкатегорії, якщо категорія не вибрана
-      setSelectedSubcategory(''); // Скидаємо підкатегорію
+      fetchSubcategories();
+      setSelectedSubcategory('');
     }
   }, [selectedCategory, fetchSubcategories]);
 
@@ -205,7 +204,6 @@ const SalesChart: React.FC = () => {
         subcategory_id?: number;
       } = {};
 
-      // Логіка вибору параметрів: підкатегорія має пріоритет
       if (selectedSubcategory) {
         params.subcategory_id = parseInt(selectedSubcategory);
       } else if (selectedCategory) {
@@ -265,20 +263,161 @@ const SalesChart: React.FC = () => {
     [dateParams, selectedCategory, selectedSubcategory, fetchReport]
   );
 
-  // Функція для обчислення відсоткової зміни порівняно з минулим роком
   const fetchYearlyChange = useCallback(async () => {
-    const { todayStr, lastYearDateStr } = dateParams;
+    const {
+      todayStr,
+      yesterdayStr,
+      last7DaysStartStr,
+      startOfMonthStr,
+      startOfQuarterStr,
+      startOfYearStr,
+    } = dateParams;
 
-    // Отримуємо дані за сьогодні
-    await fetchReport('hourly', { date: todayStr });
-    const todaySales = useSalesStore.getState().chartSales;
-    const todayTotalAmount = todaySales.reduce(
+    let currentParams: {
+      date?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {};
+    let lastYearParams: {
+      date?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {};
+    let reportType: 'hourly' | 'daily' | 'monthly' | 'custom' = 'hourly';
+
+    // Визначаємо параметри для поточного періоду та минулого року
+    switch (dateRange) {
+      case 'today':
+        reportType = 'hourly';
+        currentParams = { date: todayStr };
+        lastYearParams = {
+          date: new Date(
+            new Date(todayStr).setFullYear(new Date(todayStr).getFullYear() - 1)
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'yesterday':
+        reportType = 'hourly';
+        currentParams = { date: yesterdayStr };
+        lastYearParams = {
+          date: new Date(
+            new Date(yesterdayStr).setFullYear(
+              new Date(yesterdayStr).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'week':
+        reportType = 'daily';
+        currentParams = { startDate: last7DaysStartStr, endDate: todayStr };
+        lastYearParams = {
+          startDate: new Date(
+            new Date(last7DaysStartStr).setFullYear(
+              new Date(last7DaysStartStr).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+          endDate: new Date(
+            new Date(todayStr).setFullYear(new Date(todayStr).getFullYear() - 1)
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'month':
+        reportType = 'daily';
+        currentParams = { startDate: startOfMonthStr, endDate: todayStr };
+        lastYearParams = {
+          startDate: new Date(
+            new Date(startOfMonthStr).setFullYear(
+              new Date(startOfMonthStr).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+          endDate: new Date(
+            new Date(todayStr).setFullYear(new Date(todayStr).getFullYear() - 1)
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'quarter':
+        reportType = 'daily';
+        currentParams = { startDate: startOfQuarterStr, endDate: todayStr };
+        lastYearParams = {
+          startDate: new Date(
+            new Date(startOfQuarterStr).setFullYear(
+              new Date(startOfQuarterStr).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+          endDate: new Date(
+            new Date(todayStr).setFullYear(new Date(todayStr).getFullYear() - 1)
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'year':
+        reportType = 'monthly';
+        currentParams = { startDate: startOfYearStr, endDate: todayStr };
+        lastYearParams = {
+          startDate: new Date(
+            new Date(startOfYearStr).setFullYear(
+              new Date(startOfYearStr).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+          endDate: new Date(
+            new Date(todayStr).setFullYear(new Date(todayStr).getFullYear() - 1)
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+      case 'custom':
+        reportType = 'custom';
+        currentParams = {
+          startDate: customStartDate.split('.').reverse().join('-'),
+          endDate: customEndDate.split('.').reverse().join('-'),
+        };
+        lastYearParams = {
+          startDate: new Date(
+            new Date(currentParams.startDate!).setFullYear(
+              new Date(currentParams.startDate!).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+          endDate: new Date(
+            new Date(currentParams.endDate!).setFullYear(
+              new Date(currentParams.endDate!).getFullYear() - 1
+            )
+          )
+            .toISOString()
+            .split('T')[0],
+        };
+        break;
+    }
+
+    // Отримуємо дані за поточний період
+    await fetchReport(reportType, currentParams);
+    const currentSales = useSalesStore.getState().chartSales;
+    const currentTotalAmount = currentSales.reduce(
       (sum, sale) => sum + sale.amount,
       0
     );
 
-    // Отримуємо дані за аналогічний день минулого року
-    await fetchReport('hourly', { date: lastYearDateStr });
+    // Отримуємо дані за аналогічний період минулого року
+    await fetchReport(reportType, lastYearParams);
     const lastYearSales = useSalesStore.getState().chartSales;
     const lastYearTotalAmount = lastYearSales.reduce(
       (sum, sale) => sum + sale.amount,
@@ -287,39 +426,45 @@ const SalesChart: React.FC = () => {
 
     // Обчислюємо відсоткову зміну
     if (lastYearTotalAmount === 0) {
-      setYearlyChange(todayTotalAmount > 0 ? 100 : 0); // Якщо минулого року не було продажів
+      setYearlyChange(currentTotalAmount > 0 ? 100 : 0);
     } else {
       const change =
-        ((todayTotalAmount - lastYearTotalAmount) / lastYearTotalAmount) * 100;
-      setYearlyChange(Number(change.toFixed(1))); // Округлюємо до одного знака
+        ((currentTotalAmount - lastYearTotalAmount) / lastYearTotalAmount) *
+        100;
+      setYearlyChange(Number(change.toFixed(1)));
     }
 
-    // Повертаємо дані за сьогодні після обчислення
-    await fetchReport('hourly', { date: todayStr });
-  }, [dateParams, fetchReport]);
+    // Повертаємо дані за поточний період
+    await fetchReport(reportType, currentParams);
+  }, [
+    dateParams,
+    dateRange,
+    customStartDate,
+    customEndDate,
+    fetchReport,
+    setYearlyChange,
+  ]);
 
   const prevDateRangeRef = useRef(dateRange);
 
-  // Початкове завантаження даних і обчислення відсотка
   useEffect(() => {
     if (chartSales.length === 0 && !loading && !error) {
       fetchSalesData('today');
-      fetchYearlyChange(); // Обчислюємо відсоток при першому завантаженні
+      fetchYearlyChange();
     }
   }, [chartSales.length, loading, error, fetchSalesData, fetchYearlyChange]);
 
-  // Оновлення даних при зміні dateRange
   useEffect(() => {
-    if (dateRange !== 'custom' && dateRange !== prevDateRangeRef.current) {
+    if (dateRange !== prevDateRangeRef.current) {
       fetchSalesData(dateRange);
-      if (dateRange === 'today') fetchYearlyChange();
+      fetchYearlyChange(); // Оновлюємо відсоток для нового періоду
       prevDateRangeRef.current = dateRange;
     }
   }, [dateRange, fetchSalesData, fetchYearlyChange]);
 
-  // Оновлення даних при зміні категорії або підкатегорії
   useEffect(() => {
     fetchSalesData(dateRange, customStartDate, customEndDate);
+    if (dateRange === 'custom') fetchYearlyChange(); // Оновлюємо для кастомного періоду
   }, [
     selectedCategory,
     selectedSubcategory,
@@ -327,6 +472,7 @@ const SalesChart: React.FC = () => {
     dateRange,
     customStartDate,
     customEndDate,
+    fetchYearlyChange,
   ]);
 
   const handleDateRangeChange = (newRange: string) => {
@@ -357,7 +503,6 @@ const SalesChart: React.FC = () => {
     { value: 'year', label: 'togglerDataYear' },
   ];
 
-  // Обробник вибору категорії
   const handleCategorySelect = (value: string) => {
     const selectedCat = categories.find(
       cat => cat.account_category_name === value
@@ -365,16 +510,12 @@ const SalesChart: React.FC = () => {
     const newCategoryId = selectedCat
       ? String(selectedCat.account_category_id)
       : '';
-
-    // Якщо категорія змінюється і підкатегорія була обрана, скидаємо підкатегорію
     if (newCategoryId !== selectedCategory && selectedSubcategory) {
       setSelectedSubcategory('');
     }
-
     setSelectedCategory(newCategoryId);
   };
 
-  // Обробник вибору підкатегорії
   const handleSubcategorySelect = (value: string) => {
     const selectedSub = subcategories.find(
       sub => sub.account_subcategory_name === value
@@ -488,7 +629,7 @@ const SalesChart: React.FC = () => {
                 )?.account_category_name || ''
               : t('Statistics.chart.toggler.togglerChooseCategory')
           }
-          onSelect={handleCategorySelect} // Використовуємо новий обробник
+          onSelect={handleCategorySelect}
         />
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerName')}
@@ -504,7 +645,7 @@ const SalesChart: React.FC = () => {
                 )?.account_subcategory_name || ''
               : t('Statistics.chart.toggler.togglerChooseName')
           }
-          onSelect={handleSubcategorySelect} // Використовуємо новий обробник
+          onSelect={handleSubcategorySelect}
         />
       </div>
 
