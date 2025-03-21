@@ -3,10 +3,43 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+// export async function login(formData: FormData) {
+//   const username = formData.get('username');
+//   const password = formData.get('password');
+
+//   if (!username || !password) {
+//     return { error: 'Username and password are required' };
+//   }
+
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_HOST_BACK}/login`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ login: username, password }),
+//     credentials: 'include',
+//   });
+//   console.log(response);
+
+//   if (!response.ok) {
+//     if (response.status === 401) {
+//       return { error: 'Invalid credentials' };
+//     } else if (response.status === 422) {
+//       const errorData = await response.json();
+//       return { error: errorData.detail[0].msg || 'Validation error' };
+//     } else {
+//       return { error: 'Login failed' };
+//     }
+//   }
+
+//   redirect('/ru/dashboard');
+// }
+
 export async function login(formData: FormData) {
   const username = formData.get('username');
   const password = formData.get('password');
 
+  // Базова валідація на сервері
   if (!username || !password) {
     return { error: 'Username and password are required' };
   }
@@ -17,9 +50,7 @@ export async function login(formData: FormData) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ login: username, password }),
-    credentials: 'include', // ✅ Дозволяє браузеру зберігати кукі
   });
-  console.log(response);
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -32,7 +63,19 @@ export async function login(formData: FormData) {
     }
   }
 
-  // ✅ Кукі автоматично збережуться в браузері
+  const data = await response.json();
+  const token = data.access_token;
+
+  // Збереження токену в HTTP-only куках на 30 днів
+  const cookieStore = await cookies();
+  cookieStore.set('access_token', token, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 30 * 24 * 60 * 60,
+  });
+
   redirect('/ru/dashboard');
 }
 

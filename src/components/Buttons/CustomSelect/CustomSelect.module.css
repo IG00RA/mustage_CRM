@@ -64,6 +64,8 @@
   position: absolute;
   z-index: 1;
   width: 100%;
+  max-height: 350px;
+  overflow-y: auto;
   border-radius: 12px;
   background: var(--background);
   box-shadow: 0px 7px 10px 0px rgba(109, 100, 197, 0.1);

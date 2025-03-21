@@ -193,11 +193,16 @@
       "names": "Наименование:",
       "allNames": "Все наименования",
       "status": "Статус продажи:",
-      "allStatus": "Продан",
+      "allStatus": "Все",
+      "statusSOLD": "Продан",
+      "statusNOTSOLD": "Не продан",
+      "statusREPLACED": "Заменен",
       "transfer": "Статус передачи: ",
-      "allTransfer": "Не передан",
+      "allTransfer": "Все",
+      "transferNot": "Не передан",
+      "transferYes": "Передан",
       "seller": "Селлер:",
-      "sellerShop": "Шоп"
+      "sellerAll": "Все"
     },
     "table": {
       "name": "Название",

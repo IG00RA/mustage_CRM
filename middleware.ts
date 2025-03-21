@@ -36,12 +36,11 @@ export function middleware(request: NextRequest) {
     return intlMiddleware(request);
   }
 
-  // Для всіх інших маршрутів перевіряємо наявність токена
-  // if (!token?.value) {
-  //   const locale = request.nextUrl.locale || routing.defaultLocale;
-  //   const loginUrl = new URL(`/${locale}/login`, request.url);
-  //   return NextResponse.redirect(loginUrl);
-  // }
+  if (!token?.value) {
+    const locale = request.nextUrl.locale || routing.defaultLocale;
+    const loginUrl = new URL(`/${locale}/login`, request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 
   // Якщо токен є, передаємо керування next-intl
   return intlMiddleware(request);

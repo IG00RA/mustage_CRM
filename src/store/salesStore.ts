@@ -1,10 +1,25 @@
 import { create } from 'zustand';
-import { Sale } from '@/api/sales/data';
+import { toast } from 'react-toastify';
+
+interface Sale {
+  period: string;
+  amount: number;
+  quantity: number;
+}
 
 interface Category {
   account_category_id: number;
   account_category_name: string;
   description: string | null;
+}
+
+export interface Account {
+  id: number;
+  name: string;
+  category_id: number;
+  subcategory_id?: number;
+  seller_id: number;
+  status: 'SOLD' | 'NOT SOLD' | 'REPLACED';
 }
 
 interface Subcategory {
@@ -14,6 +29,12 @@ interface Subcategory {
   price: number;
   cost_price: number;
   description: string | null;
+}
+
+interface Seller {
+  seller_id: number;
+  seller_name: string;
+  visible_in_bot: boolean;
 }
 
 export type RangeType =
@@ -29,6 +50,8 @@ type ReportType = 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom';
 type SalesState = {
   sales: Sale[];
   chartSales: Sale[];
+  accounts: Account[];
+  sellers: Seller[];
   loading: boolean;
   error: string | null;
   dateRange: RangeType;
@@ -59,11 +82,29 @@ type SalesState = {
     categoryId?: number,
     subcategoryId?: number
   ) => Promise<void>;
+  fetchSellers: (visibleInBot?: boolean) => Promise<void>;
+  fetchAccounts: (params?: {
+    category_id?: number;
+    subcategory_id?: number;
+    status?: 'SOLD' | 'NOT SOLD' | 'REPLACED';
+    seller_id?: number;
+    limit?: number;
+    offset?: number;
+  }) => Promise<void>;
+};
+
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  return undefined;
 };
 
 export const useSalesStore = create<SalesState>(set => ({
   sales: [],
   chartSales: [],
+  accounts: [],
+  sellers: [],
   loading: false,
   error: null,
   yearlyChange: null,
@@ -110,6 +151,7 @@ export const useSalesStore = create<SalesState>(set => ({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
     }
   },
 
@@ -165,6 +207,7 @@ export const useSalesStore = create<SalesState>(set => ({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
       return [];
     }
   },
@@ -177,7 +220,6 @@ export const useSalesStore = create<SalesState>(set => ({
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
         }
       );
       if (!response.ok) throw new Error('Failed to fetch categories');
@@ -188,6 +230,7 @@ export const useSalesStore = create<SalesState>(set => ({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
     }
   },
 
@@ -209,6 +252,107 @@ export const useSalesStore = create<SalesState>(set => ({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
+    }
+  },
+
+  fetchAccounts: async (params = {}) => {
+    set({ loading: true, error: null });
+
+    const accessToken = getCookie('access_token');
+    if (!accessToken) {
+      set({ loading: false, error: 'No access token found' });
+      toast.error('No access token found');
+      return;
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      // Передаємо лише один параметр: subcategory_id має пріоритет над category_id
+      if (params.subcategory_id) {
+        queryParams.append('subcategory_id', String(params.subcategory_id));
+      } else if (params.category_id) {
+        queryParams.append('category_id', String(params.category_id));
+      }
+      if (params.status) queryParams.append('status', params.status);
+      if (params.seller_id)
+        queryParams.append('seller_id', String(params.seller_id));
+      if (params.limit) queryParams.append('limit', String(params.limit));
+      if (params.offset) queryParams.append('offset', String(params.offset));
+
+      const url = `${
+        process.env.NEXT_PUBLIC_HOST_BACK
+      }/accounts?${queryParams.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to fetch accounts');
+      }
+      const rawData = await response.json();
+
+      // Трансформуємо дані у формат Account
+      const data: Account[] = rawData.map((item: any) => ({
+        id: item.account_id,
+        name: item.account_name,
+        category_id: item.subcategory.account_category_id,
+        subcategory_id: item.subcategory.account_subcategory_id,
+        seller_id: item?.seller?.seller_id,
+        status: item.status as 'SOLD' | 'NOT SOLD' | 'REPLACED',
+      }));
+
+      set({ accounts: data, loading: false });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
+    }
+  },
+
+  fetchSellers: async (visibleInBot?: boolean) => {
+    set({ loading: true, error: null });
+    const accessToken = getCookie('access_token');
+    if (!accessToken) {
+      set({ loading: false, error: 'No access token found' });
+      toast.error('No access token found');
+      return;
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      if (visibleInBot !== undefined)
+        queryParams.append('visible_in_bot', String(visibleInBot));
+
+      const url = `${
+        process.env.NEXT_PUBLIC_HOST_BACK
+      }/sellers?${queryParams.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch sellers');
+      const data: Seller[] = await response.json();
+      set({ sellers: data, loading: false });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
     }
   },
 
@@ -424,6 +568,7 @@ export const useSalesStore = create<SalesState>(set => ({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      toast.error(error instanceof Error ? error.message : 'Unknown error');
     }
   },
 }));

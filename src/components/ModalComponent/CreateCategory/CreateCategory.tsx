@@ -22,8 +22,19 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>();
 
+  const getCookie = (name: string): string | undefined => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return undefined;
+  };
+
   const onSubmit = async (data: FormData) => {
-    console.log('Cookies before request:', document.cookie); // Дебаг
+    const accessToken = getCookie('access_token');
+    if (!accessToken) {
+      toast.error(t('Category.modalCreate.errorMessage'));
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -32,17 +43,15 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
           },
-          credentials: 'include',
+          // credentials: 'include',
           body: JSON.stringify({
             name: data.name,
             description: data.description,
           }),
         }
       );
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', [...response.headers.entries()]);
 
       if (!response.ok) {
         const errorText = await response.text();
