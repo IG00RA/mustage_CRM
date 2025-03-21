@@ -86,11 +86,7 @@ const SalesChart: React.FC = () => {
   }, [selectedCategory, fetchSubcategories]);
 
   useEffect(() => {
-    // Викликаємо fetchSalesAndYearlyChange лише якщо дати введено повністю
-    if (
-      dateRange !== 'custom' ||
-      (customStartDate.length === 10 && customEndDate.length === 10)
-    ) {
+    if (dateRange !== 'custom' || customPeriodLabel) {
       useSalesStore
         .getState()
         .fetchSalesAndYearlyChange(
@@ -105,13 +101,7 @@ const SalesChart: React.FC = () => {
           selectedSubcategory ? parseInt(selectedSubcategory) : undefined
         );
     }
-  }, [
-    dateRange,
-    customStartDate,
-    customEndDate,
-    selectedCategory,
-    selectedSubcategory,
-  ]);
+  }, [dateRange, customPeriodLabel, selectedCategory, selectedSubcategory]);
 
   const formatDateInput = (value: string): string => {
     const numbers = value.replace(/\D/g, '').slice(0, 8); // Обрізаємо до 8 цифр (ddmmyyyy)
@@ -168,7 +158,31 @@ const SalesChart: React.FC = () => {
   };
 
   const handleCustomDateInput = (type: 'start' | 'end', value: string) => {
-    const formattedValue = formatDateInput(value);
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
+    let formattedValue = formatDateInput(numbers);
+
+    if (formattedValue.length >= 2) {
+      let [day, month, year] = formattedValue.split('.');
+      if (day && day.length === 2) {
+        const dayNum = parseInt(day);
+        if (dayNum > 31) day = '31';
+        else if (dayNum < 1) day = '01';
+      }
+      if (month && month.length === 2) {
+        const monthNum = parseInt(month);
+        if (monthNum > 12) month = '12';
+        else if (monthNum < 1) month = '01';
+      }
+      if (year && year.length === 4) {
+        const yearNum = parseInt(year);
+        const currentYear = new Date().getFullYear();
+        const maxYear = currentYear;
+        if (yearNum < 2000) year = '2000';
+        else if (yearNum > maxYear) year = String(maxYear);
+      }
+      formattedValue = [day, month, year].filter(Boolean).join('.');
+    }
+
     if (type === 'start') {
       setCustomStartDate(formattedValue);
       if (formattedValue.length === 10 && customEndDate.length === 10) {
