@@ -22,6 +22,19 @@ import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 import { Account, useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
 
+const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
+
+// Default column options
+const settingsOptions = [
+  'AllAccounts.modalUpdate.selects.id',
+  'AllAccounts.modalUpdate.selects.name',
+  'AllAccounts.modalUpdate.selects.category',
+  'AllAccounts.modalUpdate.selects.seller',
+  'AllAccounts.modalUpdate.selects.transfer',
+  'AllAccounts.modalUpdate.selects.data',
+  'AllAccounts.modalUpdate.selects.mega',
+];
+
 const AllAccountsSection = () => {
   const t = useTranslations();
   const {
@@ -56,6 +69,18 @@ const AllAccountsSection = () => {
   });
 
   const [showLoader, setShowLoader] = useState<boolean>(true);
+
+  const [selectedColumns, setSelectedColumns] =
+    useState<string[]>(settingsOptions);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        setSelectedColumns(JSON.parse(saved));
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (accounts.length !== 0) {
@@ -111,73 +136,82 @@ const AllAccountsSection = () => {
     REPLACED: t('AllAccounts.selects.statusREPLACED'),
   };
 
-  const columns: ColumnDef<Account>[] = useMemo(
-    () => [
-      { accessorKey: 'id', header: 'ID' },
-      {
-        accessorKey: 'name',
-        header: t('AllAccounts.modalUpdate.selects.name'),
-      },
-      {
-        accessorKey: 'category_id',
-        header: t('AllAccounts.modalUpdate.selects.category'),
-        cell: ({ row }) =>
-          categoryMap.get(row.original.category_id) || row.original.category_id,
-        filterFn: (row, columnId, filterValue) => {
-          const categoryName = categoryMap.get(row.original.category_id) || '';
+  const columnDataMap: Record<string, (account: Account) => any> = {
+    'AllAccounts.modalUpdate.selects.id': account => account.account_id,
+    'AllAccounts.modalUpdate.selects.name': account => account.account_name,
+    'AllAccounts.modalUpdate.selects.category': account =>
+      account.subcategory?.category?.account_category_name || 'N/A',
+    'AllAccounts.modalUpdate.selects.seller': account =>
+      account.seller?.seller_name || 'N/A',
+    'AllAccounts.modalUpdate.selects.transfer': account => 'Передан', // Заглушка "Передан"
+    'AllAccounts.modalUpdate.selects.data': account => account.account_data,
+    'AllAccounts.modalUpdate.selects.mega': account => account.archive_link,
+  };
+
+  const fieldMap: Record<string, string> = {
+    'AllAccounts.modalUpdate.selects.id': 'account_id',
+    'AllAccounts.modalUpdate.selects.name': 'account_name',
+    'AllAccounts.modalUpdate.selects.category': 'category',
+    'AllAccounts.modalUpdate.selects.seller': 'seller',
+    'AllAccounts.modalUpdate.selects.transfer': 'status',
+    'AllAccounts.modalUpdate.selects.data': 'account_data',
+    'AllAccounts.modalUpdate.selects.mega': 'archive_link',
+  };
+  const columns: ColumnDef<Account>[] = useMemo(() => {
+    return selectedColumns.map(colId => {
+      const field = fieldMap[colId];
+      const column: ColumnDef<Account> = {
+        accessorKey: field,
+        header: t(colId),
+        cell: ({ row }) => {
+          if (colId === 'AllAccounts.modalUpdate.selects.mega') {
+            const link = columnDataMap[colId](row.original);
+            return link ? (
+              <a href={link} target="_blank" rel="noopener noreferrer">
+                {link}
+              </a>
+            ) : (
+              'N/A'
+            );
+          }
+          return columnDataMap[colId](row.original);
+        },
+      };
+
+      if (field === 'category') {
+        column.filterFn = (row, columnId, filterValue) => {
+          const categoryName =
+            row.original.subcategory?.category?.account_category_name || 'N/A';
           return categoryName.toLowerCase().includes(filterValue.toLowerCase());
-        },
-      },
-      {
-        accessorKey: 'seller_id',
-        header: t('AllAccounts.modalUpdate.selects.seller'),
-        cell: ({ row }) =>
-          sellerMap.get(row.original.seller_id) || row.original.seller_id,
-      },
-      {
-        accessorKey: 'status',
-        header: t('AllAccounts.modalUpdate.selects.status'),
-        cell: ({ row }) =>
-          statusMap[row.original.status] || row.original.status,
-        filterFn: (row, columnId, filterValue) => {
-          const rowValue = row.getValue(columnId) as string;
-          return filterValue ? rowValue === filterValue : true;
-        },
-      },
-    ],
-    [t, categoryMap, sellerMap, statusMap]
-  );
+        };
+      } else if (field === 'status') {
+        column.filterFn = (row, columnId, filterValue) => {
+          return filterValue ? row.original.status === filterValue : true;
+        };
+      } else if (field === 'seller') {
+        column.filterFn = (row, columnId, filterValue) => {
+          const sellerId = row.original.seller?.seller_id;
+          return filterValue ? String(sellerId) === String(filterValue) : true;
+        };
+      }
+
+      return column;
+    });
+  }, [selectedColumns, t, columnDataMap]);
 
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Accounts');
-
-    sheet.addRow([
-      'ID',
-      t('AllAccounts.modalUpdate.selects.name'),
-      t('AllAccounts.modalUpdate.selects.category'),
-      t('AllAccounts.modalUpdate.selects.seller'),
-      t('AllAccounts.modalUpdate.selects.status'),
-    ]);
-
+    sheet.addRow(selectedColumns.map(colId => t(colId)));
     table.getFilteredRowModel().rows.forEach(row => {
       const account = row.original;
-      sheet.addRow([
-        account.id,
-        account.name,
-        categoryMap.get(account.category_id) || account.category_id,
-        sellerMap.get(account.seller_id) || account.seller_id,
-        statusMap[account.status] || account.status,
-      ]);
+      sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
     });
-
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-
-    const fileName = 'accounts_report.xlsx';
-    saveAs(blob, fileName);
+    saveAs(blob, 'accounts_report.xlsx');
   };
 
   const categoryOptions = useMemo(
@@ -217,16 +251,13 @@ const AllAccountsSection = () => {
   const columnFilters = useMemo(() => {
     const filters = [];
     if (categoryFilter) {
-      filters.push({ id: 'category_id', value: categoryFilter });
-    }
-    if (selectedStatus) {
-      filters.push({ id: 'status', value: selectedStatus });
+      filters.push({ id: 'category', value: categoryFilter });
     }
     if (selectedSellerId) {
-      filters.push({ id: 'seller_id', value: selectedSellerId });
+      filters.push({ id: 'seller', value: selectedSellerId });
     }
     return filters;
-  }, [categoryFilter, selectedStatus, selectedSellerId]);
+  }, [categoryFilter, selectedSellerId]);
 
   const table = useReactTable({
     data: accounts,
@@ -234,22 +265,41 @@ const AllAccountsSection = () => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-      pagination,
-      columnFilters,
-    },
+    state: { globalFilter, pagination, columnFilters },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
-    filterFns: {
-      global: (row, columnId, filterValue) => {
-        if (!filterValue) return true;
-        const cellValue = String(row.getValue(columnId) ?? '').toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
-      },
+    globalFilterFn: (row, columnId, filterValue) => {
+      // Глобальний пошук (якщо є globalFilter)
+      const searchValue = filterValue?.toLowerCase?.() || '';
+      const matchesSearch =
+        searchValue === '' ||
+        String(row.original.account_id).includes(searchValue) ||
+        row.original.account_name.toLowerCase().includes(searchValue) ||
+        (row.original.subcategory?.category?.account_category_name || '')
+          .toLowerCase()
+          .includes(searchValue) ||
+        (row.original.seller?.seller_name || '')
+          .toLowerCase()
+          .includes(searchValue) ||
+        (row.original.status || '').toLowerCase().includes(searchValue) ||
+        (row.original.account_data || '').toLowerCase().includes(searchValue) ||
+        (row.original.archive_link || '').toLowerCase().includes(searchValue);
+
+      // Фільтр по статусу (якщо є selectedStatus)
+      const matchesStatus = selectedStatus
+        ? row.original.status === selectedStatus
+        : true;
+
+      return matchesSearch && matchesStatus;
     },
   });
+
+  const handleSaveSettings = (newSelectedColumns: string[]) => {
+    setSelectedColumns(newSelectedColumns);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSelectedColumns));
+    setIsOpenEdit(false); // Close modal after saving
+  };
 
   const handleCategorySelect = useCallback(
     (value: string) => {
@@ -393,7 +443,12 @@ const AllAccountsSection = () => {
             text={'Category.searchBtn'}
             options={Array.from(
               new Set(
-                accounts.map(acc => categoryMap.get(acc.category_id) || '')
+                accounts.map(
+                  acc =>
+                    categoryMap.get(
+                      acc.subcategory?.category?.account_category_id
+                    ) || 'N/A'
+                )
               )
             )}
           />
@@ -507,7 +562,11 @@ const AllAccountsSection = () => {
         title="AllAccounts.modalUpdate.title"
         text="AllAccounts.modalUpdate.description"
       >
-        <ViewSettings />
+        <ViewSettings
+          onClose={toggleEditModal}
+          selectedColumns={selectedColumns}
+          onSave={handleSaveSettings}
+        />
       </ModalComponent>
     </section>
   );

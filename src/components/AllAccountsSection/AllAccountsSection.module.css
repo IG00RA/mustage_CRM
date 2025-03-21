@@ -85,6 +85,9 @@
   font-size: var(--fs_small);
   font-weight: 400;
   line-height: 1.57;
+  max-width: 250px;
+  overflow-x: auto;
+  white-space: nowrap;
   &:last-child {
     padding: 9px 16px;
   }

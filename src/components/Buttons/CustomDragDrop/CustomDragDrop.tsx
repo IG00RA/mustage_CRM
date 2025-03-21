@@ -10,21 +10,28 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FC, ReactNode, useState } from 'react';
+import { FC, ReactNode, useState, useEffect } from 'react';
 import Icon from '@/helpers/Icon';
 import { useTranslations } from 'next-intl';
 
 type CustomDragDropProps = {
   settingsOptions: string[];
+  onReorder: (newOrder: string[]) => void;
   children: (id: string) => ReactNode;
 };
 
 export const CustomDragDrop: FC<CustomDragDropProps> = ({
   settingsOptions,
+  onReorder,
   children,
 }) => {
   const t = useTranslations('');
   const [settings, setSettings] = useState(settingsOptions);
+
+  // Синхронізуємо внутрішній стан із settingsOptions при їх зміні
+  useEffect(() => {
+    setSettings(settingsOptions);
+  }, [settingsOptions]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -32,9 +39,13 @@ export const CustomDragDrop: FC<CustomDragDropProps> = ({
 
   const handleDragEnd = ({ active, over }: any) => {
     if (active.id !== over.id) {
-      setSettings(prev =>
-        arrayMove(prev, prev.indexOf(active.id), prev.indexOf(over.id))
+      const newSettings = arrayMove(
+        settings,
+        settings.indexOf(active.id),
+        settings.indexOf(over.id)
       );
+      setSettings(newSettings);
+      onReorder(newSettings); // Оновлюємо батьківський стан
     }
   };
 

@@ -14,11 +14,13 @@ interface Category {
 }
 
 export interface Account {
-  id: number;
-  name: string;
-  category_id: number;
-  subcategory_id?: number;
+  account_id: number;
+  account_name: string;
+  subcategory: Subcategory;
   seller_id: number;
+  seller: Seller;
+  account_data: string;
+  archive_link: string;
   status: 'SOLD' | 'NOT SOLD' | 'REPLACED';
 }
 
@@ -29,6 +31,7 @@ interface Subcategory {
   price: number;
   cost_price: number;
   description: string | null;
+  category: Category;
 }
 
 interface Seller {
@@ -268,7 +271,6 @@ export const useSalesStore = create<SalesState>(set => ({
 
     try {
       const queryParams = new URLSearchParams();
-      // Передаємо лише один параметр: subcategory_id має пріоритет над category_id
       if (params.subcategory_id) {
         queryParams.append('subcategory_id', String(params.subcategory_id));
       } else if (params.category_id) {
@@ -298,14 +300,16 @@ export const useSalesStore = create<SalesState>(set => ({
       }
       const rawData = await response.json();
 
-      // Трансформуємо дані у формат Account
+      // Оновлена трансформація
       const data: Account[] = rawData.map((item: any) => ({
-        id: item.account_id,
-        name: item.account_name,
-        category_id: item.subcategory.account_category_id,
-        subcategory_id: item.subcategory.account_subcategory_id,
-        seller_id: item?.seller?.seller_id,
+        account_id: item.account_id,
+        account_name: item.account_name,
+        subcategory: item.subcategory,
+        seller: item.seller,
+        account_data: item.account_data,
+        archive_link: item.archive_link,
         status: item.status as 'SOLD' | 'NOT SOLD' | 'REPLACED',
+        seller_id: item.seller?.seller_id, // Залишаємо для сумісності, якщо потрібно
       }));
 
       set({ accounts: data, loading: false });
