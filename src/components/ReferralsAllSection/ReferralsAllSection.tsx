@@ -335,7 +335,6 @@ export default function ReferralsAllSection() {
   const [isOpenWithdrawal, setIsOpenWithdrawal] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [selectGeoServer, setSelectGeoServer] = useState('');
-  const [isOpenResult, setIsOpenResult] = useState(false);
   const [isOpenCreate, setIsOpenCreate] = useState(false);
 
   const toggleCreateModal = () => {
@@ -345,7 +344,7 @@ export default function ReferralsAllSection() {
     setIsOpenWithdrawal(!isOpenWithdrawal);
   };
 
-  const toggleUpdateModal = (title = '', titleSecond = '') => {
+  const toggleUpdateModal = () => {
     setIsOpenUpdate(!isOpenUpdate);
   };
 
@@ -365,7 +364,7 @@ export default function ReferralsAllSection() {
     {
       id: 'actions',
       header: t('AutoFarmSection.actions'),
-      cell: ({ row }) => (
+      cell: () => (
         <div className={styles.table_buttons}>
           <WhiteBtn
             onClick={() => toggleUpdateModal()}
@@ -399,7 +398,7 @@ export default function ReferralsAllSection() {
     {
       id: 'actions',
       header: t('AutoFarmSection.action'),
-      cell: ({ row }) => (
+      cell: () => (
         <div className={styles.table_buttons}>
           <WhiteBtn
             onClick={() => toggleWithdrawalModal()}

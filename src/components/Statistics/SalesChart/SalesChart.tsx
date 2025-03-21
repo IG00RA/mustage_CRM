@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
@@ -41,34 +41,6 @@ const SalesChart: React.FC = () => {
       setShowLoader(false);
     }
   }, [chartSales]);
-
-  const dateParams = useMemo(() => {
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const last7DaysStart = new Date(today);
-    last7DaysStart.setDate(today.getDate() - 6);
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const startOfQuarter = new Date(
-      today.getFullYear(),
-      Math.floor(today.getMonth() / 3) * 3,
-      1
-    );
-    const startOfYear = new Date(today.getFullYear(), 0, 1);
-    const lastYearDate = new Date(today);
-    lastYearDate.setFullYear(today.getFullYear() - 1);
-
-    return {
-      todayStr,
-      yesterdayStr: yesterday.toISOString().split('T')[0],
-      last7DaysStartStr: last7DaysStart.toISOString().split('T')[0],
-      startOfMonthStr: startOfMonth.toISOString().split('T')[0],
-      startOfQuarterStr: startOfQuarter.toISOString().split('T')[0],
-      startOfYearStr: startOfYear.toISOString().split('T')[0],
-      lastYearDateStr: lastYearDate.toISOString().split('T')[0],
-    };
-  }, []);
 
   useEffect(() => {
     if (categories.length === 0) {

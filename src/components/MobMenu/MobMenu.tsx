@@ -1,5 +1,3 @@
-import { useTranslations } from 'next-intl';
-// import { menuItems, socialItems } from '@/data/sidebar';
 import styles from './MobMenu.module.css';
 import Icon from '@/helpers/Icon';
 import Link from 'next/link';
@@ -18,7 +16,6 @@ export default function MobMenu({
   closeMenu,
   locale,
 }: MobMenuProps) {
-  const t = useTranslations('');
 
   return (
     <div

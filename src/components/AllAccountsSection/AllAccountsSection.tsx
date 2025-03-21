@@ -24,7 +24,6 @@ import Loader from '../Loader/Loader';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 
-// Default column options
 const settingsOptions = [
   'AllAccounts.modalUpdate.selects.id',
   'AllAccounts.modalUpdate.selects.name',
@@ -69,7 +68,6 @@ export default function AllAccountsSection() {
   });
 
   const [showLoader, setShowLoader] = useState<boolean>(true);
-
   const [selectedColumns, setSelectedColumns] =
     useState<string[]>(settingsOptions);
 
@@ -136,14 +134,17 @@ export default function AllAccountsSection() {
     REPLACED: t('AllAccounts.selects.statusREPLACED'),
   };
 
-  const columnDataMap: Record<string, (account: Account) => any> = {
+  const columnDataMap: Record<
+    string,
+    (account: Account) => string | number | undefined
+  > = {
     'AllAccounts.modalUpdate.selects.id': account => account.account_id,
     'AllAccounts.modalUpdate.selects.name': account => account.account_name,
     'AllAccounts.modalUpdate.selects.category': account =>
       account.subcategory?.category?.account_category_name || 'N/A',
     'AllAccounts.modalUpdate.selects.seller': account =>
       account.seller?.seller_name || 'N/A',
-    'AllAccounts.modalUpdate.selects.transfer': account => 'Передан', // Заглушка "Передан"
+    'AllAccounts.modalUpdate.selects.transfer': () => 'Передан',
     'AllAccounts.modalUpdate.selects.data': account => account.account_data,
     'AllAccounts.modalUpdate.selects.mega': account => account.archive_link,
   };
@@ -157,6 +158,7 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.data': 'account_data',
     'AllAccounts.modalUpdate.selects.mega': 'archive_link',
   };
+
   const columns: ColumnDef<Account>[] = useMemo(() => {
     return selectedColumns.map(colId => {
       const field = fieldMap[colId];
@@ -167,7 +169,11 @@ export default function AllAccountsSection() {
           if (colId === 'AllAccounts.modalUpdate.selects.mega') {
             const link = columnDataMap[colId](row.original);
             return link ? (
-              <a href={link} target="_blank" rel="noopener noreferrer">
+              <a
+                href={link.toString()}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {link}
               </a>
             ) : (
@@ -197,7 +203,7 @@ export default function AllAccountsSection() {
 
       return column;
     });
-  }, [selectedColumns, t, columnDataMap]);
+  }, [selectedColumns, t, columnDataMap, fieldMap]);
 
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -270,7 +276,6 @@ export default function AllAccountsSection() {
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
     globalFilterFn: (row, columnId, filterValue) => {
-      // Глобальний пошук (якщо є globalFilter)
       const searchValue = filterValue?.toLowerCase?.() || '';
       const matchesSearch =
         searchValue === '' ||
@@ -286,7 +291,6 @@ export default function AllAccountsSection() {
         (row.original.account_data || '').toLowerCase().includes(searchValue) ||
         (row.original.archive_link || '').toLowerCase().includes(searchValue);
 
-      // Фільтр по статусу (якщо є selectedStatus)
       const matchesStatus = selectedStatus
         ? row.original.status === selectedStatus
         : true;
@@ -298,7 +302,7 @@ export default function AllAccountsSection() {
   const handleSaveSettings = (newSelectedColumns: string[]) => {
     setSelectedColumns(newSelectedColumns);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSelectedColumns));
-    setIsOpenEdit(false); // Close modal after saving
+    setIsOpenEdit(false);
   };
 
   const handleCategorySelect = useCallback(
@@ -309,10 +313,11 @@ export default function AllAccountsSection() {
       setSelectedCategoryId(
         category ? String(category.account_category_id) : null
       );
-      setSelectedSubcategoryId(null); // Скидаємо підкатегорію при виборі нової категорії
+      setSelectedSubcategoryId(null);
     },
     [categories]
   );
+
   const handleSubcategorySelect = useCallback(
     (value: string) => {
       const subcategory = subcategories.find(
@@ -398,7 +403,7 @@ export default function AllAccountsSection() {
               t('AllAccounts.selects.transferNot'),
             ]}
             selected={''}
-            onSelect={(value: string) => ''}
+            onSelect={() => {}}
             width={508}
             selectWidth={383}
           />

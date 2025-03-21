@@ -203,7 +203,7 @@ export default function UserSection() {
     {
       id: 'actions',
       header: t('Names.table.actions'),
-      cell: ({ row }) => (
+      cell: () => (
         <div className={styles.table_buttons}>
           <WhiteBtn
             onClick={() => editUpdateModal()}

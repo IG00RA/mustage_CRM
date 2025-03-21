@@ -192,7 +192,6 @@ const data: Category[] = [
 export default function DistributionAll() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
 

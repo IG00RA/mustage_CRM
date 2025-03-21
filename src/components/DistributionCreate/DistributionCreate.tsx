@@ -34,7 +34,7 @@ export default function DistributionCreate() {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = () => {
     // setFormData(data);
     toggleConfirmModal();
   };

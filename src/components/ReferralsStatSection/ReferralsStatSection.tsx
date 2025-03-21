@@ -346,10 +346,6 @@ export default function ReferralsStatSection() {
   });
 
   const categoryNames = [...new Set(data.map(category => category.referral))];
-
-  const download = () => {};
-  const add = () => {};
-
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>

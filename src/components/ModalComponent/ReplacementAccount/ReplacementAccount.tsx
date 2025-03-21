@@ -35,7 +35,6 @@ export default function ReplacementAccount({
   const {
     handleSubmit,
     reset,
-    formState: { errors },
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {

@@ -12,6 +12,7 @@ import {
   Filler,
   Tooltip,
   ChartOptions,
+  Plugin,
   TooltipModel,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
@@ -46,26 +47,21 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedName, setSelectedName] = useState('');
 
-  // Відфільтровані дані за вибраним діапазоном
   const filteredSales = useMemo(
     () => filterSalesData(dateRange, salesData),
     [dateRange, salesData]
   );
 
-  // Параметри для бар-чарту:
-  const barWidth = 32; // ширина стовпця
-  const gapWidth = 50; // відстань між стовпцями
-  // Обчислюємо мінімальну ширину внутрішнього контейнера:
+  const barWidth = 32;
+  const gapWidth = 50;
   const chartMinWidth =
     filteredSales.length > 0 ? filteredSales.length * (barWidth + gapWidth) : 0;
 
-  // Розрахунок максимуму для осі y (використовується для відображення фіксованих міток)
   const maxValue = useMemo(() => {
     const values = filteredSales.map(sale => sale[dataType]);
     return values.length > 0 ? Math.max(...values) : 0;
   }, [filteredSales, dataType]);
 
-  // Генеруємо набір міток для y-осі (наприклад, 5 інтервалів)
   const tickCount = 5;
   const tickValues = useMemo(() => {
     const ticks = [];
@@ -75,12 +71,18 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     return ticks;
   }, [maxValue]);
 
-  const customTooltip = {
-    enabled: false, // Вимикаємо стандартний tooltip
-    external: (context: {
-      chart: ChartJS;
-      tooltip: TooltipModel<'bar' | 'line'>;
-    }) => {
+  const customTooltip: Plugin<'bar' | 'line'> = {
+    id: 'customTooltip',
+    afterDraw: () => {
+      return undefined; // Явний return для уникнення помилки unused-expressions
+    },
+    beforeTooltipDraw: () => {
+      return false; // Уже виправлено у вашому коді
+    },
+    afterTooltipDraw: (
+      chart: ChartJS,
+      args: { tooltip: TooltipModel<'bar' | 'line'> }
+    ) => {
       let tooltipEl = document.getElementById('custom-tooltip');
       const chartContainer = document.getElementById('chart-container');
 
@@ -88,18 +90,19 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         tooltipEl = document.createElement('div');
         tooltipEl.id = 'custom-tooltip';
         tooltipEl.classList.add(styles.custom_tooltip);
-        chartContainer && chartContainer.appendChild(tooltipEl);
+        if (chartContainer) {
+          chartContainer.appendChild(tooltipEl); // Виправлено в попередньому запиті
+        }
       }
 
-      const tooltipModel = context.tooltip;
+      const tooltipModel = args.tooltip;
 
-      // Якщо tooltip не має контенту або вийшли за межі графіка - приховати
       if (!tooltipModel || !tooltipModel.body || tooltipModel.opacity === 0) {
         tooltipEl.style.opacity = '0';
         return;
       }
 
-      const position = context.chart.canvas.getBoundingClientRect();
+      const position = chart.canvas.getBoundingClientRect();
       const dataPoint = tooltipModel.dataPoints[0];
 
       tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${dataPoint.raw}</span>`;
@@ -114,7 +117,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     },
   };
 
-  const commonOptions: ChartOptions<'bar' | 'line'> = {
+  const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -122,11 +125,13 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
       y: { grid: { display: true }, ticks: { display: false } },
     },
     plugins: {
-      tooltip: customTooltip,
+      tooltip: {
+        enabled: false,
+      },
     },
   };
 
-  const lineOptions = {
+  const lineOptions: ChartOptions<'line'> = {
     ...commonOptions,
     elements: {
       point: { radius: 0 },
@@ -134,14 +139,14 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     },
   };
 
-  const barOptions = {
+  const barOptions: ChartOptions<'bar'> = {
     ...commonOptions,
   };
 
   const dataset = {
     data: filteredSales.map(sale => sale[dataType]),
     backgroundColor: chartType === 'bar' ? '#AEBBFF' : '#5672ff10',
-    hoverBackgroundColor: '#5671ff', // Колір при наведенні
+    hoverBackgroundColor: '#5671ff',
     borderColor: '#AEBBFF',
     borderRadius: 5,
     ...(chartType === 'bar'
@@ -154,10 +159,6 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     datasets: [dataset],
   };
 
-  // Вибір налаштувань залежно від типу графіка
-  const options = chartType === 'bar' ? barOptions : lineOptions;
-
-  // Хук для експорту даних у Excel
   const exportToExcel = useExportToExcel({ sales: filteredSales, dateRange });
 
   const dateRangeOptions = [
@@ -167,14 +168,13 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
     { value: 'month', label: 'month' },
     { value: 'quarter', label: 'quarter' },
     { value: 'year', label: 'year' },
-    { value: 'custom', label: 'allTime', icon: true },
+    { value: 'custom', label: 'allTime' },
   ];
 
   return (
     <div className={styles.chart_wrap} id="chart-container">
       <h3 className={styles.chart_header}>{t('ReferralsStat.chart.header')}</h3>
 
-      {/* Тоглери для вибору типу даних та діапазону дат */}
       <div className={styles.chart_togglers_wrap}>
         <div className={styles.chart_toggler_block}>
           <span className={styles.chart_toggler_label}>
@@ -205,7 +205,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
             {t('Statistics.chart.toggler.togglerData')}
           </span>
           <div className={styles.chart_toggler_buttons}>
-            {dateRangeOptions.map(({ value, label, icon }) => (
+            {dateRangeOptions.map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => setDateRange(value)}
@@ -273,9 +273,17 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
             }}
           >
             {chartType === 'bar' ? (
-              <Bar data={chartData} options={options} />
+              <Bar
+                data={chartData}
+                options={barOptions}
+                plugins={[customTooltip]}
+              />
             ) : (
-              <Line data={chartData} options={options} />
+              <Line
+                data={chartData}
+                options={lineOptions}
+                plugins={[customTooltip]}
+              />
             )}
           </div>
         </div>

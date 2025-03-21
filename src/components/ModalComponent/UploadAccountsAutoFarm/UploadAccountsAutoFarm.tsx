@@ -32,6 +32,8 @@ export default function UploadAccountsAutoFarm() {
 
   const [settings, setSettings] = useState(settingsOptions);
 
+console.log(setSettings);
+
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >({});

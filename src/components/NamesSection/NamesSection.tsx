@@ -40,12 +40,6 @@ interface Subcategory {
   description: string | null;
 }
 
-interface Category {
-  account_category_id: number;
-  account_category_name: string;
-  description: string | null;
-}
-
 export default function NamesSection() {
   const t = useTranslations();
   const {

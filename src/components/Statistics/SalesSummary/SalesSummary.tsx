@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from '../Statistics.module.css';
 import { Sale } from '@/api/sales/data';
-import { useSalesStore } from '@/store/salesStore';
 
 interface SalesSummaryProps {
   salesData: Sale[];

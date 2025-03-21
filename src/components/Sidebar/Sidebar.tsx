@@ -85,7 +85,7 @@ export default function Sidebar() {
           </div>
         </div>
         <form
-          action={async (formData: FormData) => {
+          action={async () => {
             await logout();
           }}
         >

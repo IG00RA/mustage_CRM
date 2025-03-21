@@ -56,43 +56,6 @@ const ChartDisplay: React.FC<ChartDisplayProps> = memo(
       return ticks;
     }, [maxValue]);
 
-    const customTooltip = {
-      enabled: false,
-      external: (context: {
-        chart: ChartJS;
-        tooltip: TooltipModel<'bar' | 'line'>;
-      }) => {
-        let tooltipEl = document.getElementById('custom-tooltip');
-        const chartContainer = document.getElementById('chart-container');
-
-        if (!tooltipEl) {
-          tooltipEl = document.createElement('div');
-          tooltipEl.id = 'custom-tooltip';
-          tooltipEl.classList.add(styles.custom_tooltip);
-          chartContainer && chartContainer.appendChild(tooltipEl);
-        }
-
-        const tooltipModel = context.tooltip;
-        if (!tooltipModel || !tooltipModel.body || tooltipModel.opacity === 0) {
-          tooltipEl.style.opacity = '0';
-          return;
-        }
-
-        const position = context.chart.canvas.getBoundingClientRect();
-        const dataPoint = tooltipModel.dataPoints[0];
-        const formattedValue = formatAmount(dataPoint.raw as number);
-
-        tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${formattedValue}</span>`;
-        tooltipEl.style.opacity = '1';
-        tooltipEl.style.left = `${
-          position.left + window.pageXOffset + tooltipModel.caretX
-        }px`;
-        tooltipEl.style.top = `${
-          position.top + window.pageYOffset + tooltipModel.caretY - 44
-        }px`;
-      },
-    };
-
     const commonOptions: ChartOptions<'bar' | 'line'> = {
       responsive: true,
       maintainAspectRatio: false,
@@ -100,14 +63,60 @@ const ChartDisplay: React.FC<ChartDisplayProps> = memo(
         x: { grid: { display: false } },
         y: { grid: { display: true }, ticks: { display: false } },
       },
-      plugins: { tooltip: customTooltip },
+      plugins: {
+        tooltip: {
+          enabled: false,
+          external: (context: {
+            chart: ChartJS;
+            tooltip: TooltipModel<'bar' | 'line'>;
+          }) => {
+            let tooltipEl = document.getElementById('custom-tooltip');
+            const chartContainer = document.getElementById('chart-container');
+
+            if (!tooltipEl) {
+              tooltipEl = document.createElement('div');
+              tooltipEl.id = 'custom-tooltip';
+              tooltipEl.classList.add(styles.custom_tooltip);
+              if (chartContainer) {
+                chartContainer.appendChild(tooltipEl); // Явний виклик appendChild
+              }
+            }
+
+            const tooltipModel = context.tooltip;
+            if (
+              !tooltipModel ||
+              !tooltipModel.body ||
+              tooltipModel.opacity === 0
+            ) {
+              tooltipEl.style.opacity = '0';
+              return;
+            }
+
+            const position = context.chart.canvas.getBoundingClientRect();
+            const dataPoint = tooltipModel.dataPoints[0];
+            const formattedValue = formatAmount(dataPoint.raw as number);
+
+            tooltipEl.innerHTML = `<p>${dataPoint.label}</p><div></div><span>${formattedValue}</span>`;
+            tooltipEl.style.opacity = '1';
+            tooltipEl.style.left = `${
+              position.left + window.pageXOffset + tooltipModel.caretX
+            }px`;
+            tooltipEl.style.top = `${
+              position.top + window.pageYOffset + tooltipModel.caretY - 44
+            }px`;
+          },
+        },
+      },
     };
 
-    const lineOptions = {
+    const lineOptions: ChartOptions<'line'> = {
       ...commonOptions,
       elements: { point: { radius: 0 }, line: { tension: 0.3 } },
     };
-    const barOptions = { ...commonOptions };
+
+    const barOptions: ChartOptions<'bar'> = {
+      ...commonOptions,
+    };
 
     const dataset = {
       data: chartSales.map(sale => sale[dataType]),
@@ -125,16 +134,14 @@ const ChartDisplay: React.FC<ChartDisplayProps> = memo(
       datasets: [dataset],
     };
 
-    const options = chartType === 'bar' ? barOptions : lineOptions;
-
     return (
       <div className={styles.chart_wrapper}>
-        <div className={styles.chart_container}>
+        <div className={styles.chart_container} id="chart-container">
           <div className={styles.chart_box} style={{ minWidth: chartMinWidth }}>
             {chartType === 'bar' ? (
-              <Bar data={chartData} options={options} />
+              <Bar data={chartData} options={barOptions} />
             ) : (
-              <Line data={chartData} options={options} />
+              <Line data={chartData} options={lineOptions} />
             )}
           </div>
         </div>

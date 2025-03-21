@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useTransition } from 'react'; // Додаємо useTransition
+import { useActionState, useTransition } from 'react';
 import { login } from '@/actions/auth';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -9,21 +9,29 @@ import { toast } from 'react-toastify';
 import styles from './LoginForm.module.css';
 import logo from '@/img/logo.svg';
 
+// Визначаємо тип для стану форми
+type FormState = {
+  error: string | null;
+};
+
 export default function LoginForm() {
   const t = useTranslations();
 
-  // Стан для збереження значення логіну
   const [usernameValue, setUsernameValue] = useState('');
-  // Стан для відстеження завантаження
   const [isPending, startTransition] = useTransition();
 
-  // Обгортка для Server Action
-  const wrappedLogin = async (state: { error: any }, formData: FormData) => {
+  // Оновлюємо типізацію wrappedLogin
+  const wrappedLogin = async (
+    state: FormState,
+    formData: FormData
+  ): Promise<FormState> => {
     const result = await login(formData);
     return result;
   };
 
-  const [state, formAction] = useActionState(wrappedLogin, { error: null });
+  const [state, formAction] = useActionState(wrappedLogin, {
+    error: null,
+  } as FormState);
 
   useEffect(() => {
     if (state?.error) {
@@ -45,7 +53,7 @@ export default function LoginForm() {
         <h2 className={styles.header}>{t('LoginForm.loginHeader')}</h2>
         <h4 className={styles.header_text}>{t('LoginForm.loginText')}</h4>
         <form
-          action={formData => startTransition(() => formAction(formData))} // Використовуємо useTransition
+          action={formData => startTransition(() => formAction(formData))}
           className={styles.form}
         >
           <label htmlFor="username" className={styles.label}>
@@ -57,8 +65,8 @@ export default function LoginForm() {
             id="username"
             name="username"
             placeholder={t('LoginForm.placeholder')}
-            value={usernameValue} // Контролюємо значення
-            onChange={e => setUsernameValue(e.target.value)} // Оновлюємо стан
+            value={usernameValue}
+            onChange={e => setUsernameValue(e.target.value)}
             required
           />
           <label htmlFor="password" className={styles.label}>

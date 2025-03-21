@@ -291,7 +291,7 @@ export default function PromoCodeSection() {
     {
       id: 'actions',
       header: t('Names.table.actions'),
-      cell: ({ row }) => (
+      cell: () => (
         <div className={styles.table_buttons}>
           <WhiteBtn
             // onClick={() => toggleUpdateModal(row.original.name)}
@@ -332,9 +332,6 @@ export default function PromoCodeSection() {
   });
 
   const categoryNames = [...new Set(data.map(category => category.promoName))];
-
-  const download = () => {};
-  const add = () => {};
 
   return (
     <section className={styles.section}>

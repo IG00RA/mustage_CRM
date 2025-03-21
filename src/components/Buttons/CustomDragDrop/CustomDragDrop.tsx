@@ -7,12 +7,12 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  DragEndEvent,
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FC, ReactNode, useState, useEffect } from 'react';
 import Icon from '@/helpers/Icon';
-import { useTranslations } from 'next-intl';
 
 type CustomDragDropProps = {
   settingsOptions: string[];
@@ -20,15 +20,13 @@ type CustomDragDropProps = {
   children: (id: string) => ReactNode;
 };
 
-export default function SubmitBtn({
+export default function CustomDragDrop({
   settingsOptions,
   onReorder,
   children,
 }: CustomDragDropProps) {
-  const t = useTranslations('');
   const [settings, setSettings] = useState(settingsOptions);
 
-  // Синхронізуємо внутрішній стан із settingsOptions при їх зміні
   useEffect(() => {
     setSettings(settingsOptions);
   }, [settingsOptions]);
@@ -37,16 +35,18 @@ export default function SubmitBtn({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  const handleDragEnd = ({ active, over }: any) => {
-    if (active.id !== over.id) {
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    // Перевіряємо, чи over не null і чи ідентифікатори різні
+    if (over && active.id !== over.id) {
       const newSettings = arrayMove(
         settings,
-        settings.indexOf(active.id),
-        settings.indexOf(over.id)
+        settings.indexOf(active.id as string),
+        settings.indexOf(over.id as string)
       );
       setSettings(newSettings);
-      onReorder(newSettings); // Оновлюємо батьківський стан
+      onReorder(newSettings);
     }
+    // Якщо over === null, нічого не робимо
   };
 
   const SortableItem: FC<{ id: string; children: ReactNode }> = ({

@@ -36,7 +36,6 @@ export default function LoadAccountsConfirm({
   const {
     handleSubmit,
     reset,
-    formState: { errors },
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {

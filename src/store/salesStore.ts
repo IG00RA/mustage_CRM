@@ -40,6 +40,23 @@ interface Seller {
   visible_in_bot: boolean;
 }
 
+// Новий тип для даних звіту
+interface ReportData {
+  total_amount: number;
+  sales_count: number;
+}
+
+// Новий тип для необроблених даних аккаунта
+interface RawAccount {
+  account_id: number;
+  account_name: string;
+  subcategory: Subcategory;
+  seller: Seller;
+  account_data: string;
+  archive_link: string;
+  status: 'SOLD' | 'NOT SOLD' | 'REPLACED';
+}
+
 export type RangeType =
   | 'today'
   | 'yesterday'
@@ -196,9 +213,14 @@ export const useSalesStore = create<SalesState>(set => ({
         }
       );
       if (!response.ok) throw new Error(`Failed to fetch ${reportType} report`);
-      const data = await response.json();
+
+      // Отримуємо дані з явною типізацією
+      const rawData = await response.json();
+      // Визначаємо data як об'єкт із ключами типу string і значеннями типу ReportData
+      const data: { [key: string]: ReportData } = rawData;
+
       const sales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, any]) => ({
+        ([period, report]: [string, ReportData]) => ({
           period,
           amount: report.total_amount,
           quantity: report.sales_count,
@@ -300,16 +322,15 @@ export const useSalesStore = create<SalesState>(set => ({
       }
       const rawData = await response.json();
 
-      // Оновлена трансформація
-      const data: Account[] = rawData.map((item: any) => ({
+      const data: Account[] = rawData.map((item: RawAccount) => ({
         account_id: item.account_id,
         account_name: item.account_name,
         subcategory: item.subcategory,
         seller: item.seller,
         account_data: item.account_data,
         archive_link: item.archive_link,
-        status: item.status as 'SOLD' | 'NOT SOLD' | 'REPLACED',
-        seller_id: item.seller?.seller_id, // Залишаємо для сумісності, якщо потрібно
+        status: item.status,
+        seller_id: item.seller.seller_id,
       }));
 
       set({ accounts: data, loading: false });
