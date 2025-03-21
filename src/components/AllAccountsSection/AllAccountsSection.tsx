@@ -1,5 +1,7 @@
 'use client';
 
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import styles from './AllAccountsSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -18,7 +20,6 @@ import ModalComponent from '../ModalComponent/ModalComponent';
 import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 import { Account, useSalesStore } from '@/store/salesStore';
-import { toast } from 'react-toastify';
 import Loader from '../Loader/Loader';
 
 const AllAccountsSection = () => {
@@ -36,7 +37,7 @@ const AllAccountsSection = () => {
   } = useSalesStore();
 
   const [globalFilter, setGlobalFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState(''); // Додано для фільтра category_id
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
@@ -113,10 +114,13 @@ const AllAccountsSection = () => {
   const columns: ColumnDef<Account>[] = useMemo(
     () => [
       { accessorKey: 'id', header: 'ID' },
-      { accessorKey: 'name', header: t('AllAccounts.table.name') },
+      {
+        accessorKey: 'name',
+        header: t('AllAccounts.modalUpdate.selects.name'),
+      },
       {
         accessorKey: 'category_id',
-        header: t('AllAccounts.table.category'),
+        header: t('AllAccounts.modalUpdate.selects.category'),
         cell: ({ row }) =>
           categoryMap.get(row.original.category_id) || row.original.category_id,
         filterFn: (row, columnId, filterValue) => {
@@ -126,13 +130,13 @@ const AllAccountsSection = () => {
       },
       {
         accessorKey: 'seller_id',
-        header: t('AllAccounts.table.seller'),
+        header: t('AllAccounts.modalUpdate.selects.seller'),
         cell: ({ row }) =>
           sellerMap.get(row.original.seller_id) || row.original.seller_id,
       },
       {
         accessorKey: 'status',
-        header: t('AllAccounts.table.status'),
+        header: t('AllAccounts.modalUpdate.selects.status'),
         cell: ({ row }) =>
           statusMap[row.original.status] || row.original.status,
         filterFn: (row, columnId, filterValue) => {
@@ -144,8 +148,36 @@ const AllAccountsSection = () => {
     [t, categoryMap, sellerMap, statusMap]
   );
 
-  const exportToExcel = () => {
-    console.log('Exporting to Excel:', accounts);
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Accounts');
+
+    sheet.addRow([
+      'ID',
+      t('AllAccounts.modalUpdate.selects.name'),
+      t('AllAccounts.modalUpdate.selects.category'),
+      t('AllAccounts.modalUpdate.selects.seller'),
+      t('AllAccounts.modalUpdate.selects.status'),
+    ]);
+
+    table.getFilteredRowModel().rows.forEach(row => {
+      const account = row.original;
+      sheet.addRow([
+        account.id,
+        account.name,
+        categoryMap.get(account.category_id) || account.category_id,
+        sellerMap.get(account.seller_id) || account.seller_id,
+        statusMap[account.status] || account.status,
+      ]);
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    const fileName = 'accounts_report.xlsx';
+    saveAs(blob, fileName);
   };
 
   const categoryOptions = useMemo(

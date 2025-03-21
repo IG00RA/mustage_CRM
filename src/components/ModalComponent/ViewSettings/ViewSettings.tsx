@@ -26,7 +26,7 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.name',
   'AllAccounts.modalUpdate.selects.category',
   'AllAccounts.modalUpdate.selects.seller',
-  'AllAccounts.modalUpdate.selects.given',
+  'AllAccounts.modalUpdate.selects.status',
   'AllAccounts.modalUpdate.selects.data',
   'AllAccounts.modalUpdate.selects.mega',
 ];
@@ -78,11 +78,11 @@ export default function ViewSettings() {
         <label className={styles.label}>{t('Names.modalCreate.format')}</label>
         <CustomButtonsInput
           buttons={[
-            'id',
-            t('AllAccounts.table.name'),
-            t('AllAccounts.table.category'),
-            t('AllAccounts.table.seller'),
-            t('AllAccounts.table.status'),
+            t('AllAccounts.modalUpdate.selects.id'),
+            t('AllAccounts.modalUpdate.selects.name'),
+            t('AllAccounts.modalUpdate.selects.category'),
+            t('AllAccounts.modalUpdate.selects.seller'),
+            t('AllAccounts.modalUpdate.selects.status'),
           ]}
         />
 
