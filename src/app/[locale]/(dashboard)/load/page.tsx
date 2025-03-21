@@ -1,5 +1,5 @@
 import LoadSection from '@/components/LoadSection/LoadSection';
 
-export default function names() {
+export default function Load() {
   return <LoadSection />;
 }

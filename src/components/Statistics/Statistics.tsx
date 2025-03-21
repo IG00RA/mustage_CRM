@@ -6,7 +6,7 @@ import styles from './Statistics.module.css';
 import SalesSummary from './SalesSummary/SalesSummary';
 import SalesChart from './SalesChart/SalesChart';
 
-const Statistics = () => {
+export default function Statistics() {
   const { sales, fetchSalesSummary } = useSalesStore();
 
   useEffect(() => {
@@ -19,6 +19,4 @@ const Statistics = () => {
       <SalesChart />
     </section>
   );
-};
-
-export default Statistics;
+}

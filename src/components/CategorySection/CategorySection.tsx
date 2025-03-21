@@ -27,7 +27,7 @@ interface Category {
   description: string;
 }
 
-const CategorySection = () => {
+export default function CategorySection() {
   const t = useTranslations();
   const { categories, fetchCategories, loading, error } = useSalesStore();
   const didFetchRef = useRef(false);
@@ -247,6 +247,4 @@ const CategorySection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default CategorySection;
+}

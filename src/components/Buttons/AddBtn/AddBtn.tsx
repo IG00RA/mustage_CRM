@@ -12,13 +12,13 @@ interface ButtonProps {
   type?: 'submit' | 'button';
 }
 
-const AddBtn: React.FC<ButtonProps> = ({
+export default function AddBtn({
   text,
   icon,
   iconFill,
   onClick,
   type = 'button',
-}) => {
+}: ButtonProps) {
   const t = useTranslations();
 
   return (
@@ -38,6 +38,4 @@ const AddBtn: React.FC<ButtonProps> = ({
       {t(text)}
     </button>
   );
-};
-
-export default AddBtn;
+}

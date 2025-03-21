@@ -20,11 +20,11 @@ type CustomDragDropProps = {
   children: (id: string) => ReactNode;
 };
 
-export const CustomDragDrop: FC<CustomDragDropProps> = ({
+export default function SubmitBtn({
   settingsOptions,
   onReorder,
   children,
-}) => {
+}: CustomDragDropProps) {
   const t = useTranslations('');
   const [settings, setSettings] = useState(settingsOptions);
 
@@ -90,4 +90,4 @@ export const CustomDragDrop: FC<CustomDragDropProps> = ({
       </SortableContext>
     </DndContext>
   );
-};
+}

@@ -23,7 +23,7 @@ import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import CreateNames from '../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../ModalComponent/EditNames/EditNames';
 import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
@@ -46,7 +46,7 @@ interface Category {
   description: string | null;
 }
 
-const NamesSection = () => {
+export default function NamesSection() {
   const t = useTranslations();
   const {
     subcategories,
@@ -412,6 +412,4 @@ const NamesSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default NamesSection;
+}

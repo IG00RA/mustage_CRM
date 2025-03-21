@@ -1,5 +1,5 @@
 import AllAccounts from '@/components/AllAccountsSection/AllAccountsSection';
 
-export default function all_accounts() {
+export default function All_accounts() {
   return <AllAccounts />;
 }

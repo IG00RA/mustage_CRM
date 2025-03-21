@@ -3,7 +3,7 @@
 import styles from './DBSettings.module.css';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
@@ -17,7 +17,7 @@ type FormData = {
   defaultValue: string;
 };
 
-const DBSettings = () => {
+export default function DBSettings() {
   const t = useTranslations();
 
   const {
@@ -131,6 +131,4 @@ const DBSettings = () => {
       </form>
     </section>
   );
-};
-
-export default DBSettings;
+}

@@ -5,11 +5,9 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 
 type FormData = {
   columnName: string;
@@ -20,8 +18,6 @@ export default function CreateReferral() {
   const t = useTranslations('');
 
   const [selectCategory, setSelectCategory] = useState('');
-  const [selectNames, setSelectNames] = useState('');
-  const [settings, setSettings] = useState('PromoCodeSection.modal.check');
 
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
@@ -45,10 +41,6 @@ export default function CreateReferral() {
     console.log('Form Data:', data);
     toast.success(t('DBSettings.form.okMessage'));
     reset();
-  };
-
-  const toggleCreateName = () => {
-    toast.success(t('DBSettings.form.okMessage'));
   };
 
   return (

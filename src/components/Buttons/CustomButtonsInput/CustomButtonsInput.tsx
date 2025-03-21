@@ -8,10 +8,10 @@ interface CustomButtonsInputProps {
   onRemove: (label: string) => void; // Новий пропс для зняття чекбокса
 }
 
-const CustomButtonsInput: React.FC<CustomButtonsInputProps> = ({
+export default function CustomButtonsInput({
   buttons,
   onRemove,
-}) => {
+}: CustomButtonsInputProps) {
   return (
     <div className={styles.container}>
       {buttons.map(btn => (
@@ -33,6 +33,4 @@ const CustomButtonsInput: React.FC<CustomButtonsInputProps> = ({
       ))}
     </div>
   );
-};
-
-export default CustomButtonsInput;
+}

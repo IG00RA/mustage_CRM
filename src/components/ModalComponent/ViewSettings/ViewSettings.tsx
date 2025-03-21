@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useEffect, useMemo } from 'react';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
-import { CustomDragDrop } from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
+import CustomDragDrop from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
 
 interface ViewSettingsProps {
   onClose: () => void;

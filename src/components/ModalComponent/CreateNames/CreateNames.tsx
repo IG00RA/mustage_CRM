@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
-import { CustomDragDrop } from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
+import CustomDragDrop from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
 import { useTranslations } from 'next-intl';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
@@ -136,7 +136,7 @@ export default function CreateNames() {
         <label className={styles.label}>
           {t('Names.modalCreate.settings')}
         </label>
-        <CustomDragDrop settingsOptions={settingsOptions}>
+        <CustomDragDrop settingsOptions={settingsOptions} onReorder={() => {}}>
           {id => (
             <CustomCheckbox
               checked={checkedSettings[id] || false}
@@ -152,6 +152,7 @@ export default function CreateNames() {
       <div className={styles.field}>
         <label className={styles.label}>{t('Names.modalCreate.format')}</label>
         <CustomButtonsInput
+          onRemove={() => {}}
           buttons={[
             'id',
             t('AllAccounts.table.name'),

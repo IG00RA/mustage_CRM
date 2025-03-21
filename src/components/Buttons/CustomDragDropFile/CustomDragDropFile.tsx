@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from 'react';
 import styles from './CustomDragDropFile.module.css';
-import { X } from 'lucide-react';
 import Icon from '@/helpers/Icon';
 import { useTranslations } from 'next-intl';
 
@@ -11,10 +10,10 @@ interface CustomDragDropFileProps {
   onFileUpload?: (file: File) => void;
 }
 
-const CustomDragDropFile: React.FC<CustomDragDropFileProps> = ({
+export default function CustomDragDropFile({
   acceptedExtensions,
   onFileUpload,
-}) => {
+}: CustomDragDropFileProps) {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,6 +129,4 @@ const CustomDragDropFile: React.FC<CustomDragDropFileProps> = ({
       {error && <p className={styles.error}>{error}</p>}
     </div>
   );
-};
-
-export default CustomDragDropFile;
+}

@@ -1,5 +1,5 @@
 import CategorySection from '@/components/CategorySection/CategorySection';
 
-export default function category() {
+export default function Category() {
   return <CategorySection />;
 }

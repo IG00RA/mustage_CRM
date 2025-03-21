@@ -17,7 +17,7 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 import { Account, useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
@@ -35,7 +35,7 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.mega',
 ];
 
-const AllAccountsSection = () => {
+export default function AllAccountsSection() {
   const t = useTranslations();
   const {
     accounts,
@@ -570,6 +570,4 @@ const AllAccountsSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default AllAccountsSection;
+}

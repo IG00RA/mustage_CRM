@@ -14,7 +14,6 @@ export default function SearchResult() {
   const t = useTranslations('');
 
   const {
-    register,
     handleSubmit,
     reset,
     formState: { errors },

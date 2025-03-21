@@ -2,7 +2,7 @@
 
 import styles from './RemoveSaleSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -16,11 +16,7 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
-import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
-import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import SearchResult from '../ModalComponent/SearchResult/SearchResult';
 
 interface Table {
@@ -104,7 +100,7 @@ const data: Table[] = [
   },
 ];
 
-const RemoveSaleSection = () => {
+export default function RemoveSaleSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenResult, setIsOpenResult] = useState(false);
@@ -170,7 +166,6 @@ const RemoveSaleSection = () => {
 
   const categoryNames = [...new Set(data.map(category => category.name))];
 
-  const download = () => {};
   const add = () => {};
 
   return (
@@ -338,6 +333,4 @@ const RemoveSaleSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default RemoveSaleSection;
+}

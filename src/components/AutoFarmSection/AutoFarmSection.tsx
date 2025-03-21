@@ -12,9 +12,7 @@ import {
 } from '@tanstack/react-table';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
-import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmModal';
 import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
@@ -360,7 +358,8 @@ const data: Category[] = [
     statusUpdated: '17.10.2024 15:00',
   },
 ];
-const AutoFarmSection = () => {
+
+export default function AutoFarmSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenEditType, setIsOpenEditType] = useState(false);
@@ -726,6 +725,4 @@ const AutoFarmSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default AutoFarmSection;
+}

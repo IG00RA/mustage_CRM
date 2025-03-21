@@ -1,5 +1,5 @@
 import RemoveSaleSection from '@/components/RemoveSaleSection/RemoveSaleSection';
 
-export default function Db_settings() {
+export default function RemoveSalePage() {
   return <RemoveSaleSection />;
 }

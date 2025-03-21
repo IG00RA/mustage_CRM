@@ -9,11 +9,11 @@ interface ButtonProps {
   type?: 'submit' | 'button';
 }
 
-const SubmitBtn: React.FC<ButtonProps> = ({
+export default function SubmitBtn({
   text,
   onClick,
   type = 'submit',
-}) => {
+}: ButtonProps) {
   const t = useTranslations();
 
   return (
@@ -21,6 +21,4 @@ const SubmitBtn: React.FC<ButtonProps> = ({
       {t(text)}
     </button>
   );
-};
-
-export default SubmitBtn;
+}

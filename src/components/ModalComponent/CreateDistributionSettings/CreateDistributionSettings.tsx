@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useState } from 'react';
 
 type FormData = {
@@ -36,6 +36,16 @@ export default function CreateDistributionSettings() {
 
   const toggleCreateName = () => {
     toast.success(t('DBSettings.form.okMessage'));
+  };
+
+  const handleRemoveButton = () => {
+    // const id = settingsOptions.find(id => t(id) === label);
+    // if (id) {
+    //   setCheckedSettings(prev => ({
+    //     ...prev,
+    //     [id]: false,
+    //   }));
+    // }
   };
 
   return (
@@ -133,7 +143,10 @@ export default function CreateDistributionSettings() {
         <label className={styles.label}>
           {t('DistributionSettings.modalCreate.nameDistribution')}
         </label>
-        <CustomButtonsInput buttons={['Facebook UA-фарм 7-дней - 10 шт.']} />
+        <CustomButtonsInput
+          buttons={['Facebook UA-фарм 7-дней - 10 шт.']}
+          onRemove={handleRemoveButton}
+        />
         {errors.displayName && (
           <p className={styles.error}>{errors.displayName.message}</p>
         )}

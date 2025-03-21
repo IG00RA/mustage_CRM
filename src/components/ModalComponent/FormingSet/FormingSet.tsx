@@ -3,12 +3,8 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './FormingSet.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
-import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
-import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 
 type FormData = {
   nameField: string;
@@ -19,14 +15,9 @@ type FormData = {
   settings: string[];
 };
 
-const settingsOptions = ['Upload.modalUpload.check'];
-
 export default function FormingSet() {
   const t = useTranslations('');
 
-  const [selectCategory, setSelectCategory] = useState('');
-
-  const [settings, setSettings] = useState(settingsOptions);
   const {
     register,
     handleSubmit,
@@ -38,21 +29,6 @@ export default function FormingSet() {
     console.log('Form Data:', data);
     toast.success(t('DBSettings.form.okMessage'));
     reset();
-  };
-
-  const [checkedSettings, setCheckedSettings] = useState<
-    Record<string, boolean>
-  >({});
-
-  const toggleCheckbox = (id: string) => {
-    setCheckedSettings(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleFileUpload = (file: File) => {
-    console.log('Завантажений файл:', file);
   };
 
   return (

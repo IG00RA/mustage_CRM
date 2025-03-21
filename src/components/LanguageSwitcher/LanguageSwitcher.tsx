@@ -8,7 +8,9 @@ interface LanguageSwitcherProps {
   headerStyle: boolean;
 }
 
-const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ headerStyle }) => {
+export default function LanguageSwitcher({
+  headerStyle,
+}: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState<string>('');
@@ -65,6 +67,4 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ headerStyle }) => {
       </button>
     </div>
   );
-};
-
-export default LanguageSwitcher;
+}

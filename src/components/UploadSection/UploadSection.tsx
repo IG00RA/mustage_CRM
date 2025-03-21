@@ -3,17 +3,12 @@
 import styles from './UploadSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
-import AddBtn from '../Buttons/AddBtn/AddBtn';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
-import { toast } from 'react-toastify';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import UploadAccounts from '../ModalComponent/UploadAccounts/UploadAccounts';
 import FormingSet from '../ModalComponent/FormingSet/FormingSet';
 
-const UploadSection = () => {
+export default function UploadSection() {
   const t = useTranslations();
 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
@@ -28,7 +23,6 @@ const UploadSection = () => {
   };
 
   const download = () => {};
-  const add = () => {};
 
   return (
     <section className={styles.section}>
@@ -70,6 +64,4 @@ const UploadSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default UploadSection;
+}

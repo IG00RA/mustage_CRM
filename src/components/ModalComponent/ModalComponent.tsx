@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState, ReactNode, useEffect } from 'react';
+import {  ReactNode, useEffect } from 'react';
 import Modal from 'react-modal';
 import styles from './ModalComponent.module.css';
 import Icon from '@/helpers/Icon';

@@ -3,9 +3,8 @@
 import styles from './LoadSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import CustomCheckbox from '../Buttons/CustomCheckbox/CustomCheckbox';
@@ -22,7 +21,7 @@ type FormData = {
 
 const settingsOptions = ['Load.check'];
 
-const LoadSection = () => {
+export default function LoadSection() {
   const t = useTranslations();
 
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -33,10 +32,11 @@ const LoadSection = () => {
   const [selectNames, setSelectNames] = useState('');
   const [settings, setSettings] = useState(settingsOptions);
 
+  console.log(setSettings);
+
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<FormData>();
 
@@ -220,6 +220,4 @@ const LoadSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default LoadSection;
+}

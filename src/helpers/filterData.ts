@@ -1,9 +1,9 @@
 import { Sale } from '@/api/sales/data';
 
-export const filterSalesData = (
+export default function filterSalesData(
   dateRange: string,
   salesData: Sale[]
-): Sale[] => {
+): Sale[] {
   switch (dateRange) {
     case 'today':
       return salesData.filter(
@@ -60,4 +60,4 @@ export const filterSalesData = (
     default:
       return salesData;
   }
-};
+}

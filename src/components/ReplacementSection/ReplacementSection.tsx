@@ -4,7 +4,7 @@ import styles from './ReplacementSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import CustomCheckbox from '../Buttons/CustomCheckbox/CustomCheckbox';
@@ -103,7 +103,7 @@ const data: Table[] = [
 
 const settingsOptions = ['ReplacementSection.check'];
 
-const ReplacementSection = () => {
+export default function ReplacementSection() {
   const t = useTranslations();
 
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -114,10 +114,12 @@ const ReplacementSection = () => {
   const [selectNames, setSelectNames] = useState('');
   const [settings, setSettings] = useState(settingsOptions);
 
+  console.log(globalFilter);
+  console.log(setSettings);
+
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<FormData>();
 
@@ -282,6 +284,4 @@ const ReplacementSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default ReplacementSection;
+}

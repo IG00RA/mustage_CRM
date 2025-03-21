@@ -2,7 +2,7 @@
 
 import styles from './UserSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -16,12 +16,6 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
-import CreateNames from '../ModalComponent/CreateNames/CreateNames';
-import EditNames from '../ModalComponent/EditNames/EditNames';
-import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
-import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
 import CreateUser from '../ModalComponent/CreateUser/CreateUser';
 import UserRoles from '../ModalComponent/UserRoles/UserRoles';
 
@@ -169,32 +163,22 @@ const data: Category[] = [
   },
 ];
 
-const UserSection = () => {
+export default function UserSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
-    useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
-  const [selectCategory, setSelectCategory] = useState('');
+  useState(false);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5, // Початковий розмір сторінки
   });
 
-  const toggleAddNamesDescription = () => {
-    setIsOpenAddNamesDescription(!isOpenAddNamesDescription);
-  };
-
   const toggleCreateModal = () => {
     setIsOpenCreate(!isOpenCreate);
   };
-  const toggleCreateNamesSet = () => {
-    setIsOpenCreateNamesSet(!isOpenCreateNamesSet);
-  };
+
   const editUpdateModal = () => {
     toggleUpdateModal();
   };
@@ -369,6 +353,4 @@ const UserSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default UserSection;
+}

@@ -9,11 +9,11 @@ interface ButtonProps {
   type?: 'submit' | 'button';
 }
 
-const CancelBtn: React.FC<ButtonProps> = ({
+export default function CancelBtn({
   text,
   onClick,
   type = 'button',
-}) => {
+}: ButtonProps) {
   const t = useTranslations();
 
   return (
@@ -21,6 +21,4 @@ const CancelBtn: React.FC<ButtonProps> = ({
       {t(text)}
     </button>
   );
-};
-
-export default CancelBtn;
+}

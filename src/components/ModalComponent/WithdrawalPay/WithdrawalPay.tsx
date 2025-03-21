@@ -3,24 +3,8 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './WithdrawalPay.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
-import {
-  DndContext,
-  closestCenter,
-  useSensor,
-  useSensors,
-  PointerSensor,
-} from '@dnd-kit/core';
-import { SortableContext, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { FC } from 'react';
-import { UseFormRegister } from 'react-hook-form';
-import Icon from '@/helpers/Icon';
-import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
-import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 
 type FormData = {
@@ -34,8 +18,6 @@ type FormData = {
 
 export default function WithdrawalPay() {
   const t = useTranslations('');
-
-  const [selectCategory, setSelectCategory] = useState('');
 
   const {
     register,

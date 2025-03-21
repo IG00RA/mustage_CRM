@@ -137,6 +137,7 @@ export default function CreateNamesSet() {
               iconFill="icon-add-color"
             />
             <CustomButtonsInput
+              onRemove={() => {}}
               buttons={['Facebook UA-фарм 7-дней - 10 шт.']}
             />
           </div>

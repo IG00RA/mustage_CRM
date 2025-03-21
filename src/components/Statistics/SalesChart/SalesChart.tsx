@@ -7,7 +7,7 @@ import styles from './SalesChart.module.css';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import { RangeType, useSalesStore } from '@/store/salesStore';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import ChartDisplay from './ChartDisplay';
 import Loader from '@/components/Loader/Loader';
 

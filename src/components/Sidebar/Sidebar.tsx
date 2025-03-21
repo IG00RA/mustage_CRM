@@ -18,7 +18,7 @@ import {
 } from '@/data/sidebar';
 import { useEffect, useState } from 'react';
 
-const Sidebar = () => {
+export default function Sidebar() {
   const t = useTranslations();
   const pathname = usePathname();
 
@@ -409,6 +409,4 @@ const Sidebar = () => {
       </nav>
     </aside>
   );
-};
-
-export default Sidebar;
+}

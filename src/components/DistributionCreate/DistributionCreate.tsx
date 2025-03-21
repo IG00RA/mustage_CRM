@@ -3,13 +3,10 @@
 import styles from './DistributionCreate.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '../Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
-import CustomCheckbox from '../Buttons/CustomCheckbox/CustomCheckbox';
-import LoadAccountsConfirm from '../ModalComponent/LoadAccountsConfirm/LoadAccountsConfirm';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import UploadAccountsLack from '../ModalComponent/UploadAccountsLack/UploadAccountsLack';
 
@@ -22,41 +19,36 @@ type FormData = {
   settings: string[];
 };
 
-const settingsOptions = ['Load.check'];
-
-const DistributionCreate = () => {
+export default function DistributionCreate() {
   const t = useTranslations();
 
-  const [formData, setFormData] = useState<FormData | null>(null);
+  // const [formData, setFormData] = useState<FormData | null>(null);
 
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
 
-  const [selectCategory, setSelectCategory] = useState('');
   const [selectNames, setSelectNames] = useState('');
-  const [settings, setSettings] = useState(settingsOptions);
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
-    setFormData(data);
+    // setFormData(data);
     toggleConfirmModal();
   };
 
-  const [checkedSettings, setCheckedSettings] = useState<
-    Record<string, boolean>
-  >({});
+  // const [checkedSettings, setCheckedSettings] = useState<
+  //   Record<string, boolean>
+  // >({});
 
-  const toggleCheckbox = (id: string) => {
-    setCheckedSettings(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  // const toggleCheckbox = (id: string) => {
+  //   setCheckedSettings(prev => ({
+  //     ...prev,
+  //     [id]: !prev[id],
+  //   }));
+  // };
 
   const toggleConfirmModal = () => {
     setIsOpenConfirm(!isOpenConfirm);
@@ -164,6 +156,4 @@ const DistributionCreate = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default DistributionCreate;
+}

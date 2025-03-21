@@ -1,5 +1,5 @@
 import NamesSection from '@/components/NamesSection/NamesSection';
 
-export default function names() {
+export default function Names() {
   return <NamesSection />;
 }

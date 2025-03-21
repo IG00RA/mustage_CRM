@@ -9,7 +9,7 @@ import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 
 type FormData = {
   columnName: string;
@@ -22,6 +22,8 @@ export default function CreatePromoCode() {
   const [selectCategory, setSelectCategory] = useState('');
   const [selectNames, setSelectNames] = useState('');
   const [settings, setSettings] = useState('PromoCodeSection.modal.check');
+
+  console.log(setSettings);
 
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
@@ -171,6 +173,7 @@ export default function CreatePromoCode() {
               iconFill="icon-add-color"
             />
             <CustomButtonsInput
+              onRemove={() => {}}
               buttons={['Facebook UA-фарм 7-дней - 10 шт.']}
             />
           </div>
@@ -191,6 +194,7 @@ export default function CreatePromoCode() {
               iconFill="icon-add-color"
             />
             <CustomButtonsInput
+              onRemove={() => {}}
               buttons={['Facebook UA-фарм 7-дней - 10 шт.']}
             />
           </div>

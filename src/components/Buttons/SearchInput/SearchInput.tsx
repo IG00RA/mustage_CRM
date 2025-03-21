@@ -12,12 +12,12 @@ interface SearchInputProps {
   options: string[];
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({
+export default function SearchInput({
   onSearch,
   text,
   width,
   options,
-}) => {
+}: SearchInputProps) {
   const t = useTranslations();
   const [query, setQuery] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
@@ -93,6 +93,4 @@ const SearchInput: React.FC<SearchInputProps> = ({
       )}
     </div>
   );
-};
-
-export default SearchInput;
+}

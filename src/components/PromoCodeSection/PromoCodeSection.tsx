@@ -2,7 +2,7 @@
 
 import styles from './PromoCodeSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -16,12 +16,7 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
-import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
-import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
-import SearchResult from '../ModalComponent/SearchResult/SearchResult';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import CreatePromoCode from '../ModalComponent/CreatePromoCode/CreatePromoCode';
 
 interface Category {
@@ -252,7 +247,7 @@ const data: Category[] = [
   },
 ];
 
-const PromoCodeSection = () => {
+export default function PromoCodeSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenResult, setIsOpenResult] = useState(false);
@@ -477,6 +472,4 @@ const PromoCodeSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default PromoCodeSection;
+}

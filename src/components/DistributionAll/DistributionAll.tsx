@@ -2,7 +2,7 @@
 
 import styles from './DistributionAll.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -11,18 +11,12 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import AddBtn from '../Buttons/AddBtn/AddBtn';
-import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
-import EditCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
-import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
-import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 
 interface Category {
   id: number;
@@ -195,7 +189,7 @@ const data: Category[] = [
     creationDate: '14.03.2025 22:00',
   },
 ];
-const DistributionAll = () => {
+export default function DistributionAll() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
@@ -209,9 +203,6 @@ const DistributionAll = () => {
     pageSize: 5, // Початковий розмір сторінки
   });
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
   const toggleUpdateModal = (title = '') => {
     setUpdateTitle(title);
     setIsOpenUpdate(!isOpenUpdate);
@@ -388,6 +379,4 @@ const DistributionAll = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default DistributionAll;
+}

@@ -1,5 +1,5 @@
 import ReplacementSection from '@/components/ReplacementSection/ReplacementSection';
 
-export default function Db_settings() {
+export default function Replacement() {
   return <ReplacementSection />;
 }

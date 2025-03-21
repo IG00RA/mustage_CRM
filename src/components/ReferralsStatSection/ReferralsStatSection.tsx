@@ -3,7 +3,6 @@
 import { useSalesStore } from '@/store/salesStore';
 import styles from './ReferralsStatSection.module.css';
 import SalesChart from './SalesChart/SalesChart';
-import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import {
@@ -14,7 +13,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import Icon from '@/helpers/Icon';
@@ -277,7 +276,7 @@ const data: Category[] = [
   },
 ];
 
-const ReferralsStatSection = () => {
+export default function ReferralsStatSection() {
   const salesData = useSalesStore(state => state.sales);
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
@@ -502,6 +501,4 @@ const ReferralsStatSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default ReferralsStatSection;
+}

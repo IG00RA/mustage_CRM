@@ -11,19 +11,17 @@ import {
   Title,
   Filler,
   Tooltip,
-  TooltipItem,
   ChartOptions,
   TooltipModel,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
-import { filterSalesData } from '@/helpers/filterData';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
-import Icon from '@/helpers/Icon';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import styles from './SalesChart.module.css';
 import { Sale } from '@/api/sales/data';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
+import filterSalesData from '@/helpers/filterData';
 
 ChartJS.register(
   CategoryScale,

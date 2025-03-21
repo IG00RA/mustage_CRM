@@ -2,7 +2,7 @@
 
 import styles from './DistributionSettings.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -12,13 +12,10 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
-import { toast } from 'react-toastify';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
-import EditCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
 import CancelBtn from '../Buttons/CancelBtn/CancelBtn';
 import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
 import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
@@ -99,7 +96,8 @@ const data: Category[] = [
     last: '12.09.2024 12:00',
   },
 ];
-const DistributionSettings = () => {
+
+export default function DistributionSettings() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
@@ -303,6 +301,4 @@ const DistributionSettings = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default DistributionSettings;
+}

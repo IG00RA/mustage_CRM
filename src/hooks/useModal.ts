@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 
-export function useModal() {
+export default function useModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<ReactNode | null>(null);
   const [title, setTitle] = useState<string>('');

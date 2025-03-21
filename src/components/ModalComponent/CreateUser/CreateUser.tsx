@@ -8,11 +8,10 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
-import { CustomDragDrop } from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
 import { useTranslations } from 'next-intl';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 
 type FormData = {
@@ -149,7 +148,10 @@ export default function CreateUser() {
         <label className={styles.label}>
           {t('UserSection.modalCreate.distributionNames')}
         </label>
-        <CustomButtonsInput buttons={['Facebook UA-фарм 7-дней']} />
+        <CustomButtonsInput
+          onRemove={() => {}}
+          buttons={['Facebook UA-фарм 7-дней']}
+        />
 
         {errors.settings && (
           <p className={styles.error}>{errors.settings.message}</p>

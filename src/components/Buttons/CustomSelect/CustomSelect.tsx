@@ -13,14 +13,14 @@ interface SelectProps {
   selectWidth?: string | number;
 }
 
-export const CustomSelect = ({
+export default function CustomSelect({
   options,
   selected,
   onSelect,
   label,
   width,
   selectWidth,
-}: SelectProps) => {
+}: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
@@ -86,4 +86,4 @@ export const CustomSelect = ({
       </div>
     </div>
   );
-};
+}

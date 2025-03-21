@@ -1,5 +1,5 @@
 import Upload from '@/components/UploadSection/UploadSection';
 
-export default function Db_settings() {
+export default function UploadPage() {
   return <Upload />;
 }

@@ -1,5 +1,5 @@
 import DistributionSettings from '@/components/DistributionSettings/DistributionSettings';
 
-export default function Db_settings() {
+export default function Distribution() {
   return <DistributionSettings />;
 }

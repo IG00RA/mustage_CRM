@@ -12,14 +12,8 @@ import {
 } from '@tanstack/react-table';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateDistributionSettings from '../ModalComponent/CreateDistributionSettings/CreateDistributionSettings';
-import UploadNamesDistribution from '../ModalComponent/UploadNamesDistribution/UploadNamesDistribution';
-import { CustomSelect } from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
-import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmModal';
-import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
-import ReplenishmentAccountsFarm from '../ModalComponent/ReplenishmentAccountsFarm/ReplenishmentAccountsFarm';
-import EditServerFarmModal from '../ModalComponent/EditServerFarmModal/EditServerFarmModal';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import CreateReferral from '../ModalComponent/CreateReferral/CreateReferral';
 import WithdrawalPay from '../ModalComponent/WithdrawalPay/WithdrawalPay';
@@ -335,11 +329,9 @@ const data: Category[] = [
     name: 'Twitter UA-автофарм 30-дней',
   },
 ];
-const ReferralsAllSection = () => {
+export default function ReferralsAllSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenEditType, setIsOpenEditType] = useState(false);
-  const [isOpenServer, setIsOpenServer] = useState(false);
   const [isOpenWithdrawal, setIsOpenWithdrawal] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [selectGeoServer, setSelectGeoServer] = useState('');
@@ -447,10 +439,6 @@ const ReferralsAllSection = () => {
     columns: serverColumns,
     getCoreRowModel: getCoreRowModel(),
   });
-
-  const toggleResultModal = () => {
-    setIsOpenResult(!isOpenResult);
-  };
 
   const categoryNames = [...new Set(data.map(category => category.fullName))];
 
@@ -598,6 +586,4 @@ const ReferralsAllSection = () => {
       </ModalComponent>
     </section>
   );
-};
-
-export default ReferralsAllSection;
+}

@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import styles from './ReplacementAccount.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 type FormData = {
@@ -33,7 +33,6 @@ export default function ReplacementAccount({
   const t = useTranslations('');
 
   const {
-    register,
     handleSubmit,
     reset,
     formState: { errors },

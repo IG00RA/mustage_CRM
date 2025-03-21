@@ -4,7 +4,6 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { CustomSelect } from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useState } from 'react';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 
