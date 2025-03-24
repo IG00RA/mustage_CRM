@@ -11,6 +11,7 @@ interface SelectProps {
   label?: string;
   width?: string | number;
   selectWidth?: string | number;
+  minSelectWidth?: string | number;
 }
 
 export default function CustomSelect({
@@ -20,6 +21,7 @@ export default function CustomSelect({
   label,
   width,
   selectWidth,
+  minSelectWidth,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,7 @@ export default function CustomSelect({
 
       <div
         className={styles.select_container}
-        style={{ maxWidth: selectWidth }}
+        style={{ maxWidth: selectWidth, minWidth: minSelectWidth }}
         ref={selectRef}
       >
         <div

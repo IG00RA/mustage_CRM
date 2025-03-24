@@ -10,7 +10,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
@@ -61,12 +60,11 @@ export default function AllAccountsSection() {
     'SOLD' | 'NOT SOLD' | 'REPLACED' | null
   >(null);
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
-
+  const [totalRows, setTotalRows] = useState<number>(0); // Додано для зберігання total_rows
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
   });
-
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [selectedColumns, setSelectedColumns] =
     useState<string[]>(settingsOptions);
@@ -74,31 +72,64 @@ export default function AllAccountsSection() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (saved) {
-        setSelectedColumns(JSON.parse(saved));
-      }
+      if (saved) setSelectedColumns(JSON.parse(saved));
     }
   }, []);
 
   useEffect(() => {
-    if (accounts.length !== 0) {
-      setShowLoader(false);
-    }
+    if (accounts.length !== 0) setShowLoader(false);
   }, [accounts]);
 
+  // Завантаження початкових даних
   useEffect(() => {
-    fetchCategories();
-    fetchSubcategories();
-    fetchSellers();
-    fetchAccounts({
-      limit: 100,
-      offset: 0,
-    });
-  }, [fetchCategories, fetchSubcategories, fetchSellers, fetchAccounts]);
+    const loadInitialData = async () => {
+      await fetchCategories();
+      await fetchSubcategories();
+      await fetchSellers();
+      const { total_rows } = await fetchAccounts({
+        limit: pagination.pageSize, // Початковий запит на 5
+        offset: 0,
+      });
+      setTotalRows(total_rows);
+    };
+    loadInitialData();
+  }, [
+    fetchCategories,
+    fetchSubcategories,
+    fetchSellers,
+    fetchAccounts,
+    pagination.pageSize,
+  ]);
 
-  const toggleEditModal = useCallback(() => {
-    setIsOpenEdit(prev => !prev);
-  }, []);
+  // Оновлення даних при зміні фільтрів або пагінації
+  useEffect(() => {
+    const loadAccounts = async () => {
+      const { total_rows } = await fetchAccounts({
+        subcategory_id: selectedSubcategoryId
+          ? Number(selectedSubcategoryId)
+          : undefined,
+        category_id:
+          !selectedSubcategoryId && selectedCategoryId
+            ? Number(selectedCategoryId)
+            : undefined,
+        status: selectedStatus as 'SOLD' | 'NOT SOLD' | 'REPLACED' | undefined,
+        seller_id: selectedSellerId ? Number(selectedSellerId) : undefined,
+        limit: pagination.pageSize,
+        offset: pagination.pageIndex * pagination.pageSize,
+      });
+      setTotalRows(total_rows);
+    };
+    loadAccounts();
+  }, [
+    selectedCategoryId,
+    selectedSubcategoryId,
+    selectedStatus,
+    selectedSellerId,
+    pagination,
+    fetchAccounts,
+  ]);
+
+  const toggleEditModal = useCallback(() => setIsOpenEdit(prev => !prev), []);
 
   const categoryMap = useMemo(
     () =>
@@ -110,7 +141,6 @@ export default function AllAccountsSection() {
       ),
     [categories]
   );
-
   const subcategoryMap = useMemo(
     () =>
       new Map(
@@ -121,13 +151,11 @@ export default function AllAccountsSection() {
       ),
     [subcategories]
   );
-
   const sellerMap = useMemo(
     () =>
       new Map(sellers.map(seller => [seller.seller_id, seller.seller_name])),
     [sellers]
   );
-
   const statusMap = {
     SOLD: t('AllAccounts.selects.statusSOLD'),
     'NOT SOLD': t('AllAccounts.selects.statusNOTSOLD'),
@@ -141,7 +169,7 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.id': account => account.account_id,
     'AllAccounts.modalUpdate.selects.name': account => account.account_name,
     'AllAccounts.modalUpdate.selects.category': account =>
-      account.subcategory?.category?.account_category_name || 'N/A',
+      categoryMap.get(account.subcategory?.account_category_id) || 'N/A',
     'AllAccounts.modalUpdate.selects.seller': account =>
       account.seller?.seller_name || 'N/A',
     'AllAccounts.modalUpdate.selects.transfer': () => 'Передан',
@@ -183,27 +211,25 @@ export default function AllAccountsSection() {
           return columnDataMap[colId](row.original);
         },
       };
-
       if (field === 'category') {
         column.filterFn = (row, columnId, filterValue) => {
           const categoryName =
-            row.original.subcategory?.category?.account_category_name || 'N/A';
+            categoryMap.get(row.original.subcategory?.account_category_id) ||
+            'N/A';
           return categoryName.toLowerCase().includes(filterValue.toLowerCase());
         };
       } else if (field === 'status') {
-        column.filterFn = (row, columnId, filterValue) => {
-          return filterValue ? row.original.status === filterValue : true;
-        };
+        column.filterFn = (row, columnId, filterValue) =>
+          filterValue ? row.original.status === filterValue : true;
       } else if (field === 'seller') {
         column.filterFn = (row, columnId, filterValue) => {
           const sellerId = row.original.seller?.seller_id;
           return filterValue ? String(sellerId) === String(filterValue) : true;
         };
       }
-
       return column;
     });
-  }, [selectedColumns, t, columnDataMap, fieldMap]);
+  }, [selectedColumns, t, columnDataMap, fieldMap, categoryMap]);
 
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -227,7 +253,6 @@ export default function AllAccountsSection() {
     ],
     [categories, t]
   );
-
   const subcategoryOptions = useMemo(
     () => [
       t('AllAccounts.selects.allNames'),
@@ -235,7 +260,6 @@ export default function AllAccountsSection() {
     ],
     [subcategories, t]
   );
-
   const statusOptions = useMemo(
     () => [
       t('AllAccounts.selects.allStatus'),
@@ -245,7 +269,6 @@ export default function AllAccountsSection() {
     ],
     [t]
   );
-
   const sellerOptions = useMemo(
     () => [
       t('AllAccounts.selects.sellerAll'),
@@ -256,12 +279,9 @@ export default function AllAccountsSection() {
 
   const columnFilters = useMemo(() => {
     const filters = [];
-    if (categoryFilter) {
-      filters.push({ id: 'category', value: categoryFilter });
-    }
-    if (selectedSellerId) {
+    if (categoryFilter) filters.push({ id: 'category', value: categoryFilter });
+    if (selectedSellerId)
       filters.push({ id: 'seller', value: selectedSellerId });
-    }
     return filters;
   }, [categoryFilter, selectedSellerId]);
 
@@ -269,7 +289,6 @@ export default function AllAccountsSection() {
     data: accounts,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     state: { globalFilter, pagination, columnFilters },
     onGlobalFilterChange: setGlobalFilter,
@@ -277,24 +296,22 @@ export default function AllAccountsSection() {
     autoResetPageIndex: false,
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = filterValue?.toLowerCase?.() || '';
+      const categoryName =
+        categoryMap.get(row.original.subcategory?.account_category_id) || 'N/A';
       const matchesSearch =
         searchValue === '' ||
         String(row.original.account_id).includes(searchValue) ||
         row.original.account_name.toLowerCase().includes(searchValue) ||
-        (row.original.subcategory?.category?.account_category_name || '')
-          .toLowerCase()
-          .includes(searchValue) ||
+        categoryName.toLowerCase().includes(searchValue) ||
         (row.original.seller?.seller_name || '')
           .toLowerCase()
           .includes(searchValue) ||
         (row.original.status || '').toLowerCase().includes(searchValue) ||
         (row.original.account_data || '').toLowerCase().includes(searchValue) ||
         (row.original.archive_link || '').toLowerCase().includes(searchValue);
-
       const matchesStatus = selectedStatus
         ? row.original.status === selectedStatus
         : true;
-
       return matchesSearch && matchesStatus;
     },
   });
@@ -353,29 +370,6 @@ export default function AllAccountsSection() {
     },
     [sellers]
   );
-
-  useEffect(() => {
-    fetchAccounts({
-      subcategory_id: selectedSubcategoryId
-        ? Number(selectedSubcategoryId)
-        : undefined,
-      category_id:
-        !selectedSubcategoryId && selectedCategoryId
-          ? Number(selectedCategoryId)
-          : undefined,
-      status: selectedStatus as 'SOLD' | 'NOT SOLD' | 'REPLACED' | undefined,
-      seller_id: selectedSellerId ? Number(selectedSellerId) : undefined,
-      limit: pagination.pageSize,
-      offset: pagination.pageIndex * pagination.pageSize,
-    });
-  }, [
-    selectedCategoryId,
-    selectedSubcategoryId,
-    selectedStatus,
-    selectedSellerId,
-    pagination,
-    fetchAccounts,
-  ]);
 
   return (
     <section className={styles.section}>
@@ -450,9 +444,8 @@ export default function AllAccountsSection() {
               new Set(
                 accounts.map(
                   acc =>
-                    categoryMap.get(
-                      acc.subcategory?.category?.account_category_id
-                    ) || 'N/A'
+                    categoryMap.get(acc.subcategory?.account_category_id) ||
+                    'N/A'
                 )
               )
             )}
@@ -510,11 +503,10 @@ export default function AllAccountsSection() {
               className={styles.pagination_select}
               value={pagination.pageSize}
               onChange={e =>
-                setPagination(prev => ({
-                  ...prev,
+                setPagination({
                   pageSize: Number(e.target.value),
                   pageIndex: 0,
-                }))
+                })
               }
             >
               {[5, 10, 20].map(size => (
@@ -527,16 +519,20 @@ export default function AllAccountsSection() {
               {pagination.pageIndex * pagination.pageSize + 1}-
               {Math.min(
                 (pagination.pageIndex + 1) * pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}
-              {t('Category.table.pages')}
-              {accounts.length}
+                totalRows
+              )}{' '}
+              {t('Category.table.pages')} {totalRows}
             </span>
             <div className={styles.pagination_btn_wrap}>
               <button
                 className={styles.pagination_btn}
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                onClick={() =>
+                  setPagination(prev => ({
+                    ...prev,
+                    pageIndex: prev.pageIndex - 1,
+                  }))
+                }
+                disabled={pagination.pageIndex === 0}
               >
                 <Icon
                   className={styles.icon_back}
@@ -547,8 +543,15 @@ export default function AllAccountsSection() {
               </button>
               <button
                 className={styles.pagination_btn}
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={() =>
+                  setPagination(prev => ({
+                    ...prev,
+                    pageIndex: prev.pageIndex + 1,
+                  }))
+                }
+                disabled={
+                  (pagination.pageIndex + 1) * pagination.pageSize >= totalRows
+                }
               >
                 <Icon
                   className={styles.icon_forward}

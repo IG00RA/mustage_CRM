@@ -13,17 +13,6 @@ interface Category {
   description: string | null;
 }
 
-export interface Account {
-  account_id: number;
-  account_name: string;
-  subcategory: Subcategory;
-  seller_id: number;
-  seller: Seller;
-  account_data: string;
-  archive_link: string;
-  status: 'SOLD' | 'NOT SOLD' | 'REPLACED';
-}
-
 interface Subcategory {
   account_subcategory_id: number;
   account_subcategory_name: string;
@@ -31,7 +20,40 @@ interface Subcategory {
   price: number;
   cost_price: number;
   description: string | null;
-  category: Category;
+  output_format_field: string[];
+  output_separator: string;
+}
+
+export interface Account {
+  account_id: number;
+  upload_datetime: string;
+  sold_datetime: string | null;
+  worker_name: string;
+  teamlead_name: string;
+  client_name: string;
+  account_name: string;
+  price: number;
+  status: string;
+  frozen_at: string | null;
+  replace_reason: string | null;
+  profile_link: string;
+  archive_link: string;
+  account_data: string;
+  seller: {
+    seller_id: number;
+    seller_name: string;
+    visible_in_bot: boolean;
+  };
+  subcategory: Subcategory;
+  destination: {
+    destination_id: number;
+    browser_id: number;
+    username: string;
+    browser: {
+      browser_id: number;
+      browser_name: string;
+    };
+  };
 }
 
 interface Seller {
@@ -40,21 +62,28 @@ interface Seller {
   visible_in_bot: boolean;
 }
 
-// Новий тип для даних звіту
-interface ReportData {
-  total_amount: number;
-  sales_count: number;
+interface CategoriesResponse {
+  total_rows: number;
+  returned: number;
+  offset: number;
+  limit: number;
+  items: Category[];
 }
 
-// Новий тип для необроблених даних аккаунта
-interface RawAccount {
-  account_id: number;
-  account_name: string;
-  subcategory: Subcategory;
-  seller: Seller;
-  account_data: string;
-  archive_link: string;
-  status: 'SOLD' | 'NOT SOLD' | 'REPLACED';
+interface SubcategoriesResponse {
+  total_rows: number;
+  returned: number;
+  offset: number;
+  limit: number;
+  items: Subcategory[];
+}
+
+interface AccountsResponse {
+  total_rows: number;
+  returned: number;
+  offset: number;
+  limit: number;
+  items: Account[];
 }
 
 export type RangeType =
@@ -110,7 +139,7 @@ type SalesState = {
     seller_id?: number;
     limit?: number;
     offset?: number;
-  }) => Promise<void>;
+  }) => Promise<{ items: Account[]; total_rows: number }>;
 };
 
 const getCookie = (name: string): string | undefined => {
@@ -179,11 +208,10 @@ export const useSalesStore = create<SalesState>(set => ({
     try {
       let endpoint = '';
       const queryParams = new URLSearchParams();
-      if (params.subcategory_id) {
+      if (params.subcategory_id)
         queryParams.append('subcategory_id', String(params.subcategory_id));
-      } else if (params.category_id) {
+      else if (params.category_id)
         queryParams.append('category_id', String(params.category_id));
-      }
       switch (reportType) {
         case 'hourly':
           endpoint = `/sales/hourly-report?date=${
@@ -213,19 +241,15 @@ export const useSalesStore = create<SalesState>(set => ({
         }
       );
       if (!response.ok) throw new Error(`Failed to fetch ${reportType} report`);
-
-      // Отримуємо дані з явною типізацією
       const rawData = await response.json();
-      // Визначаємо data як об'єкт із ключами типу string і значеннями типу ReportData
-      const data: { [key: string]: ReportData } = rawData;
-
-      const sales: Sale[] = Object.entries(data).map(
-        ([period, report]: [string, ReportData]) => ({
-          period,
-          amount: report.total_amount,
-          quantity: report.sales_count,
-        })
-      );
+      const data: {
+        [key: string]: { total_amount: number; sales_count: number };
+      } = rawData;
+      const sales: Sale[] = Object.entries(data).map(([period, report]) => ({
+        period,
+        amount: report.total_amount,
+        quantity: report.sales_count,
+      }));
       return sales;
     } catch (error) {
       set({
@@ -248,8 +272,8 @@ export const useSalesStore = create<SalesState>(set => ({
         }
       );
       if (!response.ok) throw new Error('Failed to fetch categories');
-      const data: Category[] = await response.json();
-      set({ categories: data, loading: false });
+      const data: CategoriesResponse = await response.json();
+      set({ categories: data.items, loading: false });
     } catch (error) {
       set({
         loading: false,
@@ -270,8 +294,8 @@ export const useSalesStore = create<SalesState>(set => ({
         headers: { 'Content-Type': 'application/json' },
       });
       if (!response.ok) throw new Error('Failed to fetch subcategories');
-      const data: Subcategory[] = await response.json();
-      set({ subcategories: data, loading: false });
+      const data: SubcategoriesResponse = await response.json();
+      set({ subcategories: data.items, loading: false });
     } catch (error) {
       set({
         loading: false,
@@ -283,21 +307,19 @@ export const useSalesStore = create<SalesState>(set => ({
 
   fetchAccounts: async (params = {}) => {
     set({ loading: true, error: null });
-
     const accessToken = getCookie('access_token');
     if (!accessToken) {
       set({ loading: false, error: 'No access token found' });
       toast.error('No access token found');
-      return;
+      return { items: [], total_rows: 0 };
     }
 
     try {
       const queryParams = new URLSearchParams();
-      if (params.subcategory_id) {
+      if (params.subcategory_id)
         queryParams.append('subcategory_id', String(params.subcategory_id));
-      } else if (params.category_id) {
+      else if (params.category_id)
         queryParams.append('category_id', String(params.category_id));
-      }
       if (params.status) queryParams.append('status', params.status);
       if (params.seller_id)
         queryParams.append('seller_id', String(params.seller_id));
@@ -320,26 +342,16 @@ export const useSalesStore = create<SalesState>(set => ({
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Failed to fetch accounts');
       }
-      const rawData = await response.json();
-
-      const data: Account[] = rawData.map((item: RawAccount) => ({
-        account_id: item.account_id,
-        account_name: item.account_name,
-        subcategory: item.subcategory,
-        seller: item.seller,
-        account_data: item.account_data,
-        archive_link: item.archive_link,
-        status: item.status,
-        seller_id: item.seller.seller_id,
-      }));
-
-      set({ accounts: data, loading: false });
+      const data: AccountsResponse = await response.json();
+      set({ accounts: data.items, loading: false });
+      return { items: data.items, total_rows: data.total_rows }; // Повертаємо total_rows
     } catch (error) {
       set({
         loading: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       toast.error(error instanceof Error ? error.message : 'Unknown error');
+      return { items: [], total_rows: 0 };
     }
   },
 

@@ -80,6 +80,7 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
+  console.log(1);
   // Отримуємо токен з куків для авторизації запиту на бекенд
   const cookieStore = await cookies();
   const authToken = cookieStore.get('access_token');
@@ -88,6 +89,7 @@ export async function logout() {
     redirect('/ru/login');
     return;
   }
+  console.log(2);
 
   try {
     // Викликаємо API логауту на бекенді
@@ -100,18 +102,20 @@ export async function logout() {
         },
       }
     );
+    console.log(response);
+
     // Перевіряємо відповідь від бекенду
     if (response.ok) {
       const data = await response.json();
       // Перевіряємо успішність логауту
-      if (data.message === 'Logged out') {
-        // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді
-        cookieStore.delete('access_token');
-        // Переміщуємо редирект поза блок try/catch
-      } else {
-        // Якщо повідомлення не відповідає очікуваному, повертаємо помилку
-        return { error: 'Unexpected response from server' };
-      }
+      // if (data.message === 'Logged out') {
+      // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді
+      cookieStore.delete('access_token');
+      // Переміщуємо редирект поза блок try/catch
+      // } else {
+      // Якщо повідомлення не відповідає очікуваному, повертаємо помилку
+      // return { error: 'Unexpected response from server' };
+      // }
     } else {
       // Якщо статус відповіді не 200, повертаємо помилку
       return { error: 'Logout failed on server' };
@@ -120,6 +124,7 @@ export async function logout() {
     console.error('Error during API logout call:', error);
     return { error: 'Error during logout process' };
   }
+  console.log(4);
 
   // Редирект виконується поза блоком try/catch
   redirect('/ru/login');

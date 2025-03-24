@@ -46,7 +46,7 @@ const SalesChart: React.FC = () => {
     if (categories.length === 0) {
       fetchCategories();
     }
-  }, [categories.length, fetchCategories]);
+  }, [categories, fetchCategories]);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -76,12 +76,12 @@ const SalesChart: React.FC = () => {
   }, [dateRange, customPeriodLabel, selectedCategory, selectedSubcategory]);
 
   const formatDateInput = (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 8); // Обрізаємо до 8 цифр (ddmmyyyy)
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
     let formatted = '';
     if (numbers.length > 0) {
-      formatted = numbers.slice(0, 2); // День
-      if (numbers.length > 2) formatted += `.${numbers.slice(2, 4)}`; // Місяць
-      if (numbers.length > 4) formatted += `.${numbers.slice(4)}`; // Рік
+      formatted = numbers.slice(0, 2);
+      if (numbers.length > 2) formatted += `.${numbers.slice(2, 4)}`;
+      if (numbers.length > 4) formatted += `.${numbers.slice(4)}`;
     }
     return formatted;
   };
@@ -318,7 +318,9 @@ const SalesChart: React.FC = () => {
           label={t('Statistics.chart.toggler.togglerCategory')}
           options={[
             t('Statistics.chart.toggler.togglerAllCategory'),
-            ...categories.map(cat => cat.account_category_name),
+            ...(Array.isArray(categories)
+              ? categories.map(cat => cat.account_category_name)
+              : []),
           ]}
           selected={
             selectedCategory
@@ -328,12 +330,15 @@ const SalesChart: React.FC = () => {
               : t('Statistics.chart.toggler.togglerChooseCategory')
           }
           onSelect={handleCategorySelect}
+          minSelectWidth={150}
         />
         <CustomSelect
           label={t('Statistics.chart.toggler.togglerName')}
           options={[
             t('Statistics.chart.toggler.togglerAllName'),
-            ...subcategories.map(sub => sub.account_subcategory_name),
+            ...(Array.isArray(subcategories)
+              ? subcategories.map(sub => sub.account_subcategory_name)
+              : []),
           ]}
           selected={
             selectedSubcategory
@@ -344,6 +349,7 @@ const SalesChart: React.FC = () => {
               : t('Statistics.chart.toggler.togglerChooseName')
           }
           onSelect={handleSubcategorySelect}
+          minSelectWidth={170}
         />
       </div>
 
