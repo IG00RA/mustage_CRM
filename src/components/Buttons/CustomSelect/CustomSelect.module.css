@@ -37,6 +37,7 @@
   justify-content: space-between;
   align-items: center;
   transition: border 0.3s ease;
+  white-space: nowrap;
 
   & svg {
     transition: transform 0.3s ease;
@@ -114,7 +115,6 @@
 
 .list_icon {
   flex-shrink: 0;
-  opacity: 0;
   transition: opacity 0.3s ease;
 }
 

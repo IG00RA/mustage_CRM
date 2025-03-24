@@ -50,17 +50,16 @@ export default function AllAccountsSection() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [isOpenEdit, setIsOpenEdit] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
-  );
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<
-    string | null
-  >(null);
+  const [isOpenDownload, setIsOpenDownload] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
+    string[]
+  >([]);
   const [selectedStatus, setSelectedStatus] = useState<
     'SOLD' | 'NOT SOLD' | 'REPLACED' | null
   >(null);
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
-  const [totalRows, setTotalRows] = useState<number>(0); // Додано для зберігання total_rows
+  const [totalRows, setTotalRows] = useState<number>(0);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
@@ -80,14 +79,13 @@ export default function AllAccountsSection() {
     if (accounts.length !== 0) setShowLoader(false);
   }, [accounts]);
 
-  // Завантаження початкових даних
   useEffect(() => {
     const loadInitialData = async () => {
       await fetchCategories();
       await fetchSubcategories();
       await fetchSellers();
       const { total_rows } = await fetchAccounts({
-        limit: pagination.pageSize, // Початковий запит на 5
+        limit: pagination.pageSize,
         offset: 0,
       });
       setTotalRows(total_rows);
@@ -101,16 +99,16 @@ export default function AllAccountsSection() {
     pagination.pageSize,
   ]);
 
-  // Оновлення даних при зміні фільтрів або пагінації
   useEffect(() => {
     const loadAccounts = async () => {
       const { total_rows } = await fetchAccounts({
-        subcategory_id: selectedSubcategoryId
-          ? Number(selectedSubcategoryId)
-          : undefined,
-        category_id:
-          !selectedSubcategoryId && selectedCategoryId
-            ? Number(selectedCategoryId)
+        subcategory_ids:
+          selectedSubcategoryIds.length > 0
+            ? selectedSubcategoryIds.map(Number)
+            : undefined,
+        category_ids:
+          selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
+            ? selectedCategoryIds.map(Number)
             : undefined,
         status: selectedStatus as 'SOLD' | 'NOT SOLD' | 'REPLACED' | undefined,
         seller_id: selectedSellerId ? Number(selectedSellerId) : undefined,
@@ -121,8 +119,8 @@ export default function AllAccountsSection() {
     };
     loadAccounts();
   }, [
-    selectedCategoryId,
-    selectedSubcategoryId,
+    selectedCategoryIds,
+    selectedSubcategoryIds,
     selectedStatus,
     selectedSellerId,
     pagination,
@@ -130,6 +128,10 @@ export default function AllAccountsSection() {
   ]);
 
   const toggleEditModal = useCallback(() => setIsOpenEdit(prev => !prev), []);
+  const toggleDownload = useCallback(
+    () => setIsOpenDownload(prev => !prev),
+    []
+  );
 
   const categoryMap = useMemo(
     () =>
@@ -323,29 +325,51 @@ export default function AllAccountsSection() {
   };
 
   const handleCategorySelect = useCallback(
-    (value: string) => {
-      const category = categories.find(
-        cat => cat.account_category_name === value
-      );
-      setSelectedCategoryId(
-        category ? String(category.account_category_id) : null
-      );
-      setSelectedSubcategoryId(null);
+    (values: string[]) => {
+      if (values.length === 0) {
+        // Якщо вибрано "Всі категорії" або скинуто вибір
+        setSelectedCategoryIds([]);
+        setSelectedSubcategoryIds([]); // Скидаємо також підкатегорії
+      } else {
+        const newSelectedIds = values
+          .filter(value => value !== t('AllAccounts.selects.allCategories'))
+          .map(value => {
+            const category = categories.find(
+              cat => cat.account_category_name === value
+            );
+            return category ? String(category.account_category_id) : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedCategoryIds(newSelectedIds);
+        if (newSelectedIds.length > 0) setSelectedSubcategoryIds([]);
+      }
     },
-    [categories]
+    [categories, t]
   );
 
   const handleSubcategorySelect = useCallback(
-    (value: string) => {
-      const subcategory = subcategories.find(
-        sub => sub.account_subcategory_name === value
-      );
-      setSelectedSubcategoryId(
-        subcategory ? String(subcategory.account_subcategory_id) : null
-      );
-      if (subcategory) setSelectedCategoryId(null);
+    (values: string[]) => {
+      if (values.length === 0) {
+        // Якщо вибрано "Всі підкатегорії" або скинуто вибір
+        setSelectedSubcategoryIds([]);
+        setSelectedCategoryIds([]); // Скидаємо також категорії
+      } else {
+        const newSelectedIds = values
+          .filter(value => value !== t('AllAccounts.selects.allNames'))
+          .map(value => {
+            const subcategory = subcategories.find(
+              sub => sub.account_subcategory_name === value
+            );
+            return subcategory
+              ? String(subcategory.account_subcategory_id)
+              : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedSubcategoryIds(newSelectedIds);
+        if (newSelectedIds.length > 0) setSelectedCategoryIds([]);
+      }
     },
-    [subcategories]
+    [subcategories, t]
   );
 
   const handleStatusSelect = useCallback(
@@ -382,10 +406,10 @@ export default function AllAccountsSection() {
             options={statusOptions}
             selected={
               selectedStatus
-                ? statusMap[selectedStatus]
-                : t('AllAccounts.selects.allStatus')
+                ? [statusMap[selectedStatus]]
+                : [t('AllAccounts.selects.allStatus')]
             }
-            onSelect={handleStatusSelect}
+            onSelect={values => handleStatusSelect(values[0])}
             width={508}
             selectWidth={383}
           />
@@ -396,7 +420,7 @@ export default function AllAccountsSection() {
               t('AllAccounts.selects.transferYes'),
               t('AllAccounts.selects.transferNot'),
             ]}
-            selected={''}
+            selected={['']}
             onSelect={() => {}}
             width={508}
             selectWidth={383}
@@ -406,10 +430,10 @@ export default function AllAccountsSection() {
             options={sellerOptions}
             selected={
               selectedSellerId
-                ? sellerMap.get(parseInt(selectedSellerId)) || ''
-                : t('AllAccounts.selects.sellerAll')
+                ? [sellerMap.get(parseInt(selectedSellerId)) || '']
+                : [t('AllAccounts.selects.sellerAll')]
             }
-            onSelect={handleSellerSelect}
+            onSelect={values => handleSellerSelect(values[0])}
             width={508}
             selectWidth={383}
           />
@@ -419,9 +443,11 @@ export default function AllAccountsSection() {
             label={t('AllAccounts.selects.categories')}
             options={categoryOptions}
             selected={
-              selectedCategoryId
-                ? categoryMap.get(parseInt(selectedCategoryId)) || ''
-                : t('AllAccounts.selects.allCategories')
+              selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(
+                    id => categoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allCategories')]
             }
             onSelect={handleCategorySelect}
             width={331}
@@ -430,9 +456,11 @@ export default function AllAccountsSection() {
             label={t('AllAccounts.selects.names')}
             options={subcategoryOptions}
             selected={
-              selectedSubcategoryId
-                ? subcategoryMap.get(parseInt(selectedSubcategoryId)) || ''
-                : t('AllAccounts.selects.allNames')
+              selectedSubcategoryIds.length > 0
+                ? selectedSubcategoryIds.map(
+                    id => subcategoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allNames')]
             }
             onSelect={handleSubcategorySelect}
             width={331}
@@ -484,7 +512,7 @@ export default function AllAccountsSection() {
         <div className={styles.bottom_wrap}>
           <div className={styles.download_wrap}>
             <WhiteBtn
-              onClick={exportToExcel}
+              onClick={toggleDownload}
               text={'AllAccounts.downloadBtn'}
               icon="icon-cloud-download"
               iconFill="icon-cloud-download-fill"
@@ -575,6 +603,26 @@ export default function AllAccountsSection() {
           selectedColumns={selectedColumns}
           onSave={handleSaveSettings}
         />
+      </ModalComponent>
+      <ModalComponent
+        title="AllAccounts.modalUpdate.titleDownload"
+        isOpen={isOpenDownload}
+        onClose={toggleDownload}
+      >
+        <div className={styles.modal_btn_wrap}>
+          <WhiteBtn
+            onClick={exportToExcel}
+            text={'AllAccounts.downloadBtn'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <WhiteBtn
+            onClick={exportToExcel}
+            text={'AllAccounts.downloadBtnAll'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+        </div>
       </ModalComponent>
     </section>
   );

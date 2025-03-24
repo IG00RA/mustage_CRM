@@ -6,8 +6,8 @@ import Icon from '@/helpers/Icon';
 
 interface SelectProps {
   options: string[];
-  onSelect: (value: string) => void;
-  selected: string;
+  onSelect: (values: string[]) => void;
+  selected: string[];
   label?: string;
   width?: string | number;
   selectWidth?: string | number;
@@ -42,6 +42,18 @@ export default function CustomSelect({
     };
   }, []);
 
+  const handleOptionClick = (option: string, index: number) => {
+    if (index === 0) {
+      onSelect([]);
+      setIsOpen(false);
+    } else {
+      const newSelected = selected.includes(option)
+        ? selected.filter(item => item !== option) // Видаляємо, якщо вже вибрано
+        : [...selected, option]; // Додаємо, якщо не вибрано
+      onSelect(newSelected);
+    }
+  };
+
   return (
     <div className={styles.select_wrapper} style={{ width }}>
       {label && <label className={styles.select_label}>{label}</label>}
@@ -53,11 +65,15 @@ export default function CustomSelect({
       >
         <div
           className={`${styles.select_box} ${isOpen ? styles.open : ''} ${
-            selected ? styles.text_selected : ''
+            selected.length > 0 ? styles.text_selected : ''
           }`}
           onClick={() => setIsOpen(prev => !prev)}
         >
-          {selected || options[0]}
+          {selected.length > 0
+            ? selected.join(', ').length > 20
+              ? selected.join(', ').slice(0, 20) + '...'
+              : selected.join(', ')
+            : options[0]}
           <Icon name="icon-angle-down" width={16} height={16} color="#A9A9C1" />
         </div>
 
@@ -69,19 +85,20 @@ export default function CustomSelect({
           {options.map((option, index) => (
             <li
               key={index}
-              className={styles.option_item}
-              onClick={() => {
-                onSelect(option);
-                setIsOpen(false);
-              }}
+              className={`${styles.option_item} ${
+                selected.includes(option) ? styles.selected : ''
+              }`}
+              onClick={() => handleOptionClick(option, index)}
             >
               <p className={styles.list_text}>{option}</p>
-              <Icon
-                className={styles.list_icon}
-                name="icon-list-check"
-                width={12}
-                height={12}
-              />
+              {selected.includes(option) && (
+                <Icon
+                  className={styles.list_icon}
+                  name="icon-list-check"
+                  width={12}
+                  height={12}
+                />
+              )}
             </li>
           ))}
         </ul>

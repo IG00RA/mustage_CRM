@@ -106,7 +106,7 @@ export async function logout() {
 
     // Перевіряємо відповідь від бекенду
     if (response.ok) {
-      const data = await response.json();
+      await response.json();
       // Перевіряємо успішність логауту
       // if (data.message === 'Logged out') {
       // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді

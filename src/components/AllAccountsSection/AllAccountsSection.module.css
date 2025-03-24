@@ -177,3 +177,10 @@
     outline: none;
   }
 }
+
+.modal_btn_wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}

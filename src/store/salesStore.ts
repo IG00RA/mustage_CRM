@@ -133,8 +133,8 @@ type SalesState = {
   ) => Promise<void>;
   fetchSellers: (visibleInBot?: boolean) => Promise<void>;
   fetchAccounts: (params?: {
-    category_id?: number;
-    subcategory_id?: number;
+    category_ids?: number[]; // Змінено на масив
+    subcategory_ids?: number[]; // Змінено на масив
     status?: 'SOLD' | 'NOT SOLD' | 'REPLACED';
     seller_id?: number;
     limit?: number;
@@ -316,10 +316,11 @@ export const useSalesStore = create<SalesState>(set => ({
 
     try {
       const queryParams = new URLSearchParams();
-      if (params.subcategory_id)
-        queryParams.append('subcategory_id', String(params.subcategory_id));
-      else if (params.category_id)
-        queryParams.append('category_id', String(params.category_id));
+      if (params.subcategory_ids && params.subcategory_ids.length > 0) {
+        queryParams.append('subcategory_ids', params.subcategory_ids.join(',')); // Передаємо масив як строку через кому
+      } else if (params.category_ids && params.category_ids.length > 0) {
+        queryParams.append('category_ids', params.category_ids.join(',')); // Передаємо масив як строку через кому
+      }
       if (params.status) queryParams.append('status', params.status);
       if (params.seller_id)
         queryParams.append('seller_id', String(params.seller_id));
@@ -344,7 +345,7 @@ export const useSalesStore = create<SalesState>(set => ({
       }
       const data: AccountsResponse = await response.json();
       set({ accounts: data.items, loading: false });
-      return { items: data.items, total_rows: data.total_rows }; // Повертаємо total_rows
+      return { items: data.items, total_rows: data.total_rows };
     } catch (error) {
       set({
         loading: false,
