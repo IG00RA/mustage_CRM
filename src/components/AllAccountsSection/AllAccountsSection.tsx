@@ -19,11 +19,13 @@ import ModalComponent from '../ModalComponent/ModalComponent';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 import Loader from '../Loader/Loader';
-import { Account } from '@/types/salesTypes';
+import { Account, RangeType } from '@/types/salesTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
+import DateRangeSelector from '../Buttons/DateRangeSelector/DateRangeSelector';
+import { useSalesStore } from '@/store/salesStore';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 
@@ -68,6 +70,8 @@ export default function AllAccountsSection() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
   const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
   const [totalRows, setTotalRows] = useState<number>(0);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
@@ -87,6 +91,9 @@ export default function AllAccountsSection() {
   const [inputValue, setInputValue] = useState<string>(
     String(pagination.pageSize)
   );
+
+  const { dateRange, customPeriodLabel, setDateRange, setCustomPeriodLabel } =
+    useSalesStore();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -497,6 +504,20 @@ export default function AllAccountsSection() {
     [sellers, t]
   );
 
+  const handleDateRangeChange = (newRange: RangeType) => {
+    setDateRange(newRange);
+    setCustomPeriodLabel('');
+    setCustomStartDate('');
+    setCustomEndDate('');
+  };
+
+  const handleCustomDatesChange = (start: string, end: string) => {
+    setCustomPeriodLabel(`${start} - ${end}`);
+    setDateRange('custom');
+    setCustomStartDate(start);
+    setCustomEndDate(end);
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
@@ -571,31 +592,13 @@ export default function AllAccountsSection() {
           />
         </div>
         <div className={styles.search_wrap}>
-          <CustomSelect
-            label={t('AllAccounts.selects.categories')}
-            options={categoryOptions}
-            selected={
-              selectedCategoryIds.length > 0
-                ? selectedCategoryIds.map(
-                    id => categoryMap.get(parseInt(id)) || ''
-                  )
-                : [t('AllAccounts.selects.allCategories')]
-            }
-            onSelect={handleCategorySelect}
-            width={331}
-          />
-          <CustomSelect
-            label={t('AllAccounts.selects.names')}
-            options={subcategoryOptions}
-            selected={
-              selectedSubcategoryIds.length > 0
-                ? selectedSubcategoryIds.map(
-                    id => subcategoryMap.get(parseInt(id)) || ''
-                  )
-                : [t('AllAccounts.selects.allNames')]
-            }
-            onSelect={handleSubcategorySelect}
-            width={331}
+          <DateRangeSelector
+            dateRange={dateRange}
+            customPeriodLabel={customPeriodLabel}
+            onDateRangeChange={handleDateRangeChange}
+            onCustomDatesChange={handleCustomDatesChange}
+            initialStartDate={customStartDate}
+            initialEndDate={customEndDate}
           />
           <SearchInput
             onSearch={query => setCategoryFilter(query)}

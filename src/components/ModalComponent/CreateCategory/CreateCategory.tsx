@@ -37,10 +37,9 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
             description: data.description,
           }),
         },
-        () => {} // Поки що залишаємо пустий set, бо не оновлюємо Zustand напряму
+        () => {}
       );
 
-      console.log('Created category:', newCategory);
       await fetchCategories();
       toast.success(t('Category.modalCreate.successMessage'));
       reset();

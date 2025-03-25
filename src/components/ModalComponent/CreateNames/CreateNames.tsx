@@ -1,6 +1,7 @@
 'use client';
 
 import styles from '../ModalComponent.module.css';
+import ownStyles from './CreateNames.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
@@ -18,6 +19,7 @@ type FormData = {
   price: string;
   cost: string;
   nameDescription: string;
+  separator: string;
   settings: string[];
 };
 
@@ -55,7 +57,10 @@ export default function CreateNames() {
   ];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={`${styles.form} ${ownStyles.form}`}
+    >
       <div className={styles.field}>
         <label className={styles.label}>
           {t('Names.modalCreate.nameField')}
@@ -151,20 +156,31 @@ export default function CreateNames() {
       </div>
       <div className={styles.field}>
         <label className={styles.label}>{t('Names.modalCreate.format')}</label>
-        <CustomButtonsInput
-          onRemove={() => {}}
-          buttons={[
-            'id',
-            t('AllAccounts.table.name'),
-            t('AllAccounts.table.category'),
-            t('AllAccounts.table.seller'),
-            t('AllAccounts.table.status'),
-          ]}
-        />
+        <CustomButtonsInput onRemove={() => {}} buttons={['id']} />
 
         {errors.settings && (
           <p className={styles.error}>{errors.settings.message}</p>
         )}
+      </div>
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('Names.modalCreate.separator')}
+        </label>
+        <input
+          className={`${styles.input} ${
+            errors.separator ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('separator', {
+            required: t('DBSettings.form.errorMessage'),
+          })}
+        />
+        {errors.separator && (
+          <p className={styles.error}>{errors.separator.message}</p>
+        )}
+        <span className={ownStyles.separator_text}>
+          {t('Names.modalCreate.separatorText')}
+        </span>
       </div>
       <div className={styles.buttons_wrap}>
         <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />

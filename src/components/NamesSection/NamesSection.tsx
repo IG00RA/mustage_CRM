@@ -27,7 +27,7 @@ import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import CreateNames from '../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../ModalComponent/EditNames/EditNames';
 import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
-import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
+import ShowNamesDescription from '../ModalComponent/ShowNamesDescription/ShowNamesDescription';
 import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
@@ -83,9 +83,10 @@ export default function NamesSection() {
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
+  const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
     useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
+  const [selectedDescription, setSelectedDescription] = useState<string>(''); // Додаємо стан для опису
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
@@ -116,10 +117,6 @@ export default function NamesSection() {
     setInputValue(String(pagination.pageSize));
   }, [pagination.pageSize]);
 
-  const toggleAddNamesDescription = useCallback(() => {
-    setIsOpenAddNamesDescription(prev => !prev);
-  }, []);
-
   const toggleCreateModal = useCallback(() => {
     setIsOpenCreate(prev => !prev);
   }, []);
@@ -135,6 +132,20 @@ export default function NamesSection() {
 
   const closeUpdateModal = useCallback(() => {
     setIsOpenUpdate(false);
+  }, []);
+
+  const openShowNamesDescription = useCallback(
+    (title = '', description = '') => {
+      setUpdateTitle(title);
+      setSelectedDescription(description); // Зберігаємо опис
+      setIsOpenShowNamesDescription(true);
+    },
+    []
+  );
+
+  const closeShowNamesDescription = useCallback(() => {
+    setIsOpenShowNamesDescription(false);
+    setSelectedDescription(''); // Очищаємо опис при закритті
   }, []);
 
   const data = useMemo(
@@ -223,7 +234,12 @@ export default function NamesSection() {
           <div className={styles.table_buttons}>
             <CancelBtn
               text="Names.table.enterBtn"
-              onClick={toggleAddNamesDescription}
+              onClick={() =>
+                openShowNamesDescription(
+                  row.original.account_subcategory_name,
+                  row.original.description ||""
+                )
+              }
             />
             <WhiteBtn
               onClick={() =>
@@ -236,7 +252,7 @@ export default function NamesSection() {
         ),
       },
     ],
-    [t, categoryMap, toggleAddNamesDescription, openUpdateModal]
+    [t, categoryMap, openShowNamesDescription, openUpdateModal]
   );
 
   const columnFilters = useMemo(
@@ -295,7 +311,7 @@ export default function NamesSection() {
     } else if (inputValue === '') {
       setPagination(prev => ({
         ...prev,
-        pageSize: 5, 
+        pageSize: 5,
         pageIndex: 0,
       }));
       setInputValue('5');
@@ -330,7 +346,7 @@ export default function NamesSection() {
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
-            text={'Category.searchBtn'}
+            text={'Names.searchBtn'}
             options={subcategoryNames}
           />
         </div>
@@ -449,12 +465,15 @@ export default function NamesSection() {
         <CreateNamesSet />
       </ModalComponent>
       <ModalComponent
-        isOpen={isOpenAddNamesDescription}
-        onClose={toggleAddNamesDescription}
-        title="Names.modalAddNamesDescription.title"
-        text="Names.modalAddNamesDescription.description"
+        isOpen={isOpenShowNamesDescription}
+        onClose={closeShowNamesDescription}
+        title="Names.modalShowNamesDescription.title"
+        editedTitle={updateTitle}
       >
-        <AddNamesDescription />
+        <ShowNamesDescription
+          description={selectedDescription} 
+          onClose={closeShowNamesDescription}
+        />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}

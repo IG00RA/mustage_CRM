@@ -152,6 +152,8 @@
       "data": "Данные аккаунта",
       "megaLink": "Ссылка на мегу",
       "format": "Формат выдачи аккаунта:",
+      "separator": "Разделитель:",
+      "separatorText": "*этот символ будет использоваться как разделитель между данными в таблице",
       "createBtn": "Создать наименование"
     },
     "modalCreateSet": {
@@ -174,10 +176,9 @@
       "description": "Отредактируйте нужные поля:",
       "createBtn": "Применить редактирование"
     },
-    "modalAddNamesDescription": {
-      "title": "Добавить описание",
-      "description": "Ведите описание для наименования:",
-      "createBtn": "Сохранить описание"
+    "modalShowNamesDescription": {
+      "title": "Описание наименования ",
+      "closeBtn": "Закрыть"
     }
   },
   "AllAccounts": {
