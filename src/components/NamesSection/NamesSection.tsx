@@ -28,20 +28,16 @@ import CreateNames from '../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../ModalComponent/EditNames/EditNames';
 import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
 import AddNamesDescription from '../ModalComponent/AddNamesDescription/AddNamesDescription';
-import { useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { PaginationState } from '@/types/componentsTypes';
+import { Subcategory } from '@/types/salesTypes';
 
-interface Subcategory {
-  account_subcategory_id: number;
-  account_subcategory_name: string;
-  account_category_id: number;
-  price: number;
-  cost_price: number;
-  description: string | null;
-}
+const NAMES_PAGINATION_KEY = 'namesPaginationSettings';
 
 export default function NamesSection() {
   const t = useTranslations();
+
   const {
     subcategories,
     categories,
@@ -49,7 +45,8 @@ export default function NamesSection() {
     fetchCategories,
     loading,
     error,
-  } = useSalesStore();
+  } = useCategoriesStore();
+
   const didFetchRef = useRef(false);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
@@ -89,14 +86,35 @@ export default function NamesSection() {
   const [isOpenAddNamesDescription, setIsOpenAddNamesDescription] =
     useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(NAMES_PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : {
+            pageIndex: 0,
+            pageSize: 5,
+          };
+    }
+    return {
+      pageIndex: 0,
+      pageSize: 5,
+    };
+  });
+  const [inputValue, setInputValue] = useState<string>(
+    String(pagination.pageSize)
   );
 
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5,
-  });
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(NAMES_PAGINATION_KEY, JSON.stringify(pagination));
+    }
+  }, [pagination]);
+
+  useEffect(() => {
+    setInputValue(String(pagination.pageSize));
+  }, [pagination.pageSize]);
 
   const toggleAddNamesDescription = useCallback(() => {
     setIsOpenAddNamesDescription(prev => !prev);
@@ -152,16 +170,22 @@ export default function NamesSection() {
   );
 
   const handleCategorySelect = useCallback(
-    (categoryName: string) => {
-      if (categoryName === t('Names.selectAllBtn')) {
-        setSelectedCategoryId(null);
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('Names.selectAllBtn')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedCategoryIds([]);
       } else {
-        const selectedCategory = categories.find(
-          cat => cat.account_category_name === categoryName
-        );
-        setSelectedCategoryId(
-          selectedCategory ? String(selectedCategory.account_category_id) : null
-        );
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const category = categories.find(
+              cat => cat.account_category_name === value
+            );
+            return category ? String(category.account_category_id) : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedCategoryIds(newSelectedIds);
       }
     },
     [categories, t]
@@ -184,10 +208,10 @@ export default function NamesSection() {
           return categoryName || row.original.account_category_id;
         },
         filterFn: (row, columnId, filterValue) => {
-          // Перевіряємо точну відповідність числового значення
           const rowValue = row.getValue(columnId) as number;
-          const filterNum = Number(filterValue);
-          return rowValue === filterNum;
+          return (
+            filterValue.length === 0 || filterValue.includes(String(rowValue))
+          );
         },
       },
       { accessorKey: 'cost_price', header: t('Names.table.cost') },
@@ -217,10 +241,10 @@ export default function NamesSection() {
 
   const columnFilters = useMemo(
     () =>
-      selectedCategoryId
-        ? [{ id: 'account_category_id', value: selectedCategoryId }]
+      selectedCategoryIds.length > 0
+        ? [{ id: 'account_category_id', value: selectedCategoryIds }]
         : [],
-    [selectedCategoryId]
+    [selectedCategoryIds]
   );
 
   const table = useReactTable({
@@ -253,6 +277,31 @@ export default function NamesSection() {
     [data]
   );
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value);
+    },
+    []
+  );
+
+  const handleInputBlur = useCallback(() => {
+    const newSize = Number(inputValue);
+    if (!isNaN(newSize) && newSize > 0) {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: newSize,
+        pageIndex: 0,
+      }));
+    } else if (inputValue === '') {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: 5, 
+        pageIndex: 0,
+      }));
+      setInputValue('5');
+    }
+  }, [inputValue]);
+
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
@@ -270,9 +319,11 @@ export default function NamesSection() {
             label={t('Names.selectText')}
             options={categoryOptions}
             selected={
-              selectedCategoryId
-                ? categoryMap.get(parseInt(selectedCategoryId)) || ''
-                : t('Names.selectBtn')
+              selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(
+                    id => categoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('Names.selectAllBtn')]
             }
             onSelect={handleCategorySelect}
             width={298}
@@ -317,23 +368,33 @@ export default function NamesSection() {
           <span className={styles.pagination_text}>
             {t('Category.table.pagination')}
           </span>
-          <select
-            className={styles.pagination_select}
-            value={pagination.pageSize}
-            onChange={e =>
-              setPagination(prev => ({
-                ...prev,
-                pageSize: Number(e.target.value),
-                pageIndex: 0,
-              }))
-            }
-          >
-            {[5, 10, 20].map(size => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          <div className={styles.pagination_wrapper}>
+            <select
+              className={styles.pagination_select}
+              value={pagination.pageSize}
+              onChange={e =>
+                setPagination(prev => ({
+                  ...prev,
+                  pageSize: Number(e.target.value),
+                  pageIndex: 0,
+                }))
+              }
+            >
+              {[5, 10, 20].map(size => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              className={styles.pagination_input}
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              min={1}
+            />
+          </div>
           <span className={styles.pagination_text}>
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(

@@ -4,7 +4,10 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { useSalesStore } from '@/store/salesStore';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { ENDPOINTS } from '@/constants/api';
+import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
+import { Category } from '@/types/salesTypes';
 
 type FormData = {
   name: string;
@@ -13,7 +16,7 @@ type FormData = {
 
 export default function CreateCategory({ onClose }: { onClose: () => void }) {
   const t = useTranslations('');
-  const { fetchCategories } = useSalesStore();
+  const { fetchCategories } = useCategoriesStore();
 
   const {
     register,
@@ -22,47 +25,22 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>();
 
-  const getCookie = (name: string): string | undefined => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return undefined;
-  };
-
   const onSubmit = async (data: FormData) => {
-    const accessToken = getCookie('access_token');
-    if (!accessToken) {
-      toast.error(t('Category.modalCreate.errorMessage'));
-      return;
-    }
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_BACK}/categories`,
+      const newCategory = await fetchWithErrorHandling<Category>(
+        ENDPOINTS.CATEGORIES,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          // credentials: 'include',
+          headers: getAuthHeaders(),
           body: JSON.stringify({
-            name: data.name,
+            account_category_name: data.name,
             description: data.description,
           }),
-        }
+        },
+        () => {} // Поки що залишаємо пустий set, бо не оновлюємо Zustand напряму
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Server error response:', errorText);
-        const errorData = JSON.parse(errorText);
-        throw new Error(errorData.message || 'Failed to create category');
-      }
-
-      const newCategory = await response.json();
       console.log('Created category:', newCategory);
-
       await fetchCategories();
       toast.success(t('Category.modalCreate.successMessage'));
       reset();

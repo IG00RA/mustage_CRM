@@ -2,7 +2,13 @@
 
 import styles from './CategorySection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useRef, useMemo, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -18,18 +24,16 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
 import UpdateCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
-import { useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { PaginationState } from '@/types/componentsTypes';
+import { Category } from '@/types/salesTypes';
 
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-}
+const CATEGORY_PAGINATION_KEY = 'categoryPaginationSettings';
 
 export default function CategorySection() {
   const t = useTranslations();
-  const { categories, fetchCategories, loading, error } = useSalesStore();
+  const { categories, fetchCategories, loading, error } = useCategoriesStore();
   const didFetchRef = useRef(false);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
@@ -49,33 +53,64 @@ export default function CategorySection() {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [fetchCategories, categories, loading, error]);
 
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [isOpenCreate, setIsOpenCreate] = React.useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = React.useState(false);
-  const [updateTitle, setUpdateTitle] = React.useState('');
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 5,
+  const [selectedCategory, setSelectedCategory] = React.useState<{
+    account_category_id: number;
+    account_category_name: string;
+    description: string;
+  } | null>(null);
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(CATEGORY_PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : { pageIndex: 0, pageSize: 5 };
+    }
+    return { pageIndex: 0, pageSize: 5 };
   });
+  const [inputValue, setInputValue] = useState<string>(
+    String(pagination.pageSize)
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CATEGORY_PAGINATION_KEY, JSON.stringify(pagination));
+    }
+  }, [pagination]);
+
+  useEffect(() => {
+    setInputValue(String(pagination.pageSize));
+  }, [pagination.pageSize]);
 
   const toggleCreateModal = () => setIsOpenCreate(prev => !prev);
 
-  const openUpdateModal = (title = '') => {
-    setUpdateTitle(title);
+  const openUpdateModal = (
+    account_category_id: number,
+    account_category_name: string,
+    description: string
+  ) => {
+    setSelectedCategory({
+      account_category_id,
+      account_category_name,
+      description,
+    });
     setIsOpenUpdate(true);
   };
 
   const closeUpdateModal = () => {
     setIsOpenUpdate(false);
+    setSelectedCategory(null);
   };
 
   const data: Category[] = useMemo(
     () =>
       categories.map(category => ({
-        id: category.account_category_id,
-        name: category.account_category_name,
+        account_category_id: category.account_category_id,
+        account_category_name: category.account_category_name,
         description: category.description || '',
       })),
     [categories]
@@ -88,15 +123,21 @@ export default function CategorySection() {
   }, [categories]);
 
   const columns: ColumnDef<Category>[] = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'name', header: t('Category.table.name') },
+    { accessorKey: 'account_category_id', header: 'ID' },
+    { accessorKey: 'account_category_name', header: t('Category.table.name') },
     { accessorKey: 'description', header: t('Category.table.description') },
     {
       id: 'actions',
       header: t('Category.table.actions'),
       cell: ({ row }) => (
         <WhiteBtn
-          onClick={() => openUpdateModal(row.original.name)}
+          onClick={() =>
+            openUpdateModal(
+              row.original.account_category_id,
+              row.original.account_category_name,
+              row.original.description||""
+            )
+          }
           text={'Category.table.editBtn'}
           icon="icon-edit-pencil"
           iconFill="icon-edit-pencil"
@@ -124,9 +165,34 @@ export default function CategorySection() {
   });
 
   const categoryNames = useMemo(
-    () => [...new Set(data.map(category => category.name))],
+    () => [...new Set(data.map(category => category.account_category_name))],
     [data]
   );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value);
+    },
+    []
+  );
+
+  const handleInputBlur = useCallback(() => {
+    const newSize = Number(inputValue);
+    if (!isNaN(newSize) && newSize > 0) {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: newSize,
+        pageIndex: 0,
+      }));
+    } else if (inputValue === '') {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: 5,
+        pageIndex: 0,
+      }));
+      setInputValue('5');
+    }
+  }, [inputValue]);
 
   return (
     <section className={styles.section}>
@@ -175,22 +241,33 @@ export default function CategorySection() {
           <span className={styles.pagination_text}>
             {t('Category.table.pagination')}
           </span>
-          <select
-            className={styles.pagination_select}
-            value={pagination.pageSize}
-            onChange={e =>
-              setPagination(prev => ({
-                ...prev,
-                pageSize: Number(e.target.value),
-              }))
-            }
-          >
-            {[5, 10, 20].map(size => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          <div className={styles.pagination_wrapper}>
+            <select
+              className={styles.pagination_select}
+              value={pagination.pageSize}
+              onChange={e =>
+                setPagination(prev => ({
+                  ...prev,
+                  pageSize: Number(e.target.value),
+                  pageIndex: 0,
+                }))
+              }
+            >
+              {[5, 10, 20].map(size => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              className={styles.pagination_input}
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              min={1}
+            />
+          </div>
           <span className={styles.pagination_text}>
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(
@@ -241,9 +318,16 @@ export default function CategorySection() {
         onClose={closeUpdateModal}
         title="Category.modalUpdate.title"
         text="Category.modalUpdate.description"
-        editedTitle={updateTitle}
+        editedTitle={selectedCategory?.account_category_name || ''}
       >
-        <UpdateCategory />
+        {selectedCategory && (
+          <UpdateCategory
+            categoryId={selectedCategory.account_category_id}
+            initialName={selectedCategory.account_category_name}
+            initialDescription={selectedCategory.description}
+            onClose={closeUpdateModal}
+          />
+        )}
       </ModalComponent>
     </section>
   );

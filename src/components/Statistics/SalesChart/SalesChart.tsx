@@ -1,40 +1,50 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './SalesChart.module.css';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import { RangeType, useSalesStore } from '@/store/salesStore';
+import { useSalesStore } from '@/store/salesStore';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import ChartDisplay from './ChartDisplay';
 import Loader from '@/components/Loader/Loader';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { RangeType } from '@/types/salesTypes';
+import ModalComponent from '@/components/ModalComponent/ModalComponent';
 
 const SalesChart: React.FC = () => {
   const t = useTranslations();
+  const [isOpenDownload, setIsOpenDownload] = useState(false);
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
+    string[]
+  >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
   const {
     chartSales,
-    error,
+    error: salesError,
     dateRange,
     yearlyChange,
     customPeriodLabel,
-    categories,
-    subcategories,
     setDateRange,
     setCustomPeriodLabel,
+  } = useSalesStore();
+
+  const {
+    categories,
+    subcategories,
     fetchCategories,
     fetchSubcategories,
-  } = useSalesStore();
+    error: categoriesError,
+  } = useCategoriesStore();
 
   useEffect(() => {
     if (chartSales.length !== 0) {
@@ -49,31 +59,48 @@ const SalesChart: React.FC = () => {
   }, [categories, fetchCategories]);
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetchSubcategories(parseInt(selectedCategory));
+    if (selectedCategoryIds.length > 0) {
+      fetchSubcategories(parseInt(selectedCategoryIds[0]));
     } else {
       fetchSubcategories();
-      setSelectedSubcategory('');
+      setSelectedSubcategoryIds([]);
     }
-  }, [selectedCategory, fetchSubcategories]);
+  }, [selectedCategoryIds, fetchSubcategories]);
 
   useEffect(() => {
-    if (dateRange !== 'custom' || customPeriodLabel) {
+    if (
+      dateRange !== 'custom' ||
+      (dateRange === 'custom' && customPeriodLabel)
+    ) {
       useSalesStore
         .getState()
         .fetchSalesAndYearlyChange(
           dateRange,
-          dateRange === 'custom'
+          dateRange === 'custom' && customStartDate
             ? customStartDate.split('.').reverse().join('-')
             : undefined,
-          dateRange === 'custom'
+          dateRange === 'custom' && customEndDate
             ? customEndDate.split('.').reverse().join('-')
             : undefined,
-          selectedCategory ? parseInt(selectedCategory) : undefined,
-          selectedSubcategory ? parseInt(selectedSubcategory) : undefined
+          selectedCategoryIds.length > 0
+            ? selectedCategoryIds.map(Number)
+            : undefined,
+          selectedSubcategoryIds.length > 0
+            ? selectedSubcategoryIds.map(Number)
+            : undefined
         );
     }
-  }, [dateRange, customPeriodLabel, selectedCategory, selectedSubcategory]);
+  }, [
+    dateRange,
+    customPeriodLabel,
+    selectedCategoryIds,
+    selectedSubcategoryIds,
+  ]);
+
+  const toggleDownload = useCallback(
+    () => setIsOpenDownload(prev => !prev),
+    []
+  );
 
   const formatDateInput = (value: string): string => {
     const numbers = value.replace(/\D/g, '').slice(0, 8);
@@ -187,6 +214,69 @@ const SalesChart: React.FC = () => {
 
   const exportToExcel = useExportToExcel({ sales: chartSales, dateRange });
 
+  const categoryMap = useMemo(
+    () =>
+      new Map(
+        categories.map(cat => [
+          cat.account_category_id,
+          cat.account_category_name,
+        ])
+      ),
+    [categories]
+  );
+  const subcategoryMap = useMemo(
+    () =>
+      new Map(
+        subcategories.map(sub => [
+          sub.account_subcategory_id,
+          sub.account_subcategory_name,
+        ])
+      ),
+    [subcategories]
+  );
+
+  const handleCategorySelect = (values: string[]) => {
+    const filteredValues = values.filter(
+      value => value !== t('Statistics.chart.toggler.togglerAllCategory')
+    );
+    if (filteredValues.length === 0) {
+      setSelectedCategoryIds([]);
+      setSelectedSubcategoryIds([]);
+    } else {
+      const newSelectedIds = filteredValues
+        .map(value => {
+          const category = categories.find(
+            cat => cat.account_category_name === value
+          );
+          return category ? String(category.account_category_id) : null;
+        })
+        .filter((id): id is string => id !== null);
+      setSelectedCategoryIds(newSelectedIds);
+      if (newSelectedIds.length > 0) setSelectedSubcategoryIds([]);
+    }
+  };
+
+  const handleSubcategorySelect = (values: string[]) => {
+    const filteredValues = values.filter(
+      value => value !== t('Statistics.chart.toggler.togglerAllName')
+    );
+    if (filteredValues.length === 0) {
+      setSelectedSubcategoryIds([]);
+    } else {
+      const newSelectedIds = filteredValues
+        .map(value => {
+          const subcategory = subcategories.find(
+            sub => sub.account_subcategory_name === value
+          );
+          return subcategory
+            ? String(subcategory.account_subcategory_id)
+            : null;
+        })
+        .filter((id): id is string => id !== null);
+      setSelectedSubcategoryIds(newSelectedIds);
+    }
+  };
+
   interface DateRangeOption {
     value: RangeType;
     label: string;
@@ -201,197 +291,200 @@ const SalesChart: React.FC = () => {
     { value: 'year', label: 'togglerDataYear' },
   ];
 
-  const handleCategorySelect = (value: string) => {
-    const selectedCat = categories.find(
-      cat => cat.account_category_name === value
-    );
-    const newCategoryId = selectedCat
-      ? String(selectedCat.account_category_id)
-      : '';
-    if (newCategoryId !== selectedCategory && selectedSubcategory) {
-      setSelectedSubcategory('');
-    }
-    setSelectedCategory(newCategoryId);
-  };
-
-  const handleSubcategorySelect = (value: string) => {
-    const selectedSub = subcategories.find(
-      sub => sub.account_subcategory_name === value
-    );
-    setSelectedSubcategory(
-      selectedSub ? String(selectedSub.account_subcategory_id) : ''
-    );
-  };
+  const error = salesError || categoriesError;
 
   return (
-    <div className={styles.chart_wrap} id="chart-container">
-      <h3 className={styles.chart_header}>{t('Statistics.chart.header')}</h3>
-      <span className={styles.chart_year_text}>
-        {yearlyChange !== null
-          ? `(${yearlyChange > 0 ? '+' : ''}${yearlyChange}%)`
-          : '(0%)'}{' '}
-        {t('Statistics.chart.headerText')}
-      </span>
-      <div className={styles.chart_togglers_wrap}>
-        <div className={styles.chart_toggler_block}>
-          <span className={styles.chart_toggler_label}>
-            {t('Statistics.chart.toggler.togglerType')}
-          </span>
-          <div className={styles.chart_toggler_buttons}>
-            <button
-              onClick={() => setDataType('amount')}
-              className={`${styles.chart_button} ${
-                dataType === 'amount' ? styles.active : ''
-              }`}
-            >
-              {t('Statistics.chart.toggler.togglerSum')}
-            </button>
-            <button
-              onClick={() => setDataType('quantity')}
-              className={`${styles.chart_button} ${
-                dataType === 'quantity' ? styles.active : ''
-              }`}
-            >
-              {t('Statistics.chart.toggler.togglerQuantity')}
-            </button>
+    <>
+      <div className={styles.chart_wrap} id="chart-container">
+        {showLoader && <Loader error={error} />}
+        <h3 className={styles.chart_header}>{t('Statistics.chart.header')}</h3>
+        <span className={styles.chart_year_text}>
+          {yearlyChange !== null
+            ? `(${yearlyChange > 0 ? '+' : ''}${yearlyChange}%)`
+            : '(0%)'}{' '}
+          {t('Statistics.chart.headerText')}
+        </span>
+        <div className={styles.chart_togglers_wrap}>
+          <div className={styles.chart_toggler_block}>
+            <span className={styles.chart_toggler_label}>
+              {t('Statistics.chart.toggler.togglerType')}
+            </span>
+            <div className={styles.chart_toggler_buttons}>
+              <button
+                onClick={() => setDataType('amount')}
+                className={`${styles.chart_button} ${
+                  dataType === 'amount' ? styles.active : ''
+                }`}
+              >
+                {t('Statistics.chart.toggler.togglerSum')}
+              </button>
+              <button
+                onClick={() => setDataType('quantity')}
+                className={`${styles.chart_button} ${
+                  dataType === 'quantity' ? styles.active : ''
+                }`}
+              >
+                {t('Statistics.chart.toggler.togglerQuantity')}
+              </button>
+            </div>
+          </div>
+          <div className={styles.chart_toggler_block}>
+            <span className={styles.chart_toggler_label}>
+              {t('Statistics.chart.toggler.togglerData')}
+            </span>
+            <div className={styles.chart_toggler_buttons}>
+              {dateRangeOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => handleDateRangeChange(value)}
+                  className={`${styles.chart_button} ${
+                    dateRange === value ? styles.active : ''
+                  }`}
+                >
+                  {t(`Statistics.chart.toggler.${label}`)}
+                </button>
+              ))}
+              <div className={styles.chart_toggler_button_wrap}>
+                <button
+                  key="custom"
+                  onClick={handleCustomButtonClick}
+                  className={`${styles.chart_button} ${
+                    dateRange === 'custom' ? styles.active : ''
+                  }`}
+                >
+                  <Icon name="icon-stat_calendar_grey" width={14} height={14} />
+                  {dateRange === 'custom' && customPeriodLabel
+                    ? customPeriodLabel
+                    : t('Statistics.chart.toggler.togglerDataCustom')}
+                </button>
+                {dateRange === 'custom' && isCustomDateOpen && (
+                  <div className={styles.custom_date_range}>
+                    <input
+                      type="text"
+                      value={customStartDate}
+                      className={styles.custom_date_range_input}
+                      onChange={e =>
+                        handleCustomDateInput('start', e.target.value)
+                      }
+                      placeholder="dd.mm.yyyy"
+                      maxLength={10}
+                    />
+                    -
+                    <input
+                      type="text"
+                      value={customEndDate}
+                      className={styles.custom_date_range_input}
+                      onChange={e =>
+                        handleCustomDateInput('end', e.target.value)
+                      }
+                      placeholder="dd.mm.yyyy"
+                      maxLength={10}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        <div className={styles.chart_toggler_block}>
-          <span className={styles.chart_toggler_label}>
-            {t('Statistics.chart.toggler.togglerData')}
-          </span>
-          <div className={styles.chart_toggler_buttons}>
-            {dateRangeOptions.map(({ value, label }) => (
+
+        <div className={styles.chart_category_wrap}>
+          <CustomSelect
+            label={t('Statistics.chart.toggler.togglerCategory')}
+            options={[
+              t('Statistics.chart.toggler.togglerAllCategory'),
+              ...(Array.isArray(categories)
+                ? categories.map(cat => cat.account_category_name)
+                : []),
+            ]}
+            selected={
+              selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(
+                    id => categoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('Statistics.chart.toggler.togglerAllCategory')]
+            }
+            onSelect={handleCategorySelect}
+            minSelectWidth={150}
+          />
+          <CustomSelect
+            label={t('Statistics.chart.toggler.togglerName')}
+            options={[
+              t('Statistics.chart.toggler.togglerAllName'),
+              ...(Array.isArray(subcategories)
+                ? subcategories.map(sub => sub.account_subcategory_name)
+                : []),
+            ]}
+            selected={
+              selectedSubcategoryIds.length > 0
+                ? selectedSubcategoryIds.map(
+                    id => subcategoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('Statistics.chart.toggler.togglerAllName')]
+            }
+            onSelect={handleSubcategorySelect}
+            minSelectWidth={170}
+          />
+        </div>
+
+        <ChartDisplay
+          chartSales={chartSales}
+          chartType={chartType}
+          dataType={dataType}
+        />
+
+        <div className={styles.bottom_wrap}>
+          <WhiteBtn
+            onClick={toggleDownload}
+            text="Statistics.chart.buttonText"
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <div className={styles.chart_toggler_block}>
+            <span className={styles.chart_toggler_label}>
+              {t('Statistics.chart.chartView')}
+            </span>
+            <div className={styles.chart_toggler_buttons}>
               <button
-                key={value}
-                onClick={() => handleDateRangeChange(value)}
+                onClick={() => setChartType('line')}
                 className={`${styles.chart_button} ${
-                  dateRange === value ? styles.active : ''
+                  chartType === 'line' ? styles.active : ''
                 }`}
               >
-                {t(`Statistics.chart.toggler.${label}`)}
+                {t('Statistics.chart.chartViewLinear')}
               </button>
-            ))}
-            <div className={styles.chart_toggler_button_wrap}>
               <button
-                key="custom"
-                onClick={handleCustomButtonClick}
+                onClick={() => setChartType('bar')}
                 className={`${styles.chart_button} ${
-                  dateRange === 'custom' ? styles.active : ''
+                  chartType === 'bar' ? styles.active : ''
                 }`}
               >
-                <Icon name="icon-stat_calendar_grey" width={14} height={14} />
-                {dateRange === 'custom' && customPeriodLabel
-                  ? customPeriodLabel
-                  : t('Statistics.chart.toggler.togglerDataCustom')}
+                {t('Statistics.chart.chartViewHistogram')}
               </button>
-              {dateRange === 'custom' && isCustomDateOpen && (
-                <div className={styles.custom_date_range}>
-                  <input
-                    type="text"
-                    value={customStartDate}
-                    className={styles.custom_date_range_input}
-                    onChange={e =>
-                      handleCustomDateInput('start', e.target.value)
-                    }
-                    placeholder="dd.mm.yyyy"
-                    maxLength={10}
-                  />
-                  -
-                  <input
-                    type="text"
-                    value={customEndDate}
-                    className={styles.custom_date_range_input}
-                    onChange={e => handleCustomDateInput('end', e.target.value)}
-                    placeholder="dd.mm.yyyy"
-                    maxLength={10}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
       </div>
-
-      <div className={styles.chart_category_wrap}>
-        <CustomSelect
-          label={t('Statistics.chart.toggler.togglerCategory')}
-          options={[
-            t('Statistics.chart.toggler.togglerAllCategory'),
-            ...(Array.isArray(categories)
-              ? categories.map(cat => cat.account_category_name)
-              : []),
-          ]}
-          selected={
-            selectedCategory
-              ? categories.find(
-                  cat => cat.account_category_id === parseInt(selectedCategory)
-                )?.account_category_name || ''
-              : t('Statistics.chart.toggler.togglerChooseCategory')
-          }
-          onSelect={handleCategorySelect}
-          minSelectWidth={150}
-        />
-        <CustomSelect
-          label={t('Statistics.chart.toggler.togglerName')}
-          options={[
-            t('Statistics.chart.toggler.togglerAllName'),
-            ...(Array.isArray(subcategories)
-              ? subcategories.map(sub => sub.account_subcategory_name)
-              : []),
-          ]}
-          selected={
-            selectedSubcategory
-              ? subcategories.find(
-                  sub =>
-                    sub.account_subcategory_id === parseInt(selectedSubcategory)
-                )?.account_subcategory_name || ''
-              : t('Statistics.chart.toggler.togglerChooseName')
-          }
-          onSelect={handleSubcategorySelect}
-          minSelectWidth={170}
-        />
-      </div>
-
-      {showLoader && <Loader error={error} />}
-      <ChartDisplay
-        chartSales={chartSales}
-        chartType={chartType}
-        dataType={dataType}
-      />
-
-      <div className={styles.bottom_wrap}>
-        <WhiteBtn
-          onClick={exportToExcel}
-          text="Statistics.chart.buttonText"
-          icon="icon-cloud-download"
-          iconFill="icon-cloud-download-fill"
-        />
-        <div className={styles.chart_toggler_block}>
-          <span className={styles.chart_toggler_label}>
-            {t('Statistics.chart.chartView')}
-          </span>
-          <div className={styles.chart_toggler_buttons}>
-            <button
-              onClick={() => setChartType('line')}
-              className={`${styles.chart_button} ${
-                chartType === 'line' ? styles.active : ''
-              }`}
-            >
-              {t('Statistics.chart.chartViewLinear')}
-            </button>
-            <button
-              onClick={() => setChartType('bar')}
-              className={`${styles.chart_button} ${
-                chartType === 'bar' ? styles.active : ''
-              }`}
-            >
-              {t('Statistics.chart.chartViewHistogram')}
-            </button>
-          </div>
+      <ModalComponent
+        title="AllAccounts.modalUpdate.titleDownload"
+        isOpen={isOpenDownload}
+        onClose={toggleDownload}
+      >
+        <div className={styles.modal_btn_wrap}>
+          <WhiteBtn
+            onClick={exportToExcel}
+            text={'AllAccounts.downloadBtn'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <WhiteBtn
+            onClick={exportToExcel}
+            text={'AllAccounts.downloadBtnAll'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
         </div>
-      </div>
-    </div>
+      </ModalComponent>
+    </>
   );
 };
 

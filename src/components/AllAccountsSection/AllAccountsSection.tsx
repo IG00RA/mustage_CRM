@@ -18,8 +18,12 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
-import { Account, useSalesStore } from '@/store/salesStore';
 import Loader from '../Loader/Loader';
+import { Account } from '@/types/salesTypes';
+import { useAccountsStore } from '@/store/accountsStore';
+import { useSellersStore } from '@/store/sellersStore';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { PaginationState } from '@/types/componentsTypes';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 
@@ -33,19 +37,25 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.mega',
 ];
 
+const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';
+
 export default function AllAccountsSection() {
   const t = useTranslations();
+
+  const { accounts, fetchAccounts, error: accountsError } = useAccountsStore();
   const {
-    accounts,
     categories,
     subcategories,
-    sellers,
-    fetchAccounts,
     fetchCategories,
     fetchSubcategories,
-    fetchSellers,
-    error,
-  } = useSalesStore();
+    error: categoriesError,
+  } = useCategoriesStore();
+
+  const { sellers, fetchSellers, error: sellersError } = useSellersStore();
+
+  const error =
+    [accountsError, categoriesError, sellersError].filter(Boolean).join('; ') ||
+    null;
 
   const [globalFilter, setGlobalFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -55,15 +65,39 @@ export default function AllAccountsSection() {
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
     string[]
   >([]);
-  const [selectedStatus, setSelectedStatus] = useState<
-    'SOLD' | 'NOT SOLD' | 'REPLACED' | null
-  >(null);
-  const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
+  const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
   const [totalRows, setTotalRows] = useState<number>(0);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5,
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(ACCOUNTS_PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : {
+            pageIndex: 0,
+            pageSize: 5,
+          };
+    }
+    return {
+      pageIndex: 0,
+      pageSize: 5,
+    };
   });
+  const [inputValue, setInputValue] = useState<string>(
+    String(pagination.pageSize)
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ACCOUNTS_PAGINATION_KEY, JSON.stringify(pagination));
+    }
+  }, [pagination]);
+
+  useEffect(() => {
+    setInputValue(String(pagination.pageSize));
+  }, [pagination.pageSize]);
+
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [selectedColumns, setSelectedColumns] =
     useState<string[]>(settingsOptions);
@@ -110,8 +144,11 @@ export default function AllAccountsSection() {
           selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
             ? selectedCategoryIds.map(Number)
             : undefined,
-        status: selectedStatus as 'SOLD' | 'NOT SOLD' | 'REPLACED' | undefined,
-        seller_id: selectedSellerId ? Number(selectedSellerId) : undefined,
+        status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
+        seller_id:
+          selectedSellerIds.length > 0
+            ? selectedSellerIds.map(Number)
+            : undefined,
         limit: pagination.pageSize,
         offset: pagination.pageIndex * pagination.pageSize,
       });
@@ -121,11 +158,36 @@ export default function AllAccountsSection() {
   }, [
     selectedCategoryIds,
     selectedSubcategoryIds,
-    selectedStatus,
-    selectedSellerId,
+    selectedStatuses,
+    selectedSellerIds,
     pagination,
     fetchAccounts,
   ]);
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value);
+    },
+    []
+  );
+
+  const handleInputBlur = useCallback(() => {
+    const newSize = Number(inputValue);
+    if (!isNaN(newSize) && newSize > 0) {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: newSize,
+        pageIndex: 0,
+      }));
+    } else if (inputValue === '') {
+      setPagination(prev => ({
+        ...prev,
+        pageSize: 5,
+        pageIndex: 0,
+      }));
+      setInputValue('5');
+    }
+  }, [inputValue]);
 
   const toggleEditModal = useCallback(() => setIsOpenEdit(prev => !prev), []);
   const toggleDownload = useCallback(
@@ -158,11 +220,6 @@ export default function AllAccountsSection() {
       new Map(sellers.map(seller => [seller.seller_id, seller.seller_name])),
     [sellers]
   );
-  const statusMap = {
-    SOLD: t('AllAccounts.selects.statusSOLD'),
-    'NOT SOLD': t('AllAccounts.selects.statusNOTSOLD'),
-    REPLACED: t('AllAccounts.selects.statusREPLACED'),
-  };
 
   const columnDataMap: Record<
     string,
@@ -220,14 +277,6 @@ export default function AllAccountsSection() {
             'N/A';
           return categoryName.toLowerCase().includes(filterValue.toLowerCase());
         };
-      } else if (field === 'status') {
-        column.filterFn = (row, columnId, filterValue) =>
-          filterValue ? row.original.status === filterValue : true;
-      } else if (field === 'seller') {
-        column.filterFn = (row, columnId, filterValue) => {
-          const sellerId = row.original.seller?.seller_id;
-          return filterValue ? String(sellerId) === String(filterValue) : true;
-        };
       }
       return column;
     });
@@ -262,12 +311,21 @@ export default function AllAccountsSection() {
     ],
     [subcategories, t]
   );
+  const statusOptionsRaw = ['SOLD', 'NOTSOLD', 'REPLACED'];
   const statusOptions = useMemo(
     () => [
       t('AllAccounts.selects.allStatus'),
-      t('AllAccounts.selects.statusSOLD'),
-      t('AllAccounts.selects.statusNOTSOLD'),
-      t('AllAccounts.selects.statusREPLACED'),
+      ...statusOptionsRaw.map(status =>
+        t(`AllAccounts.selects.status${status}`)
+      ),
+    ],
+    [t]
+  );
+  const transferOptions = useMemo(
+    () => [
+      t('AllAccounts.selects.allTransfer'),
+      t('AllAccounts.selects.transferYes'),
+      t('AllAccounts.selects.transferNot'),
     ],
     [t]
   );
@@ -282,10 +340,8 @@ export default function AllAccountsSection() {
   const columnFilters = useMemo(() => {
     const filters = [];
     if (categoryFilter) filters.push({ id: 'category', value: categoryFilter });
-    if (selectedSellerId)
-      filters.push({ id: 'seller', value: selectedSellerId });
     return filters;
-  }, [categoryFilter, selectedSellerId]);
+  }, [categoryFilter]);
 
   const table = useReactTable({
     data: accounts,
@@ -311,10 +367,23 @@ export default function AllAccountsSection() {
         (row.original.status || '').toLowerCase().includes(searchValue) ||
         (row.original.account_data || '').toLowerCase().includes(searchValue) ||
         (row.original.archive_link || '').toLowerCase().includes(searchValue);
-      const matchesStatus = selectedStatus
-        ? row.original.status === selectedStatus
-        : true;
-      return matchesSearch && matchesStatus;
+
+      const matchesStatus =
+        selectedStatuses.length === 0 ||
+        selectedStatuses.includes(row.original.status);
+
+      const matchesTransfer =
+        selectedTransfers.length === 0 ||
+        (selectedTransfers.includes(t('AllAccounts.selects.transferYes')) &&
+          row.original.isTransferred) ||
+        (selectedTransfers.includes(t('AllAccounts.selects.transferNot')) &&
+          !row.original.isTransferred);
+
+      const matchesSeller =
+        selectedSellerIds.length === 0 ||
+        selectedSellerIds.includes(String(row.original.seller?.seller_id));
+
+      return matchesSearch && matchesStatus && matchesTransfer && matchesSeller;
     },
   });
 
@@ -326,13 +395,14 @@ export default function AllAccountsSection() {
 
   const handleCategorySelect = useCallback(
     (values: string[]) => {
-      if (values.length === 0) {
-        // Якщо вибрано "Всі категорії" або скинуто вибір
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allCategories')
+      );
+      if (filteredValues.length === 0) {
         setSelectedCategoryIds([]);
-        setSelectedSubcategoryIds([]); // Скидаємо також підкатегорії
+        setSelectedSubcategoryIds([]);
       } else {
-        const newSelectedIds = values
-          .filter(value => value !== t('AllAccounts.selects.allCategories'))
+        const newSelectedIds = filteredValues
           .map(value => {
             const category = categories.find(
               cat => cat.account_category_name === value
@@ -349,13 +419,14 @@ export default function AllAccountsSection() {
 
   const handleSubcategorySelect = useCallback(
     (values: string[]) => {
-      if (values.length === 0) {
-        // Якщо вибрано "Всі підкатегорії" або скинуто вибір
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allNames')
+      );
+      if (filteredValues.length === 0) {
         setSelectedSubcategoryIds([]);
-        setSelectedCategoryIds([]); // Скидаємо також категорії
+        setSelectedCategoryIds([]);
       } else {
-        const newSelectedIds = values
-          .filter(value => value !== t('AllAccounts.selects.allNames'))
+        const newSelectedIds = filteredValues
           .map(value => {
             const subcategory = subcategories.find(
               sub => sub.account_subcategory_name === value
@@ -373,26 +444,57 @@ export default function AllAccountsSection() {
   );
 
   const handleStatusSelect = useCallback(
-    (value: string) => {
-      const statusMapKeys: {
-        [key: string]: 'SOLD' | 'NOT SOLD' | 'REPLACED' | null;
-      } = {
-        [t('AllAccounts.selects.allStatus')]: null,
-        [t('AllAccounts.selects.statusSOLD')]: 'SOLD',
-        [t('AllAccounts.selects.statusNOTSOLD')]: 'NOT SOLD',
-        [t('AllAccounts.selects.statusREPLACED')]: 'REPLACED',
-      };
-      setSelectedStatus(statusMapKeys[value] || null);
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allStatus')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedStatuses([]);
+      } else {
+        const rawStatuses = filteredValues
+          .map(value => {
+            const index = statusOptions.indexOf(value);
+            return index > 0 ? statusOptionsRaw[index - 1] : null;
+          })
+          .filter((status): status is string => status !== null);
+        setSelectedStatuses(rawStatuses);
+      }
+    },
+    [t, statusOptions, statusOptionsRaw]
+  );
+
+  const handleTransferSelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allTransfer')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedTransfers([]);
+      } else {
+        setSelectedTransfers(filteredValues);
+      }
     },
     [t]
   );
 
   const handleSellerSelect = useCallback(
-    (value: string) => {
-      const seller = sellers.find(seller => seller.seller_name === value);
-      setSelectedSellerId(seller ? String(seller.seller_id) : null);
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.sellerAll')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedSellerIds([]);
+      } else {
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const seller = sellers.find(seller => seller.seller_name === value);
+            return seller ? String(seller.seller_id) : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedSellerIds(newSelectedIds);
+      }
     },
-    [sellers]
+    [sellers, t]
   );
 
   return (
@@ -405,23 +507,25 @@ export default function AllAccountsSection() {
             label={t('AllAccounts.selects.status')}
             options={statusOptions}
             selected={
-              selectedStatus
-                ? [statusMap[selectedStatus]]
+              selectedStatuses.length > 0
+                ? selectedStatuses.map(status =>
+                    t(`AllAccounts.selects.status${status}`)
+                  )
                 : [t('AllAccounts.selects.allStatus')]
             }
-            onSelect={values => handleStatusSelect(values[0])}
+            onSelect={handleStatusSelect}
             width={508}
             selectWidth={383}
           />
           <CustomSelect
             label={t('AllAccounts.selects.transfer')}
-            options={[
-              t('AllAccounts.selects.allTransfer'),
-              t('AllAccounts.selects.transferYes'),
-              t('AllAccounts.selects.transferNot'),
-            ]}
-            selected={['']}
-            onSelect={() => {}}
+            options={transferOptions}
+            selected={
+              selectedTransfers.length > 0
+                ? selectedTransfers
+                : [t('AllAccounts.selects.allTransfer')]
+            }
+            onSelect={handleTransferSelect}
             width={508}
             selectWidth={383}
           />
@@ -429,11 +533,39 @@ export default function AllAccountsSection() {
             label={t('AllAccounts.selects.seller')}
             options={sellerOptions}
             selected={
-              selectedSellerId
-                ? [sellerMap.get(parseInt(selectedSellerId)) || '']
+              selectedSellerIds.length > 0
+                ? selectedSellerIds.map(id => sellerMap.get(parseInt(id)) || '')
                 : [t('AllAccounts.selects.sellerAll')]
             }
-            onSelect={values => handleSellerSelect(values[0])}
+            onSelect={handleSellerSelect}
+            width={508}
+            selectWidth={383}
+          />
+          <CustomSelect
+            label={t('AllAccounts.selects.categories')}
+            options={categoryOptions}
+            selected={
+              selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(
+                    id => categoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allCategories')]
+            }
+            onSelect={handleCategorySelect}
+            width={508}
+            selectWidth={383}
+          />
+          <CustomSelect
+            label={t('AllAccounts.selects.names')}
+            options={subcategoryOptions}
+            selected={
+              selectedSubcategoryIds.length > 0
+                ? selectedSubcategoryIds.map(
+                    id => subcategoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allNames')]
+            }
+            onSelect={handleSubcategorySelect}
             width={508}
             selectWidth={383}
           />
@@ -527,22 +659,33 @@ export default function AllAccountsSection() {
             <span className={styles.pagination_text}>
               {t('Category.table.pagination')}
             </span>
-            <select
-              className={styles.pagination_select}
-              value={pagination.pageSize}
-              onChange={e =>
-                setPagination({
-                  pageSize: Number(e.target.value),
-                  pageIndex: 0,
-                })
-              }
-            >
-              {[5, 10, 20].map(size => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
+            <div className={styles.pagination_wrapper}>
+              <select
+                className={styles.pagination_select}
+                value={pagination.pageSize}
+                onChange={e =>
+                  setPagination(prev => ({
+                    ...prev,
+                    pageSize: Number(e.target.value),
+                    pageIndex: 0,
+                  }))
+                }
+              >
+                {[5, 10, 20].map(size => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                className={styles.pagination_input}
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                min={1}
+              />
+            </div>
             <span className={styles.pagination_text}>
               {pagination.pageIndex * pagination.pageSize + 1}-
               {Math.min(

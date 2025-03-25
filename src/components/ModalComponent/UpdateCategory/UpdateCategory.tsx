@@ -4,26 +4,70 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { ENDPOINTS } from '@/constants/api';
+import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { useEffect } from 'react';
+import {
+  UpdateCategoryFormData,
+  UpdateCategoryProps,
+} from '@/types/componentsTypes';
 
-type FormData = {
-  columnName: string;
-  displayName: string;
-};
-
-export default function UpdateCategory() {
+export default function UpdateCategory({
+  categoryId,
+  initialName,
+  initialDescription,
+  onClose,
+}: UpdateCategoryProps) {
   const t = useTranslations('');
+  const { fetchCategories } = useCategoriesStore();
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<UpdateCategoryFormData>({
+    defaultValues: {
+      account_category_name: initialName,
+      description: initialDescription || '', // Встановлюємо початковий опис
+    },
+  });
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-    toast.success(t('DBSettings.form.okMessage'));
-    reset();
+  // Встановлюємо початкові значення для полів
+  useEffect(() => {
+    setValue('account_category_name', initialName);
+    setValue('description', initialDescription || ''); // Оновлюємо description при зміні пропса
+  }, [initialName, initialDescription, setValue]);
+
+  const onSubmit = async (data: UpdateCategoryFormData) => {
+    try {
+      await fetchWithErrorHandling(
+        `${ENDPOINTS.CATEGORIES}/${categoryId}`,
+        {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            account_category_name: data.account_category_name,
+            description: data.description,
+          }),
+        },
+        () => {} // Поки що не оновлюємо стан напряму
+      );
+
+      toast.success(t('Category.modalUpdate.successMessage'));
+      await fetchCategories();
+      reset();
+      onClose();
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('Category.modalUpdate.errorMessage')
+      );
+    }
   };
 
   return (
@@ -34,15 +78,15 @@ export default function UpdateCategory() {
         </label>
         <input
           className={`${styles.input} ${
-            errors.columnName ? styles.input_error : ''
+            errors.account_category_name ? styles.input_error : ''
           }`}
           placeholder={t('DBSettings.form.placeholder')}
-          {...register('columnName', {
+          {...register('account_category_name', {
             required: t('DBSettings.form.errorMessage'),
           })}
         />
-        {errors.columnName && (
-          <p className={styles.error}>{errors.columnName.message}</p>
+        {errors.account_category_name && (
+          <p className={styles.error}>{errors.account_category_name.message}</p>
         )}
       </div>
 
@@ -52,19 +96,25 @@ export default function UpdateCategory() {
         </label>
         <input
           className={`${styles.input} ${
-            errors.displayName ? styles.input_error : ''
+            errors.description ? styles.input_error : ''
           }`}
           placeholder={t('DBSettings.form.placeholder')}
-          {...register('displayName', {
+          {...register('description', {
             required: t('DBSettings.form.errorMessage'),
           })}
         />
-        {errors.displayName && (
-          <p className={styles.error}>{errors.displayName.message}</p>
+        {errors.description && (
+          <p className={styles.error}>{errors.description.message}</p>
         )}
       </div>
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />
+        <CancelBtn
+          text="DBSettings.form.cancelBtn"
+          onClick={() => {
+            reset();
+            onClose();
+          }}
+        />
         <SubmitBtn text="Category.modalUpdate.createBtn" />
       </div>
     </form>

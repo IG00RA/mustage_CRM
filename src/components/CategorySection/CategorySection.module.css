@@ -149,3 +149,25 @@
     outline: none;
   }
 }
+
+.pagination_wrapper {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.pagination_input {
+  width: 40px;
+  display: inline-block;
+  padding: 2px;
+  color: var(--text_dark);
+  font-family: var(--font_sans);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--grey);
+  outline: none;
+}
