@@ -12,6 +12,7 @@ interface SelectProps {
   width?: string | number;
   selectWidth?: string | number;
   minSelectWidth?: string | number;
+  multiSelections?: boolean;
 }
 
 export default function CustomSelect({
@@ -22,6 +23,7 @@ export default function CustomSelect({
   width,
   selectWidth,
   minSelectWidth,
+  multiSelections = true,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -43,14 +45,23 @@ export default function CustomSelect({
   }, []);
 
   const handleOptionClick = (option: string, index: number) => {
-    if (index === 0) {
-      onSelect([]);
-      setIsOpen(false);
+    if (multiSelections) {
+      // Логіка для множинного вибору
+      if (index === 0) {
+        // Перший елемент скидає вибір
+        onSelect([]);
+        setIsOpen(false);
+      } else {
+        const newSelected = selected.includes(option)
+          ? selected.filter(item => item !== option) // Видаляємо, якщо вже вибрано
+          : [...selected, option]; // Додаємо, якщо не вибрано
+        onSelect(newSelected);
+      }
     } else {
-      const newSelected = selected.includes(option)
-        ? selected.filter(item => item !== option) // Видаляємо, якщо вже вибрано
-        : [...selected, option]; // Додаємо, якщо не вибрано
+      // Логіка для одинарного вибору
+      const newSelected = selected.includes(option) ? [] : [option]; // Якщо елемент уже вибраний, очищаємо, інакше вибираємо його
       onSelect(newSelected);
+      setIsOpen(false); // Закриваємо селект після вибору
     }
   };
 

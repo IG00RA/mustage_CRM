@@ -38,6 +38,7 @@
   align-items: center;
   transition: border 0.3s ease;
   white-space: nowrap;
+  min-width: 180px;
 
   & svg {
     transition: transform 0.3s ease;

@@ -237,7 +237,7 @@ export default function NamesSection() {
               onClick={() =>
                 openShowNamesDescription(
                   row.original.account_subcategory_name,
-                  row.original.description ||""
+                  row.original.description || ''
                 )
               }
             />
@@ -454,7 +454,7 @@ export default function NamesSection() {
         title="Names.modalCreate.title"
         text="Names.modalCreate.description"
       >
-        <CreateNames />
+        <CreateNames onClose={toggleCreateModal} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenCreateNamesSet}
@@ -471,7 +471,7 @@ export default function NamesSection() {
         editedTitle={updateTitle}
       >
         <ShowNamesDescription
-          description={selectedDescription} 
+          description={selectedDescription}
           onClose={closeShowNamesDescription}
         />
       </ModalComponent>
