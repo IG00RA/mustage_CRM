@@ -1,7 +1,19 @@
+import { RangeType } from "./salesTypes";
+
 //Pagination
 export interface PaginationState {
   pageIndex: number;
   pageSize: number;
+}
+
+//Stat
+export interface DateRangeSelectorProps {
+  dateRange: RangeType;
+  customPeriodLabel?: string;
+  onDateRangeChange: (range: RangeType) => void;
+  onCustomDatesChange: (start: string, end: string) => void;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }
 
 //Category
