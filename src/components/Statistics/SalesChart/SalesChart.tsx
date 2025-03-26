@@ -21,9 +21,9 @@ const SalesChart: React.FC = () => {
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
-    string[]
+    number[]
   >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
@@ -59,7 +59,7 @@ const SalesChart: React.FC = () => {
 
   useEffect(() => {
     if (selectedCategoryIds.length > 0) {
-      fetchSubcategories(parseInt(selectedCategoryIds[0]));
+      fetchSubcategories(selectedCategoryIds[0]);
     } else {
       fetchSubcategories();
       setSelectedSubcategoryIds([]);
@@ -82,10 +82,14 @@ const SalesChart: React.FC = () => {
             ? customEndDate.split('.').reverse().join('-')
             : undefined,
           selectedCategoryIds.length > 0
-            ? selectedCategoryIds.map(Number)
+            ? selectedCategoryIds.length === 1
+              ? selectedCategoryIds[0]
+              : selectedCategoryIds
             : undefined,
           selectedSubcategoryIds.length > 0
-            ? selectedSubcategoryIds.map(Number)
+            ? selectedSubcategoryIds.length === 1
+              ? selectedSubcategoryIds[0]
+              : selectedSubcategoryIds
             : undefined
         );
     }
@@ -151,9 +155,9 @@ const SalesChart: React.FC = () => {
           const category = categories.find(
             cat => cat.account_category_name === value
           );
-          return category ? String(category.account_category_id) : null;
+          return category ? category.account_category_id : null;
         })
-        .filter((id): id is string => id !== null);
+        .filter((id): id is number => id !== null);
       setSelectedCategoryIds(newSelectedIds);
       if (newSelectedIds.length > 0) setSelectedSubcategoryIds([]);
     }
@@ -171,11 +175,9 @@ const SalesChart: React.FC = () => {
           const subcategory = subcategories.find(
             sub => sub.account_subcategory_name === value
           );
-          return subcategory
-            ? String(subcategory.account_subcategory_id)
-            : null;
+          return subcategory ? subcategory.account_subcategory_id : null;
         })
-        .filter((id): id is string => id !== null);
+        .filter((id): id is number => id !== null);
       setSelectedSubcategoryIds(newSelectedIds);
     }
   };
@@ -238,9 +240,7 @@ const SalesChart: React.FC = () => {
             ]}
             selected={
               selectedCategoryIds.length > 0
-                ? selectedCategoryIds.map(
-                    id => categoryMap.get(parseInt(id)) || ''
-                  )
+                ? selectedCategoryIds.map(id => categoryMap.get(id) || '')
                 : [t('Statistics.chart.toggler.togglerAllCategory')]
             }
             onSelect={handleCategorySelect}
@@ -256,9 +256,7 @@ const SalesChart: React.FC = () => {
             ]}
             selected={
               selectedSubcategoryIds.length > 0
-                ? selectedSubcategoryIds.map(
-                    id => subcategoryMap.get(parseInt(id)) || ''
-                  )
+                ? selectedSubcategoryIds.map(id => subcategoryMap.get(id) || '')
                 : [t('Statistics.chart.toggler.togglerAllName')]
             }
             onSelect={handleSubcategorySelect}

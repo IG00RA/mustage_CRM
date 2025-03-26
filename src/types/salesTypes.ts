@@ -89,8 +89,8 @@ export interface SalesState {
     range: RangeType,
     customStart?: string,
     customEnd?: string,
-    categoryId?: number,
-    subcategoryId?: number
+    categoryId?: number | number[],
+    subcategoryId?: number | number[]
   ) => Promise<void>;
 }
 

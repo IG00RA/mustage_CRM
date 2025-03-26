@@ -147,10 +147,38 @@ export const useSalesStore = create<SalesState>(set => ({
   },
 
   fetchReport: async (reportType, params) => {
-    const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined)
-    );
-    const query = new URLSearchParams(filteredParams).toString();
+    const queryParams = new URLSearchParams();
+
+    // Додаємо параметри дати
+    Object.entries(params).forEach(([key, value]) => {
+      if (
+        key !== 'category_id' &&
+        key !== 'subcategory_id' &&
+        value !== undefined
+      ) {
+        queryParams.append(key, String(value));
+      }
+    });
+
+    // Додаємо category_id як окремі параметри
+    if (params.category_id && Array.isArray(params.category_id)) {
+      params.category_id.forEach((id: number) => {
+        queryParams.append('category_id', String(id));
+      });
+    } else if (params.category_id) {
+      queryParams.append('category_id', String(params.category_id));
+    }
+
+    // Додаємо subcategory_id як окремі параметри
+    if (params.subcategory_id && Array.isArray(params.subcategory_id)) {
+      params.subcategory_id.forEach((id: number) => {
+        queryParams.append('subcategory_id', String(id));
+      });
+    } else if (params.subcategory_id) {
+      queryParams.append('subcategory_id', String(params.subcategory_id));
+    }
+
+    const query = queryParams.toString();
     const endpoint =
       reportType === 'hourly'
         ? `${ENDPOINTS.SALES_HOURLY}${query ? `?${query}` : ''}`
@@ -161,6 +189,7 @@ export const useSalesStore = create<SalesState>(set => ({
         : reportType === 'yearly'
         ? `${ENDPOINTS.SALES_YEARLY}${query ? `?${query}` : ''}`
         : `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
+
     const data = await fetchWithErrorHandling<any>(
       endpoint,
       { method: 'GET' },
@@ -177,8 +206,8 @@ export const useSalesStore = create<SalesState>(set => ({
     range,
     customStart,
     customEnd,
-    categoryId,
-    subcategoryId
+    categoryId?,
+    subcategoryId?
   ) => {
     const { reportType, current, lastYear } = getDateRangeParams(
       range,
@@ -186,9 +215,28 @@ export const useSalesStore = create<SalesState>(set => ({
       customEnd
     );
     const params: Record<string, string | string[]> = {};
-    if (categoryId && categoryId.length > 0) params.category_id = categoryId;
-    if (subcategoryId && subcategoryId.length > 0)
-      params.subcategory_id = subcategoryId;
+
+    // Обробка categoryId
+    if (categoryId !== undefined) {
+      if (Array.isArray(categoryId)) {
+        if (categoryId.length > 0) {
+          params.category_id = categoryId.map(String);
+        }
+      } else {
+        params.category_id = String(categoryId);
+      }
+    }
+
+    // Обробка subcategoryId
+    if (subcategoryId !== undefined) {
+      if (Array.isArray(subcategoryId)) {
+        if (subcategoryId.length > 0) {
+          params.subcategory_id = subcategoryId.map(String);
+        }
+      } else {
+        params.subcategory_id = String(subcategoryId);
+      }
+    }
 
     const currentSales = await useSalesStore
       .getState()
