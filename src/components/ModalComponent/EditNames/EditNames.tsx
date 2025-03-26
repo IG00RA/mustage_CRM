@@ -18,8 +18,8 @@ import { Subcategory } from '@/types/salesTypes';
 
 type FormData = {
   nameField: string;
-  price: string;
-  cost: string;
+  price: number;
+  cost: number;
   nameDescription: string;
   separator: string;
   settings: string[];
@@ -68,8 +68,8 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
   } = useForm<FormData>({
     defaultValues: {
       nameField: '',
-      price: '',
-      cost: '',
+      price: 0,
+      cost: 0,
       nameDescription: '',
       separator: '',
     },
@@ -79,8 +79,8 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
     if (subcategory) {
       // Заповнення основних полів
       setValue('nameField', subcategory.account_subcategory_name);
-      setValue('price', String(subcategory.price));
-      setValue('cost', String(subcategory.cost_price));
+      setValue('price', subcategory.price);
+      setValue('cost', subcategory.cost_price);
       setValue('nameDescription', subcategory.description || '');
       setValue('separator', subcategory.output_separator || '');
 
@@ -147,8 +147,8 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
           headers: getAuthHeaders(),
           body: JSON.stringify({
             account_subcategory_name: data.nameField,
-            price: Number(data.price),
-            cost_price: Number(data.cost),
+            price: data.price,
+            cost_price: data.cost,
             description: data.nameDescription,
             output_format_field: mappedSettings,
             output_separator: data.separator,
@@ -164,11 +164,6 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
       onClose();
     } catch (error) {
       console.error('Error updating subcategory:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Names.modalCreate.errorMessage')
-      );
     }
   };
 

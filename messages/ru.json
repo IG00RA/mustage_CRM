@@ -170,7 +170,10 @@
       "setSettingsPrice": "Себестоимость набора:",
       "setSettingsDescription": "Описание набора:",
       "descriptionField": "Описание категории:",
-      "createBtn": "Создать набор"
+      "createBtn": "Создать набор",
+      "errorMessage": "Добавтe наименование в набор",
+      "errorSetAddedMessage": "Виберите наименование и количество",
+      "setAdded": "Наименование добавлено в набор"
     },
     "modalUpdate": {
       "title": "Редактировать наименования ",

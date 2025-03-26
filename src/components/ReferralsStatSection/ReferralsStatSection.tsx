@@ -443,7 +443,7 @@ export default function ReferralsStatSection() {
               }))
             }
           >
-            {[5, 10, 20].map(size => (
+            {[5, 10, 20, 50, 100].map(size => (
               <option key={size} value={size}>
                 {size}
               </option>

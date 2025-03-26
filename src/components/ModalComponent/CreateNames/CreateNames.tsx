@@ -19,9 +19,9 @@ import { Subcategory } from '@/types/salesTypes';
 
 type FormData = {
   nameField: string;
-  account_category_id: string;
-  price: string;
-  cost: string;
+  account_category_id: number;
+  price: number;
+  cost: number;
   nameDescription: string;
   separator: string;
   settings: string[];
@@ -52,14 +52,14 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      account_category_id: '',
+      account_category_id: 0,
     },
   });
 
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >({});
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
   const [order, setOrder] = useState<string[]>(settingsOptions);
 
   const toggleCheckbox = (id: string) => {
@@ -109,7 +109,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       cat => cat.account_category_name === selectedName
     );
     if (selectedCat) {
-      const categoryId = String(selectedCat.account_category_id);
+      const categoryId = Number(selectedCat.account_category_id);
       setSelectedCategoryId(categoryId);
       setValue('account_category_id', categoryId);
     }
@@ -129,9 +129,10 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            account_subcategory_id: Number(data.account_category_id),
-            price: Number(data.price),
-            cost_price: Number(data.cost),
+            account_subcategory_name: data.nameField,
+            account_category_id: data.account_category_id,
+            price: data.price,
+            cost_price: data.cost,
             description: data.nameDescription,
             output_format_field: mappedSettings,
             output_separator: data.separator,
@@ -144,10 +145,13 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       toast.success(t('Names.okMessage'));
       reset();
       setCheckedSettings({});
-      setSelectedCategoryId('');
+      setSelectedCategoryId(0);
       onClose();
     } catch (error) {
-      console.error('Error creating subcategory:', error);
+      console.error(
+        'Error creating subcategory:',
+        typeof error === 'string' ? error : 'Произошла ошибка'
+      );
     }
   };
   return (
@@ -181,7 +185,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           options={categoryOptions}
           selected={
             selectedCategoryId
-              ? [categoryMap.get(parseInt(selectedCategoryId)) || '']
+              ? [categoryMap.get(selectedCategoryId) || '']
               : ['']
           }
           onSelect={handleCategorySelect}
@@ -299,7 +303,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           onClick={() => {
             reset();
             setCheckedSettings({});
-            setSelectedCategoryId('');
+            setSelectedCategoryId(0);
             onClose();
           }}
         />

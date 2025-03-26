@@ -10,4 +10,5 @@ export const ENDPOINTS = {
   SUBCATEGORIES: `${BASE_URL}/subcategories`,
   ACCOUNTS: `${BASE_URL}/accounts`,
   SELLERS: `${BASE_URL}/sellers`,
+  ACCOUNT_SETS: `${BASE_URL}/account-sets`,
 };

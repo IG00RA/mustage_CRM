@@ -34,7 +34,7 @@ export const fetchWithErrorHandling = async <T>(
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
     set({ loading: false, error: errorMessage });
-    toast.error(errorMessage);
+    toast.error(typeof error === 'string' ? error : 'Произошла ошибка');
     throw error;
   }
 };

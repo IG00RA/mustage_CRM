@@ -388,33 +388,23 @@ export default function NamesSection() {
           <span className={styles.pagination_text}>
             {t('Category.table.pagination')}
           </span>
-          <div className={styles.pagination_wrapper}>
-            <select
-              className={styles.pagination_select}
-              value={pagination.pageSize}
-              onChange={e =>
-                setPagination(prev => ({
-                  ...prev,
-                  pageSize: Number(e.target.value),
-                  pageIndex: 0,
-                }))
-              }
-            >
-              {[5, 10, 20].map(size => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              className={styles.pagination_input}
-              value={inputValue}
-              onChange={handleInputChange}
-              onBlur={handleInputBlur}
-              min={1}
-            />
-          </div>
+          <select
+            className={styles.pagination_select}
+            value={pagination.pageSize}
+            onChange={e =>
+              setPagination(prev => ({
+                ...prev,
+                pageSize: Number(e.target.value),
+                pageIndex: 0,
+              }))
+            }
+          >
+            {[5, 10, 20, 50, 100].map(size => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
           <span className={styles.pagination_text}>
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(
@@ -466,7 +456,7 @@ export default function NamesSection() {
         title="Names.modalCreateSet.title"
         text="Names.modalCreateSet.description"
       >
-        <CreateNamesSet />
+        <CreateNamesSet onClose={toggleCreateNamesSet} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenShowNamesDescription}
