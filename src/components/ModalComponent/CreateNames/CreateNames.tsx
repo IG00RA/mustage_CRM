@@ -19,12 +19,25 @@ import { Subcategory } from '@/types/salesTypes';
 
 type FormData = {
   nameField: string;
-  account_category_id: string; // Змінено на string для селекту
+  account_category_id: string;
   price: string;
   cost: string;
   nameDescription: string;
   separator: string;
   settings: string[];
+};
+
+const settingsOptions = [
+  'Names.modalCreate.id',
+  'Names.modalCreate.data',
+  'Names.modalCreate.megaLink',
+];
+
+// Мапінг ключів локалізації на потрібні значення
+const settingsMapping: Record<string, string> = {
+  'Names.modalCreate.id': 'account_subcategory_id',
+  'Names.modalCreate.data': 'account_data',
+  'Names.modalCreate.megaLink': 'archive_link',
 };
 
 export default function CreateNames({ onClose }: { onClose: () => void }) {
@@ -39,7 +52,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      account_category_id: '', // Початкове значення для селекту
+      account_category_id: '',
     },
   });
 
@@ -47,6 +60,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
     Record<string, boolean>
   >({});
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [order, setOrder] = useState<string[]>(settingsOptions);
 
   const toggleCheckbox = (id: string) => {
     setCheckedSettings(prev => ({
@@ -55,11 +69,23 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
     }));
   };
 
-  const settingsOptions = [
-    'Names.modalCreate.id',
-    'Names.modalCreate.data',
-    'Names.modalCreate.megaLink',
-  ];
+  const handleReorder = (newOrder: string[]) => {
+    setOrder(newOrder);
+  };
+
+  const handleRemoveButton = (label: string) => {
+    const id = settingsOptions.find(id => t(id) === label);
+    if (id) {
+      setCheckedSettings(prev => ({
+        ...prev,
+        [id]: false,
+      }));
+    }
+  };
+
+  const activeButtons = useMemo(() => {
+    return order.filter(id => checkedSettings[id]).map(id => t(id));
+  }, [order, checkedSettings, t]);
 
   const categoryOptions = useMemo(
     () => categories.map(cat => cat.account_category_name),
@@ -78,57 +104,52 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
   );
 
   const handleCategorySelect = (values: string[]) => {
-    const selectedName = values[0]; // Беремо тільки перше значення, бо вибір один
+    const selectedName = values[0];
     const selectedCat = categories.find(
       cat => cat.account_category_name === selectedName
     );
     if (selectedCat) {
       const categoryId = String(selectedCat.account_category_id);
       setSelectedCategoryId(categoryId);
-      setValue('account_category_id', categoryId); // Оновлюємо значення форми
+      setValue('account_category_id', categoryId);
     }
   };
 
   const onSubmit = async (data: FormData) => {
     try {
-      const selectedSettings = Object.entries(checkedSettings)
-        .filter(([, checked]) => checked)
-        .map(([id]) => id);
+      // Отримуємо вибрані налаштування з урахуванням порядку з масиву order
+      const selectedSettings = order.filter(id => checkedSettings[id]);
 
-      const newSubcategory = await fetchWithErrorHandling<Subcategory>(
+      const mappedSettings = selectedSettings.map(
+        setting => settingsMapping[setting]
+      );
+      await fetchWithErrorHandling<Subcategory>(
         ENDPOINTS.SUBCATEGORIES,
         {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            account_subcategory_name: data.nameField,
-            account_category_id: Number(data.account_category_id),
+            account_subcategory_id: Number(data.account_category_id),
             price: Number(data.price),
             cost_price: Number(data.cost),
             description: data.nameDescription,
-            output_format_field: selectedSettings,
+            output_format_field: mappedSettings,
             output_separator: data.separator,
           }),
         },
         () => {}
       );
 
-      await fetchSubcategories(); // Оновлюємо список підкатегорій
-      toast.success(t('Names.modalCreate.successMessage'));
+      await fetchSubcategories();
+      toast.success(t('Names.okMessage'));
       reset();
       setCheckedSettings({});
       setSelectedCategoryId('');
       onClose();
     } catch (error) {
       console.error('Error creating subcategory:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Names.modalCreate.errorMessage')
-      );
     }
   };
-
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -153,8 +174,10 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className={styles.field}>
+        <label className={styles.label}>
+          {t('Names.modalCreate.nameCategoryField')}
+        </label>
         <CustomSelect
-          label={t('Names.modalCreate.nameCategoryField')}
           options={categoryOptions}
           selected={
             selectedCategoryId
@@ -162,7 +185,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
               : ['']
           }
           onSelect={handleCategorySelect}
-          width={298}
+          width={'100%'}
           multiSelections={false}
         />
         {errors.account_category_id && (
@@ -184,6 +207,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           }`}
           placeholder={t('DBSettings.form.placeholder')}
           type="number"
+          step="any"
           {...register('price', {
             required: t('DBSettings.form.errorMessage'),
             valueAsNumber: true,
@@ -198,6 +222,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           className={`${styles.input} ${errors.cost ? styles.input_error : ''}`}
           placeholder={t('DBSettings.form.placeholder')}
           type="number"
+          step="any"
           {...register('cost', {
             required: t('DBSettings.form.errorMessage'),
             valueAsNumber: true,
@@ -228,8 +253,8 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
         <label className={styles.label}>
           {t('Names.modalCreate.settings')}
         </label>
-        <CustomDragDrop settingsOptions={settingsOptions} onReorder={() => {}}>
-          {id => (
+        <CustomDragDrop settingsOptions={order} onReorder={handleReorder}>
+          {(id: string) => (
             <CustomCheckbox
               checked={checkedSettings[id] || false}
               onChange={() => toggleCheckbox(id)}
@@ -242,10 +267,8 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       <div className={styles.field}>
         <label className={styles.label}>{t('Names.modalCreate.format')}</label>
         <CustomButtonsInput
-          onRemove={() => {}}
-          buttons={Object.keys(checkedSettings).filter(
-            key => checkedSettings[key]
-          )}
+          buttons={activeButtons}
+          onRemove={handleRemoveButton}
         />
       </div>
 

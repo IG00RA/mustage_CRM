@@ -11,7 +11,7 @@ export default function ShowNamesDescription({
   return (
     <>
       <div className={styles.field}>
-        <p className={styles.input}>{description}</p>
+        <p className={`${styles.input} ${styles.textarea}`}>{description}</p>
       </div>
       <div className={styles.buttons_wrap}>
         <CancelBtn

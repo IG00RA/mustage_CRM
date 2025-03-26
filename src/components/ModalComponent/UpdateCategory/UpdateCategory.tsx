@@ -62,12 +62,7 @@ export default function UpdateCategory({
       onClose();
     } catch (error) {
       console.error('Error updating category:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Category.modalUpdate.errorMessage')
-      );
-    }
+       }
   };
 
   return (

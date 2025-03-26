@@ -129,6 +129,7 @@
     "selectBtn": "Выберите категорию",
     "selectAllBtn": "Все категории",
     "selectText": "Категории:",
+    "okMessage": "Операция успешна",
     "table": {
       "name": "Название",
       "category": "Категория",
@@ -174,7 +175,8 @@
     "modalUpdate": {
       "title": "Редактировать наименования ",
       "description": "Отредактируйте нужные поля:",
-      "createBtn": "Применить редактирование"
+      "createBtn": "Применить редактирование",
+      "closeBtn": "Закрыть"
     },
     "modalShowNamesDescription": {
       "title": "Описание наименования ",

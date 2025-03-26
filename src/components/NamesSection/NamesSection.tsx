@@ -86,7 +86,9 @@ export default function NamesSection() {
   const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
     useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
-  const [selectedDescription, setSelectedDescription] = useState<string>(''); // Додаємо стан для опису
+  const [selectedDescription, setSelectedDescription] = useState<string>('');
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<Subcategory | null>(null); // Додаємо стан для обраної підкатегорії
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
@@ -125,19 +127,21 @@ export default function NamesSection() {
     setIsOpenCreateNamesSet(prev => !prev);
   }, []);
 
-  const openUpdateModal = useCallback((title = '') => {
-    setUpdateTitle(title);
+  const openUpdateModal = useCallback((subcategory: Subcategory) => {
+    setUpdateTitle(subcategory.account_subcategory_name);
+    setSelectedSubcategory(subcategory); // Зберігаємо повний об'єкт підкатегорії
     setIsOpenUpdate(true);
   }, []);
 
   const closeUpdateModal = useCallback(() => {
     setIsOpenUpdate(false);
+    setSelectedSubcategory(null); // Очищаємо при закритті
   }, []);
 
   const openShowNamesDescription = useCallback(
     (title = '', description = '') => {
       setUpdateTitle(title);
-      setSelectedDescription(description); // Зберігаємо опис
+      setSelectedDescription(description);
       setIsOpenShowNamesDescription(true);
     },
     []
@@ -145,7 +149,7 @@ export default function NamesSection() {
 
   const closeShowNamesDescription = useCallback(() => {
     setIsOpenShowNamesDescription(false);
-    setSelectedDescription(''); // Очищаємо опис при закритті
+    setSelectedDescription('');
   }, []);
 
   const data = useMemo(
@@ -157,6 +161,8 @@ export default function NamesSection() {
         price: subcategory.price,
         cost_price: subcategory.cost_price,
         description: subcategory.description,
+        output_separator: subcategory.output_separator,
+        output_format_field: subcategory.output_format_field,
       })),
     [subcategories]
   );
@@ -242,9 +248,7 @@ export default function NamesSection() {
               }
             />
             <WhiteBtn
-              onClick={() =>
-                openUpdateModal(row.original.account_subcategory_name)
-              }
+              onClick={() => openUpdateModal(row.original)} // Передаємо повний об'єкт
               text={'Names.table.editBtn'}
               icon="icon-edit-pencil"
             />
@@ -482,7 +486,10 @@ export default function NamesSection() {
         text="Names.modalUpdate.description"
         editedTitle={updateTitle}
       >
-        <EditNames />
+        <EditNames
+          onClose={closeUpdateModal}
+          subcategory={selectedSubcategory}
+        />
       </ModalComponent>
     </section>
   );

@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import styles from './LoginForm.module.css';
 import logo from '@/img/logo.svg';
 
-// Визначаємо тип для стану форми
 type FormState = {
   error: string | null;
 };
@@ -20,7 +19,6 @@ export default function LoginForm() {
   const [usernameValue, setUsernameValue] = useState('');
   const [isPending, startTransition] = useTransition();
 
-  // Оновлюємо типізацію wrappedLogin
   const wrappedLogin = async (
     state: FormState,
     formData: FormData

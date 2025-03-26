@@ -46,11 +46,6 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
       onClose();
     } catch (error) {
       console.error('Error creating category:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Category.modalCreate.errorMessage')
-      );
     }
   };
 
