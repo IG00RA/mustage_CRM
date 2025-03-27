@@ -17,41 +17,48 @@ export interface Subcategory {
   account_category_id: number;
   price: number;
   cost_price: number;
-  description: string | null;
-  output_format_field?: string[];
-  output_separator?: string;
+  description?: string | null;
+  output_format_field?: string[] | null;
+  output_separator?: string | null;
+}
+
+interface DestinationResponse {
+  destination_id: number;
+  browser_id: number;
+  username: string;
+  browser?: Browser | null;
+}
+
+interface Browser {
+  browser_id: number;
+  browser_name: string;
 }
 
 export interface Account {
   account_id: number;
   upload_datetime: string;
-  sold_datetime: string | null;
+  sold_datetime?: string | null;
   worker_name: string;
-  teamlead_name: string;
-  client_name: string;
+  teamlead_name?: string | null;
+  client_name?: string | null;
   account_name: string;
-  price: number;
-  status: string;
-  frozen_at: string | null;
-  replace_reason: string | null;
-  profile_link: string;
-  archive_link: string;
-  account_data: string;
-  isTransferred?: boolean | null;
-  seller: Seller;
+  price?: number | null;
+  status: 'SOLD' | 'NOT SOLD' | 'REPLACED' | 'EXCLUDED';
+  frozen_at?: string | null;
+  replace_reason?: string | null;
+  profile_link?: string | null;
+  archive_link?: string | null;
+  account_data?: string | null;
+  seller?: Seller | null;
   subcategory: Subcategory;
-  destination: {
-    destination_id: number;
-    browser_id: number;
-    username: string;
-    browser: { browser_id: number; browser_name: string };
-  };
+  category: Category;
+  destination?: DestinationResponse | null;
 }
 
 export interface Seller {
   seller_id: number;
-  seller_name: string;
-  visible_in_bot: boolean;
+  seller_name?: string | null;
+  visible_in_bot: boolean | null;
 }
 
 export interface Response<T> {
@@ -69,7 +76,8 @@ export type RangeType =
   | 'month'
   | 'quarter'
   | 'year'
-  | 'custom';
+  | 'custom'
+  | 'all';
 
 export type ReportType = 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom';
 
@@ -115,9 +123,13 @@ export interface AccountsState {
     seller_id?: number[];
     limit?: number;
     offset?: number;
+    with_destination?: boolean;
+    sold_start_date?: string;
+    sold_end_date?: string;
+    upload_start_date?: string;
+    upload_end_date?: string;
   }) => Promise<{ items: Account[]; total_rows: number }>;
 }
-
 export interface SellersState {
   sellers: Seller[];
   loading: boolean;

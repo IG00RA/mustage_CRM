@@ -33,6 +33,11 @@
   border-bottom: 1px solid var(--grey);
 }
 
+.sell_wrap{
+  margin-bottom: 10px;
+
+}
+
 .search_wrap {
   display: flex;
   gap: 16px;

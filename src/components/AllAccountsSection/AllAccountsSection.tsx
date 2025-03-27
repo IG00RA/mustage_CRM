@@ -10,7 +10,9 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
   useReactTable,
+  SortingState,
 } from '@tanstack/react-table';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
@@ -52,7 +54,6 @@ export default function AllAccountsSection() {
     fetchSubcategories,
     error: categoriesError,
   } = useCategoriesStore();
-
   const { sellers, fetchSellers, error: sellersError } = useSellersStore();
 
   const error =
@@ -70,38 +71,34 @@ export default function AllAccountsSection() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
   const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
-  const [customStartDate, setCustomStartDate] = useState<string>('');
-  const [customEndDate, setCustomEndDate] = useState<string>('');
   const [totalRows, setTotalRows] = useState<number>(0);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(ACCOUNTS_PAGINATION_KEY);
       return saved
         ? (JSON.parse(saved) as PaginationState)
-        : {
-            pageIndex: 0,
-            pageSize: 5,
-          };
+        : { pageIndex: 0, pageSize: 5 };
     }
-    return {
-      pageIndex: 0,
-      pageSize: 5,
-    };
+    return { pageIndex: 0, pageSize: 5 };
   });
- 
-  const { dateRange, customPeriodLabel, setDateRange, setCustomPeriodLabel } =
-    useSalesStore();
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sellDateRange, setSellDateRange] = useState<RangeType>('all');
+  const [sellCustomStartDate, setSellCustomStartDate] = useState<string>('');
+  const [sellCustomEndDate, setSellCustomEndDate] = useState<string>('');
+  const [loadDateRange, setLoadDateRange] = useState<RangeType>('all');
+  const [loadCustomStartDate, setLoadCustomStartDate] = useState<string>('');
+  const [loadCustomEndDate, setLoadCustomEndDate] = useState<string>('');
+
+  const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [selectedColumns, setSelectedColumns] =
+    useState<string[]>(settingsOptions);
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Додаємо прапор для початкового завантаження
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(ACCOUNTS_PAGINATION_KEY, JSON.stringify(pagination));
     }
   }, [pagination]);
-
-
-  const [showLoader, setShowLoader] = useState<boolean>(true);
-  const [selectedColumns, setSelectedColumns] =
-    useState<string[]>(settingsOptions);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -114,29 +111,9 @@ export default function AllAccountsSection() {
     if (accounts.length !== 0) setShowLoader(false);
   }, [accounts]);
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      await fetchCategories();
-      await fetchSubcategories();
-      await fetchSellers();
-      const { total_rows } = await fetchAccounts({
-        limit: pagination.pageSize,
-        offset: 0,
-      });
-      setTotalRows(total_rows);
-    };
-    loadInitialData();
-  }, [
-    fetchCategories,
-    fetchSubcategories,
-    fetchSellers,
-    fetchAccounts,
-    pagination.pageSize,
-  ]);
-
-  useEffect(() => {
-    const loadAccounts = async () => {
-      const { total_rows } = await fetchAccounts({
+  const loadAccounts = useCallback(
+    async (updatedPagination: PaginationState) => {
+      const fetchParams: any = {
         subcategory_ids:
           selectedSubcategoryIds.length > 0
             ? selectedSubcategoryIds.map(Number)
@@ -150,20 +127,146 @@ export default function AllAccountsSection() {
           selectedSellerIds.length > 0
             ? selectedSellerIds.map(Number)
             : undefined,
-        limit: pagination.pageSize,
-        offset: pagination.pageIndex * pagination.pageSize,
-      });
+        limit: updatedPagination.pageSize,
+        offset: updatedPagination.pageIndex * updatedPagination.pageSize,
+      };
+
+      if (
+        sellDateRange === 'custom' &&
+        sellCustomStartDate &&
+        sellCustomEndDate
+      ) {
+        fetchParams.sold_start_date = sellCustomStartDate;
+        fetchParams.sold_end_date = sellCustomEndDate;
+      } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
+        const { start, end } = getDateRange(sellDateRange);
+        fetchParams.sold_start_date = formatDate(start);
+        fetchParams.sold_end_date = formatDate(end);
+      }
+
+      if (
+        loadDateRange === 'custom' &&
+        loadCustomStartDate &&
+        loadCustomEndDate
+      ) {
+        fetchParams.upload_start_date = loadCustomStartDate;
+        fetchParams.upload_end_date = loadCustomEndDate;
+      } else if (loadDateRange !== 'custom' && loadDateRange !== 'all') {
+        const { start, end } = getDateRange(loadDateRange);
+        fetchParams.upload_start_date = formatDate(start);
+        fetchParams.upload_end_date = formatDate(end);
+      }
+
+      if (selectedTransfers.length === 1) {
+        if (selectedTransfers[0] === t('AllAccounts.selects.transferYes')) {
+          fetchParams.with_destination = true;
+        } else if (
+          selectedTransfers[0] === t('AllAccounts.selects.transferNot')
+        ) {
+          fetchParams.with_destination = false;
+        }
+      }
+
+      const { total_rows } = await fetchAccounts(fetchParams);
       setTotalRows(total_rows);
+    },
+    [
+      selectedCategoryIds,
+      selectedSubcategoryIds,
+      selectedStatuses,
+      selectedTransfers,
+      selectedSellerIds,
+      sellDateRange,
+      sellCustomStartDate,
+      sellCustomEndDate,
+      loadDateRange,
+      loadCustomStartDate,
+      loadCustomEndDate,
+      fetchAccounts,
+      t,
+    ]
+  );
+
+  // Єдиний useEffect для всіх оновлень
+  useEffect(() => {
+    const loadData = async () => {
+      if (isInitialLoad) {
+        await Promise.all([
+          fetchCategories(),
+          fetchSubcategories(),
+          fetchSellers(),
+        ]);
+        setIsInitialLoad(false);
+      }
+      await loadAccounts(pagination);
     };
-    loadAccounts();
+    loadData();
   }, [
+    fetchCategories,
+    fetchSubcategories,
+    fetchSellers,
     selectedCategoryIds,
     selectedSubcategoryIds,
     selectedStatuses,
+    selectedTransfers,
     selectedSellerIds,
+    sellDateRange,
+    sellCustomStartDate,
+    sellCustomEndDate,
+    loadDateRange,
+    loadCustomStartDate,
+    loadCustomEndDate,
     pagination,
-    fetchAccounts,
+    loadAccounts,
+    isInitialLoad,
   ]);
+
+  const getDateRange = (range: RangeType): { start: Date; end: Date } => {
+    const end = new Date();
+    const start = new Date();
+    switch (range) {
+      case 'today':
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case 'yesterday':
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        end.setDate(end.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case 'week':
+        start.setDate(start.getDate() - 7);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case 'month':
+        start.setMonth(start.getMonth() - 1);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case 'quarter':
+        start.setMonth(start.getMonth() - 3);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case 'year':
+        start.setFullYear(start.getFullYear() - 1);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case 'all':
+        start.setFullYear(2000, 0, 1);
+        end.setHours(23, 59, 59, 999);
+        break;
+      default:
+        break;
+    }
+    return { start, end };
+  };
+
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const toggleEditModal = useCallback(() => setIsOpenEdit(prev => !prev), []);
   const toggleDownload = useCallback(
@@ -199,7 +302,7 @@ export default function AllAccountsSection() {
 
   const columnDataMap: Record<
     string,
-    (account: Account) => string | number | undefined
+    (account: Account) => string | null | undefined | number
   > = {
     'AllAccounts.modalUpdate.selects.id': account => account.account_id,
     'AllAccounts.modalUpdate.selects.name': account => account.account_name,
@@ -207,7 +310,10 @@ export default function AllAccountsSection() {
       categoryMap.get(account.subcategory?.account_category_id) || 'N/A',
     'AllAccounts.modalUpdate.selects.seller': account =>
       account.seller?.seller_name || 'N/A',
-    'AllAccounts.modalUpdate.selects.transfer': () => 'Передан',
+    'AllAccounts.modalUpdate.selects.transfer': account =>
+      account.destination
+        ? t('AllAccounts.selects.transferYes')
+        : t('AllAccounts.selects.transferNot'),
     'AllAccounts.modalUpdate.selects.data': account => account.account_data,
     'AllAccounts.modalUpdate.selects.mega': account => account.archive_link,
   };
@@ -244,6 +350,15 @@ export default function AllAccountsSection() {
             );
           }
           return columnDataMap[colId](row.original);
+        },
+        enableSorting: colId === 'AllAccounts.modalUpdate.selects.transfer',
+        sortingFn: (rowA, rowB) => {
+          if (colId === 'AllAccounts.modalUpdate.selects.transfer') {
+            const aTransferred = !!rowA.original.destination;
+            const bTransferred = !!rowB.original.destination;
+            return aTransferred === bTransferred ? 0 : aTransferred ? -1 : 1;
+          }
+          return 0;
         },
       };
       if (field === 'category') {
@@ -287,7 +402,7 @@ export default function AllAccountsSection() {
     ],
     [subcategories, t]
   );
-  const statusOptionsRaw = ['SOLD', 'NOTSOLD', 'REPLACED'];
+  const statusOptionsRaw = ['SOLD', 'NOT SOLD', 'REPLACED', 'EXCLUDED'];
   const statusOptions = useMemo(
     () => [
       t('AllAccounts.selects.allStatus'),
@@ -308,7 +423,7 @@ export default function AllAccountsSection() {
   const sellerOptions = useMemo(
     () => [
       t('AllAccounts.selects.sellerAll'),
-      ...sellers.map(seller => seller.seller_name),
+      ...sellers.map(seller => String(seller.seller_name)),
     ],
     [sellers, t]
   );
@@ -324,9 +439,11 @@ export default function AllAccountsSection() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: { globalFilter, pagination, columnFilters },
+    getSortedRowModel: getSortedRowModel(),
+    state: { globalFilter, pagination, columnFilters, sorting },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     autoResetPageIndex: false,
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = filterValue?.toLowerCase?.() || '';
@@ -347,14 +464,12 @@ export default function AllAccountsSection() {
       const matchesStatus =
         selectedStatuses.length === 0 ||
         selectedStatuses.includes(row.original.status);
-
       const matchesTransfer =
         selectedTransfers.length === 0 ||
         (selectedTransfers.includes(t('AllAccounts.selects.transferYes')) &&
-          row.original.isTransferred) ||
+          row.original.destination) ||
         (selectedTransfers.includes(t('AllAccounts.selects.transferNot')) &&
-          !row.original.isTransferred);
-
+          !row.original.destination);
       const matchesSeller =
         selectedSellerIds.length === 0 ||
         selectedSellerIds.includes(String(row.original.seller?.seller_id));
@@ -473,18 +588,28 @@ export default function AllAccountsSection() {
     [sellers, t]
   );
 
-  const handleDateRangeChange = (newRange: RangeType) => {
-    setDateRange(newRange);
-    setCustomPeriodLabel('');
-    setCustomStartDate('');
-    setCustomEndDate('');
+  const handleSellDateRangeChange = (newRange: RangeType) => {
+    setSellDateRange(newRange);
+    setSellCustomStartDate('');
+    setSellCustomEndDate('');
   };
 
-  const handleCustomDatesChange = (start: string, end: string) => {
-    setCustomPeriodLabel(`${start} - ${end}`);
-    setDateRange('custom');
-    setCustomStartDate(start);
-    setCustomEndDate(end);
+  const handleSellCustomDatesChange = (start: string, end: string) => {
+    setSellDateRange('custom');
+    setSellCustomStartDate(start);
+    setSellCustomEndDate(end);
+  };
+
+  const handleLoadDateRangeChange = (newRange: RangeType) => {
+    setLoadDateRange(newRange);
+    setLoadCustomStartDate('');
+    setLoadCustomEndDate('');
+  };
+
+  const handleLoadCustomDatesChange = (start: string, end: string) => {
+    setLoadDateRange('custom');
+    setLoadCustomStartDate(start);
+    setLoadCustomEndDate(end);
   };
 
   return (
@@ -515,6 +640,7 @@ export default function AllAccountsSection() {
                 ? selectedTransfers
                 : [t('AllAccounts.selects.allTransfer')]
             }
+            multiSelections={false}
             onSelect={handleTransferSelect}
             width={508}
             selectWidth={383}
@@ -560,18 +686,38 @@ export default function AllAccountsSection() {
             selectWidth={383}
           />
         </div>
+        <div className={styles.sell_wrap}>
+          <DateRangeSelector
+            label="AllAccounts.sellDate"
+            dateRange={sellDateRange}
+            customPeriodLabel={
+              sellCustomStartDate && sellCustomEndDate
+                ? `${sellCustomStartDate} - ${sellCustomEndDate}`
+                : ''
+            }
+            onDateRangeChange={handleSellDateRangeChange}
+            onCustomDatesChange={handleSellCustomDatesChange}
+            initialStartDate={sellCustomStartDate}
+            initialEndDate={sellCustomEndDate}
+          />
+        </div>
         <div className={styles.search_wrap}>
           <DateRangeSelector
-            dateRange={dateRange}
-            customPeriodLabel={customPeriodLabel}
-            onDateRangeChange={handleDateRangeChange}
-            onCustomDatesChange={handleCustomDatesChange}
-            initialStartDate={customStartDate}
-            initialEndDate={customEndDate}
+            label="AllAccounts.loadDate"
+            dateRange={loadDateRange}
+            customPeriodLabel={
+              loadCustomStartDate && loadCustomEndDate
+                ? `${loadCustomStartDate} - ${loadCustomEndDate}`
+                : ''
+            }
+            onDateRangeChange={handleLoadDateRangeChange}
+            onCustomDatesChange={handleLoadCustomDatesChange}
+            initialStartDate={loadCustomStartDate}
+            initialEndDate={loadCustomEndDate}
           />
           <SearchInput
             onSearch={query => setCategoryFilter(query)}
-            text={'Category.searchBtn'}
+            text={'AllAccounts.searchBtn'}
             options={Array.from(
               new Set(
                 accounts.map(
@@ -591,11 +737,18 @@ export default function AllAccountsSection() {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th className={styles.th} key={header.id}>
+                  <th
+                    className={styles.th}
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()
                     )}
+                    {{ asc: ' ↑', desc: ' ↓' }[
+                      header.column.getIsSorted() as string
+                    ] ?? null}
                   </th>
                 ))}
               </tr>
@@ -634,13 +787,16 @@ export default function AllAccountsSection() {
             <select
               className={styles.pagination_select}
               value={pagination.pageSize}
-              onChange={e =>
-                setPagination(prev => ({
-                  ...prev,
-                  pageSize: Number(e.target.value),
+              onChange={e => {
+                const newPageSize = Number(e.target.value);
+                const newPagination = {
+                  ...pagination,
+                  pageSize: newPageSize,
                   pageIndex: 0,
-                }))
-              }
+                };
+                setPagination(newPagination);
+                loadAccounts(newPagination);
+              }}
             >
               {[5, 10, 20, 50, 100].map(size => (
                 <option key={size} value={size}>
@@ -659,12 +815,14 @@ export default function AllAccountsSection() {
             <div className={styles.pagination_btn_wrap}>
               <button
                 className={styles.pagination_btn}
-                onClick={() =>
-                  setPagination(prev => ({
-                    ...prev,
-                    pageIndex: prev.pageIndex - 1,
-                  }))
-                }
+                onClick={() => {
+                  const newPagination = {
+                    ...pagination,
+                    pageIndex: pagination.pageIndex - 1,
+                  };
+                  setPagination(newPagination);
+                  loadAccounts(newPagination);
+                }}
                 disabled={pagination.pageIndex === 0}
               >
                 <Icon
@@ -676,12 +834,14 @@ export default function AllAccountsSection() {
               </button>
               <button
                 className={styles.pagination_btn}
-                onClick={() =>
-                  setPagination(prev => ({
-                    ...prev,
-                    pageIndex: prev.pageIndex + 1,
-                  }))
-                }
+                onClick={() => {
+                  const newPagination = {
+                    ...pagination,
+                    pageIndex: pagination.pageIndex + 1,
+                  };
+                  setPagination(newPagination);
+                  loadAccounts(newPagination);
+                }}
                 disabled={
                   (pagination.pageIndex + 1) * pagination.pageSize >= totalRows
                 }

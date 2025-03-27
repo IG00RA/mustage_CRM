@@ -1,4 +1,4 @@
-import { RangeType } from "./salesTypes";
+import { RangeType } from './salesTypes';
 
 //Pagination
 export interface PaginationState {
@@ -14,6 +14,7 @@ export interface DateRangeSelectorProps {
   onCustomDatesChange: (start: string, end: string) => void;
   initialStartDate?: string;
   initialEndDate?: string;
+  label?: string;
 }
 
 //Category

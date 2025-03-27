@@ -36,6 +36,26 @@ export const useAccountsStore = create<AccountsState>(set => ({
       queryParams.append('offset', String(params.offset));
     }
 
+    if (typeof params.with_destination === 'boolean') {
+      queryParams.append('with_destination', String(params.with_destination));
+    }
+
+    // Додаємо параметри для дати продажу
+    if (params.sold_start_date) {
+      queryParams.append('sold_start_date', params.sold_start_date);
+    }
+    if (params.sold_end_date) {
+      queryParams.append('sold_end_date', params.sold_end_date);
+    }
+
+    // Додаємо параметри для дати завантаження
+    if (params.upload_start_date) {
+      queryParams.append('upload_start_date', params.upload_start_date);
+    }
+    if (params.upload_end_date) {
+      queryParams.append('upload_end_date', params.upload_end_date);
+    }
+
     const url = `${ENDPOINTS.ACCOUNTS}?${queryParams.toString()}`;
     const data = await fetchWithErrorHandling<Response<Account>>(
       url,
