@@ -2,7 +2,7 @@
 
 import styles from './PromoCodeSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -18,309 +18,168 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import CreatePromoCode from '../ModalComponent/CreatePromoCode/CreatePromoCode';
-
-interface Category {
-  id: number;
-  promoName: string; // Название промокода
-  discount: string; // Скидка (в %), як рядок для сумісності з вашим прикладом
-  promoCode: string; // Промокод
-  status: string; // Статус
-  endDate: string; // Дата завершения
-}
-
-const data: Category[] = [
-  {
-    id: 1,
-    promoName: 'Новогодняя скидка',
-    discount: '15%',
-    promoCode: 'NEW_YEAR_MUSTAGE',
-    status: 'Деактивирован',
-    endDate: '07.01.2024',
-  },
-  {
-    id: 2,
-    promoName: 'Весенняя акция',
-    discount: '10%',
-    promoCode: 'SPRING_SALE',
-    status: 'Активен',
-    endDate: '15.04.2025',
-  },
-  {
-    id: 3,
-    promoName: 'Летний бонус',
-    discount: '20%',
-    promoCode: 'SUMMER20',
-    status: 'Активен',
-    endDate: '31.08.2025',
-  },
-  {
-    id: 4,
-    promoName: 'Осенний сюрприз',
-    discount: '25%',
-    promoCode: 'FALL25',
-    status: 'Ожидание',
-    endDate: '30.11.2025',
-  },
-  {
-    id: 5,
-    promoName: 'Черная пятница',
-    discount: '30%',
-    promoCode: 'BLACK_FRIDAY',
-    status: 'Деактивирован',
-    endDate: '01.12.2024',
-  },
-  {
-    id: 6,
-    promoName: 'Киберпонедельник',
-    discount: '35%',
-    promoCode: 'CYBER_MONDAY',
-    status: 'Деактивирован',
-    endDate: '03.12.2024',
-  },
-  {
-    id: 7,
-    promoName: 'День святого Валентина',
-    discount: '12%',
-    promoCode: 'VALENTINE12',
-    status: 'Активен',
-    endDate: '15.02.2025',
-  },
-  {
-    id: 8,
-    promoName: 'Пасхальная скидка',
-    discount: '18%',
-    promoCode: 'EASTER18',
-    status: 'Ожидание',
-    endDate: '20.04.2025',
-  },
-  {
-    id: 9,
-    promoName: 'День рождения компании',
-    discount: '22%',
-    promoCode: 'BDAY22',
-    status: 'Активен',
-    endDate: '10.06.2025',
-  },
-  {
-    id: 10,
-    promoName: 'Лояльность',
-    discount: '10%',
-    promoCode: 'LOYALTY10',
-    status: 'Активен',
-    endDate: '31.12.2025',
-  },
-  {
-    id: 11,
-    promoName: 'Зимний распродаж',
-    discount: '40%',
-    promoCode: 'WINTER40',
-    status: 'Ожидание',
-    endDate: '15.01.2026',
-  },
-  {
-    id: 12,
-    promoName: 'Скидка для новых клиентов',
-    discount: '5%',
-    promoCode: 'WELCOME5',
-    status: 'Активен',
-    endDate: '31.03.2025',
-  },
-  {
-    id: 13,
-    promoName: 'Хеллоуин',
-    discount: '13%',
-    promoCode: 'HALLOWEEN13',
-    status: 'Деактивирован',
-    endDate: '01.11.2024',
-  },
-  {
-    id: 14,
-    promoName: 'День независимости',
-    discount: '17%',
-    promoCode: 'INDEP17',
-    status: 'Ожидание',
-    endDate: '04.07.2025',
-  },
-  {
-    id: 15,
-    promoName: 'Скидка на подписку',
-    discount: '20%',
-    promoCode: 'SUB20',
-    status: 'Активен',
-    endDate: '30.06.2025',
-  },
-  {
-    id: 16,
-    promoName: 'Акция выходного дня',
-    discount: '15%',
-    promoCode: 'WEEKEND15',
-    status: 'Активен',
-    endDate: '28.02.2025',
-  },
-  {
-    id: 17,
-    promoName: 'Сезонный бонус',
-    discount: '25%',
-    promoCode: 'SEASON25',
-    status: 'Ожидание',
-    endDate: '15.09.2025',
-  },
-  {
-    id: 18,
-    promoName: 'Скидка на первый заказ',
-    discount: '10%',
-    promoCode: 'FIRST10',
-    status: 'Активен',
-    endDate: '31.12.2025',
-  },
-  {
-    id: 19,
-    promoName: 'Рождественская акция',
-    discount: '30%',
-    promoCode: 'XMAS30',
-    status: 'Деактивирован',
-    endDate: '26.12.2024',
-  },
-  {
-    id: 20,
-    promoName: 'День матери',
-    discount: '15%',
-    promoCode: 'MOTHER15',
-    status: 'Ожидание',
-    endDate: '11.05.2025',
-  },
-  {
-    id: 21,
-    promoName: 'День отца',
-    discount: '15%',
-    promoCode: 'FATHER15',
-    status: 'Ожидание',
-    endDate: '15.06.2025',
-  },
-  {
-    id: 22,
-    promoName: 'Скидка для студентов',
-    discount: '20%',
-    promoCode: 'STUDENT20',
-    status: 'Активен',
-    endDate: '30.09.2025',
-  },
-  {
-    id: 23,
-    promoName: 'Акция для друзей',
-    discount: '10%',
-    promoCode: 'FRIENDS10',
-    status: 'Активен',
-    endDate: '31.12.2025',
-  },
-  {
-    id: 24,
-    promoName: 'Скидка на второй товар',
-    discount: '25%',
-    promoCode: 'SECOND25',
-    status: 'Активен',
-    endDate: '15.03.2025',
-  },
-  {
-    id: 25,
-    promoName: 'Флеш-распродажа',
-    discount: '50%',
-    promoCode: 'FLASH50',
-    status: 'Ожидание',
-    endDate: '20.07.2025',
-  },
-  {
-    id: 26,
-    promoName: 'Скидка на выходные',
-    discount: '15%',
-    promoCode: 'WEEKEND15_OFF',
-    status: 'Активен',
-    endDate: '31.05.2025',
-  },
-  {
-    id: 27,
-    promoName: 'Летний фест',
-    discount: '20%',
-    promoCode: 'SUMMER_FEST',
-    status: 'Ожидание',
-    endDate: '15.08.2025',
-  },
-];
+import { usePromoCodesStore } from '@/store/promoCodesStore';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import Loader from '../Loader/Loader';
+import { PromoCode } from '@/types/componentsTypes';
 
 export default function PromoCodeSection() {
   const t = useTranslations();
+
+  const {
+    promoCodes,
+    fetchPromoCodes,
+    error: promoCodesError,
+    totalRows,
+  } = usePromoCodesStore();
+  const {
+    categories,
+    subcategories,
+    fetchCategories,
+    fetchSubcategories,
+    error: categoriesError,
+  } = useCategoriesStore();
+
+  const error =
+    [promoCodesError, categoriesError].filter(Boolean).join('; ') || null;
+
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenResult, setIsOpenResult] = useState(false);
-  const [selectSell, setSelectSell] = useState('');
-  const [selectLoad, setSelectLoad] = useState('');
-
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
+    string[]
+  >([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 5, // Початковий розмір сторінки
+    pageSize: 5,
   });
+  const [showLoader, setShowLoader] = useState<boolean>(true);
 
-  const toggleResultModal = () => {
-    setIsOpenResult(!isOpenResult);
-  };
+  useEffect(() => {
+    if (categories.length !== 0) setShowLoader(false);
+  }, [categories]);
 
-  const columns: ColumnDef<Category>[] = [
-    {
-      accessorKey: 'id',
-      header: 'ID',
+  const loadPromoCodes = useCallback(
+    async (updatedPagination: { pageIndex: number; pageSize: number }) => {
+      const fetchParams: any = {
+        subcategory_ids:
+          selectedSubcategoryIds.length > 0
+            ? selectedSubcategoryIds.map(Number)
+            : undefined,
+        category_ids:
+          selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
+            ? selectedCategoryIds.map(Number)
+            : undefined,
+        status: selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
+        search_query: globalFilter || undefined,
+        limit: updatedPagination.pageSize,
+        offset: updatedPagination.pageIndex * updatedPagination.pageSize,
+      };
+
+      await fetchPromoCodes(fetchParams);
     },
-    {
-      accessorKey: 'promoName',
-      header: t('PromoCodeSection.table.name'),
-    },
-    {
-      accessorKey: 'discount',
-      header: t('PromoCodeSection.table.discount'),
-    },
-    {
-      accessorKey: 'promoCode',
-      header: t('PromoCodeSection.table.code'),
-    },
-    {
-      accessorKey: 'status',
-      header: t('PromoCodeSection.table.status'),
-    },
-    {
-      accessorKey: 'endDate',
-      header: t('PromoCodeSection.table.data'),
-    },
-    {
-      id: 'actions',
-      header: t('Names.table.actions'),
-      cell: () => (
-        <div className={styles.table_buttons}>
-          <WhiteBtn
-            // onClick={() => toggleUpdateModal(row.original.name)}
-            onClick={() => toggleResultModal()}
-            text={'Names.table.editBtn'}
-            icon="icon-edit-pencil"
-          />
-          <WhiteBtn
-            // onClick={() => toggleUpdateModal(row.original.name)}
-            onClick={() => toggleResultModal()}
-            text={'PromoCodeSection.table.btn'}
-            icon="icon-archive-box"
-          />
-        </div>
+    [
+      selectedCategoryIds,
+      selectedSubcategoryIds,
+      selectedStatuses,
+      globalFilter,
+      fetchPromoCodes,
+    ]
+  );
+
+  // Initial data load
+  useEffect(() => {
+    const loadInitialData = async () => {
+      await Promise.all([
+        fetchCategories(),
+        fetchSubcategories(),
+        loadPromoCodes(pagination),
+      ]);
+    };
+    loadInitialData();
+  }, []); // Empty dependency array to run only once on mount
+
+  // Reload promo codes when filters or pagination change
+  useEffect(() => {
+    loadPromoCodes(pagination);
+  }, [
+    selectedCategoryIds,
+    selectedSubcategoryIds,
+    selectedStatuses,
+    globalFilter,
+    pagination.pageIndex,
+    pagination.pageSize,
+  ]);
+
+  const toggleResultModal = useCallback(
+    () => setIsOpenResult(prev => !prev),
+    []
+  );
+
+  const categoryMap = useMemo(
+    () =>
+      new Map(
+        categories.map(cat => [
+          cat.account_category_id,
+          cat.account_category_name,
+        ])
       ),
-    },
-  ];
+    [categories]
+  );
+  const subcategoryMap = useMemo(
+    () =>
+      new Map(
+        subcategories.map(sub => [
+          sub.account_subcategory_id,
+          sub.account_subcategory_name,
+        ])
+      ),
+    [subcategories]
+  );
+
+  const columns: ColumnDef<PromoCode>[] = useMemo(
+    () => [
+      { accessorKey: 'promocode_id', header: 'ID' },
+      { accessorKey: 'name', header: t('PromoCodeSection.table.name') },
+      { accessorKey: 'discount', header: t('PromoCodeSection.table.discount') },
+      { accessorKey: 'promocode', header: t('PromoCodeSection.table.code') },
+      {
+        accessorKey: 'promocode_status',
+        header: t('PromoCodeSection.table.status'),
+      },
+      { accessorKey: 'expires_at', header: t('PromoCodeSection.table.data') },
+      {
+        id: 'actions',
+        header: t('Names.table.actions'),
+        cell: () => (
+          <div className={styles.table_buttons}>
+            <WhiteBtn
+              onClick={toggleResultModal}
+              text={'Names.table.editBtn'}
+              icon="icon-edit-pencil"
+            />
+            <WhiteBtn
+              onClick={toggleResultModal}
+              text={'PromoCodeSection.table.btn'}
+              icon="icon-archive-box"
+            />
+          </div>
+        ),
+      },
+    ],
+    [t, toggleResultModal]
+  );
 
   const table = useReactTable({
-    data,
+    data: promoCodes,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-      pagination,
-    },
+    state: { globalFilter, pagination },
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
     filterFns: {
       global: (row, columnId, filterValue) => {
         if (!filterValue) return true;
@@ -328,10 +187,96 @@ export default function PromoCodeSection() {
         return cellValue.includes(filterValue.toLowerCase());
       },
     },
-    onPaginationChange: setPagination,
   });
 
-  const categoryNames = [...new Set(data.map(category => category.promoName))];
+  const categoryOptions = useMemo(
+    () => [
+      t('AllAccounts.selects.allCategories'),
+      ...categories.map(cat => cat.account_category_name),
+    ],
+    [categories, t]
+  );
+  const subcategoryOptions = useMemo(
+    () => [
+      t('AllAccounts.selects.allNames'),
+      ...subcategories.map(sub => sub.account_subcategory_name),
+    ],
+    [subcategories, t]
+  );
+  const statusOptions = useMemo(
+    () => [
+      t('PromoCodeSection.selects.allStatus'),
+      t('PromoCodeSection.selects.active'),
+      t('PromoCodeSection.selects.deactivated'),
+    ],
+    [t]
+  );
+
+  const handleCategorySelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allCategories')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedCategoryIds([]);
+        setSelectedSubcategoryIds([]);
+      } else {
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const category = categories.find(
+              cat => cat.account_category_name === value
+            );
+            return category ? String(category.account_category_id) : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedCategoryIds(newSelectedIds);
+        if (newSelectedIds.length > 0) setSelectedSubcategoryIds([]);
+      }
+    },
+    [categories, t]
+  );
+
+  const handleSubcategorySelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allNames')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedSubcategoryIds([]);
+        setSelectedCategoryIds([]);
+      } else {
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const subcategory = subcategories.find(
+              sub => sub.account_subcategory_name === value
+            );
+            return subcategory
+              ? String(subcategory.account_subcategory_id)
+              : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedSubcategoryIds(newSelectedIds);
+        if (newSelectedIds.length > 0) setSelectedCategoryIds([]);
+      }
+    },
+    [subcategories, t]
+  );
+
+  const handleStatusSelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('PromoCodeSection.selects.allStatus')
+      );
+      const mappedStatuses = filteredValues.map(value => {
+        if (value === t('PromoCodeSection.selects.active')) return 'ACTIVE';
+        if (value === t('PromoCodeSection.selects.deactivated'))
+          return 'DEACTIVATED';
+        return value;
+      });
+      setSelectedStatuses(mappedStatuses);
+    },
+    [t]
+  );
 
   return (
     <section className={styles.section}>
@@ -341,24 +286,45 @@ export default function PromoCodeSection() {
         <div className={styles.top_btn_wrap}>
           <CustomSelect
             label={t('PromoCodeSection.category')}
-            options={['Facebook UA (ручной фарм)']}
-            selected={selectLoad}
-            onSelect={setSelectLoad}
+            options={categoryOptions}
+            selected={
+              selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(
+                    id => categoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allCategories')]
+            }
+            onSelect={handleCategorySelect}
             width={496}
           />
           <CustomSelect
             label={t('PromoCodeSection.names')}
-            options={['Facebook UA-фарм 7-дней']}
-            selected={selectSell}
-            onSelect={setSelectSell}
+            options={subcategoryOptions}
+            selected={
+              selectedSubcategoryIds.length > 0
+                ? selectedSubcategoryIds.map(
+                    id => subcategoryMap.get(parseInt(id)) || ''
+                  )
+                : [t('AllAccounts.selects.allNames')]
+            }
+            onSelect={handleSubcategorySelect}
             width={496}
           />
           <CustomSelect
             label={t('PromoCodeSection.status')}
-            options={['Все статусы']}
-            selected={selectSell}
-            onSelect={setSelectSell}
+            options={statusOptions}
+            selected={
+              selectedStatuses.length > 0
+                ? selectedStatuses.map(status =>
+                    status === 'ACTIVE'
+                      ? t('PromoCodeSection.selects.active')
+                      : t('PromoCodeSection.selects.deactivated')
+                  )
+                : [t('PromoCodeSection.selects.allStatus')]
+            }
+            onSelect={handleStatusSelect}
             width={496}
+            multiSelections={false}
           />
         </div>
         <div className={styles.search_wrap}>
@@ -368,12 +334,13 @@ export default function PromoCodeSection() {
           />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
-            text={'Category.searchBtn'}
-            options={categoryNames}
+            text={'PromoCodeSection.searchBtn'}
+            options={Array.from(new Set(promoCodes.map(promo => promo.name)))}
           />
         </div>
       </div>
       <div className={styles.table_container}>
+        {showLoader && <Loader error={error} />}
         <table className={styles.table}>
           <thead className={styles.thead}>
             {table.getHeaderGroups().map(headerGroup => (
@@ -401,7 +368,6 @@ export default function PromoCodeSection() {
             ))}
           </tbody>
         </table>
-
         <div className={styles.pagination}>
           <span className={styles.pagination_text}>
             {t('Category.table.pagination')}
@@ -409,12 +375,15 @@ export default function PromoCodeSection() {
           <select
             className={styles.pagination_select}
             value={pagination.pageSize}
-            onChange={e =>
-              setPagination(prev => ({
-                ...prev,
-                pageSize: Number(e.target.value),
-              }))
-            }
+            onChange={e => {
+              const newPageSize = Number(e.target.value);
+              const newPagination = {
+                ...pagination,
+                pageSize: newPageSize,
+                pageIndex: 0,
+              };
+              setPagination(newPagination);
+            }}
           >
             {[5, 10, 20, 50, 100].map(size => (
               <option key={size} value={size}>
@@ -426,16 +395,22 @@ export default function PromoCodeSection() {
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(
               (pagination.pageIndex + 1) * pagination.pageSize,
-              data.length
+              totalRows
             )}
             {t('Category.table.pages')}
-            {data.length}
+            {totalRows}
           </span>
           <div className={styles.pagination_btn_wrap}>
             <button
               className={styles.pagination_btn}
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => {
+                const newPagination = {
+                  ...pagination,
+                  pageIndex: pagination.pageIndex - 1,
+                };
+                setPagination(newPagination);
+              }}
+              disabled={pagination.pageIndex === 0}
             >
               <Icon
                 className={styles.icon_back}
@@ -446,8 +421,16 @@ export default function PromoCodeSection() {
             </button>
             <button
               className={styles.pagination_btn}
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
+              onClick={() => {
+                const newPagination = {
+                  ...pagination,
+                  pageIndex: pagination.pageIndex + 1,
+                };
+                setPagination(newPagination);
+              }}
+              disabled={
+                (pagination.pageIndex + 1) * pagination.pageSize >= totalRows
+              }
             >
               <Icon
                 className={styles.icon_forward}

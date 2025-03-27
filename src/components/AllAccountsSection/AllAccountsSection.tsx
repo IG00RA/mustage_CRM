@@ -27,7 +27,6 @@ import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
 import DateRangeSelector from '../Buttons/DateRangeSelector/DateRangeSelector';
-import { useSalesStore } from '@/store/salesStore';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 
