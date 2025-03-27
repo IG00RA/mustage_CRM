@@ -8,6 +8,8 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { Category } from '@/types/salesTypes';
+import { useState } from 'react'; // Add this import
+import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 
 type FormData = {
   name: string;
@@ -17,6 +19,7 @@ type FormData = {
 export default function CreateCategory({ onClose }: { onClose: () => void }) {
   const t = useTranslations('');
   const { fetchCategories } = useCategoriesStore();
+  const [isSetCategory, setIsSetCategory] = useState(false);
 
   const {
     register,
@@ -27,7 +30,7 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const newCategory = await fetchWithErrorHandling<Category>(
+      await fetchWithErrorHandling<Category>(
         ENDPOINTS.CATEGORIES,
         {
           method: 'POST',
@@ -35,6 +38,7 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
           body: JSON.stringify({
             account_category_name: data.name,
             description: data.description,
+            is_set_category: isSetCategory,
           }),
         },
         () => {}
@@ -43,6 +47,7 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
       await fetchCategories();
       toast.success(t('Category.modalCreate.successMessage'));
       reset();
+      setIsSetCategory(false);
       onClose();
     } catch (error) {
       console.error('Error creating category:', error);
@@ -82,11 +87,21 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
           <p className={styles.error}>{errors.description.message}</p>
         )}
       </div>
+
+      <div className={styles.field}>
+        <CustomCheckbox
+          checked={isSetCategory}
+          onChange={() => setIsSetCategory(!isSetCategory)}
+          label={t('Category.modalCreate.isSetCategory')}
+        />
+      </div>
+
       <div className={styles.buttons_wrap}>
         <CancelBtn
           text="DBSettings.form.cancelBtn"
           onClick={() => {
             reset();
+            setIsSetCategory(false);
             onClose();
           }}
         />

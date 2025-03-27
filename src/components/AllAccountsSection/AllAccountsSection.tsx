@@ -88,10 +88,7 @@ export default function AllAccountsSection() {
       pageSize: 5,
     };
   });
-  const [inputValue, setInputValue] = useState<string>(
-    String(pagination.pageSize)
-  );
-
+ 
   const { dateRange, customPeriodLabel, setDateRange, setCustomPeriodLabel } =
     useSalesStore();
 
@@ -101,9 +98,6 @@ export default function AllAccountsSection() {
     }
   }, [pagination]);
 
-  useEffect(() => {
-    setInputValue(String(pagination.pageSize));
-  }, [pagination.pageSize]);
 
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [selectedColumns, setSelectedColumns] =

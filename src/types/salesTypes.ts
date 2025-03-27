@@ -8,6 +8,7 @@ export interface Category {
   account_category_id: number;
   account_category_name: string;
   description: string | null;
+  is_set_category: boolean;
 }
 
 export interface Subcategory {

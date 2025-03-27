@@ -62,6 +62,7 @@ export default function CategorySection() {
     account_category_id: number;
     account_category_name: string;
     description: string;
+    is_set_category: boolean;
   } | null>(null);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
@@ -72,9 +73,6 @@ export default function CategorySection() {
     }
     return { pageIndex: 0, pageSize: 5 };
   });
-  const [inputValue, setInputValue] = useState<string>(
-    String(pagination.pageSize)
-  );
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -82,21 +80,19 @@ export default function CategorySection() {
     }
   }, [pagination]);
 
-  useEffect(() => {
-    setInputValue(String(pagination.pageSize));
-  }, [pagination.pageSize]);
-
   const toggleCreateModal = () => setIsOpenCreate(prev => !prev);
 
   const openUpdateModal = (
     account_category_id: number,
     account_category_name: string,
-    description: string
+    description: string,
+    is_set_category: boolean
   ) => {
     setSelectedCategory({
       account_category_id,
       account_category_name,
       description,
+      is_set_category,
     });
     setIsOpenUpdate(true);
   };
@@ -112,6 +108,7 @@ export default function CategorySection() {
         account_category_id: category.account_category_id,
         account_category_name: category.account_category_name,
         description: category.description || '',
+        is_set_category: category.is_set_category || false,
       })),
     [categories]
   );
@@ -135,7 +132,8 @@ export default function CategorySection() {
             openUpdateModal(
               row.original.account_category_id,
               row.original.account_category_name,
-              row.original.description || ''
+              row.original.description || '',
+              row.original.is_set_category || false
             )
           }
           text={'Category.table.editBtn'}
@@ -168,31 +166,6 @@ export default function CategorySection() {
     () => [...new Set(data.map(category => category.account_category_name))],
     [data]
   );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value);
-    },
-    []
-  );
-
-  const handleInputBlur = useCallback(() => {
-    const newSize = Number(inputValue);
-    if (!isNaN(newSize) && newSize > 0) {
-      setPagination(prev => ({
-        ...prev,
-        pageSize: newSize,
-        pageIndex: 0,
-      }));
-    } else if (inputValue === '') {
-      setPagination(prev => ({
-        ...prev,
-        pageSize: 5,
-        pageIndex: 0,
-      }));
-      setInputValue('5');
-    }
-  }, [inputValue]);
 
   return (
     <section className={styles.section}>
@@ -315,6 +288,7 @@ export default function CategorySection() {
             categoryId={selectedCategory.account_category_id}
             initialName={selectedCategory.account_category_name}
             initialDescription={selectedCategory.description}
+            initialIsSetCategory={selectedCategory.is_set_category}
             onClose={closeUpdateModal}
           />
         )}

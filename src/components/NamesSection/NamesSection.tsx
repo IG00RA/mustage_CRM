@@ -105,19 +105,12 @@ export default function NamesSection() {
       pageSize: 5,
     };
   });
-  const [inputValue, setInputValue] = useState<string>(
-    String(pagination.pageSize)
-  );
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(NAMES_PAGINATION_KEY, JSON.stringify(pagination));
     }
   }, [pagination]);
-
-  useEffect(() => {
-    setInputValue(String(pagination.pageSize));
-  }, [pagination.pageSize]);
 
   const toggleCreateModal = useCallback(() => {
     setIsOpenCreate(prev => !prev);
@@ -296,31 +289,6 @@ export default function NamesSection() {
     ],
     [data]
   );
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value);
-    },
-    []
-  );
-
-  const handleInputBlur = useCallback(() => {
-    const newSize = Number(inputValue);
-    if (!isNaN(newSize) && newSize > 0) {
-      setPagination(prev => ({
-        ...prev,
-        pageSize: newSize,
-        pageIndex: 0,
-      }));
-    } else if (inputValue === '') {
-      setPagination(prev => ({
-        ...prev,
-        pageSize: 5,
-        pageIndex: 0,
-      }));
-      setInputValue('5');
-    }
-  }, [inputValue]);
 
   return (
     <section className={styles.section}>

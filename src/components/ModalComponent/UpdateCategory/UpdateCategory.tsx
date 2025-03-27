@@ -7,20 +7,27 @@ import { toast } from 'react-toastify';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   UpdateCategoryFormData,
   UpdateCategoryProps,
 } from '@/types/componentsTypes';
+import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
+
+interface ExtendedUpdateCategoryProps extends UpdateCategoryProps {
+  initialIsSetCategory?: boolean;
+}
 
 export default function UpdateCategory({
   categoryId,
   initialName,
   initialDescription,
+  initialIsSetCategory = false,
   onClose,
-}: UpdateCategoryProps) {
+}: ExtendedUpdateCategoryProps) {
   const t = useTranslations('');
   const { fetchCategories } = useCategoriesStore();
+  const [isSetCategory, setIsSetCategory] = useState(initialIsSetCategory);
 
   const {
     register,
@@ -31,15 +38,15 @@ export default function UpdateCategory({
   } = useForm<UpdateCategoryFormData>({
     defaultValues: {
       account_category_name: initialName,
-      description: initialDescription || '', // Встановлюємо початковий опис
+      description: initialDescription || '',
     },
   });
 
-  // Встановлюємо початкові значення для полів
   useEffect(() => {
     setValue('account_category_name', initialName);
-    setValue('description', initialDescription || ''); // Оновлюємо description при зміні пропса
-  }, [initialName, initialDescription, setValue]);
+    setValue('description', initialDescription || '');
+    setIsSetCategory(initialIsSetCategory);
+  }, [initialName, initialDescription, initialIsSetCategory, setValue]);
 
   const onSubmit = async (data: UpdateCategoryFormData) => {
     try {
@@ -51,18 +58,20 @@ export default function UpdateCategory({
           body: JSON.stringify({
             account_category_name: data.account_category_name,
             description: data.description,
+            is_set_category: isSetCategory,
           }),
         },
-        () => {} // Поки що не оновлюємо стан напряму
+        () => {}
       );
 
       toast.success(t('Category.modalUpdate.successMessage'));
       await fetchCategories();
       reset();
+      setIsSetCategory(initialIsSetCategory);
       onClose();
     } catch (error) {
       console.error('Error updating category:', error);
-       }
+    }
   };
 
   return (
@@ -102,11 +111,21 @@ export default function UpdateCategory({
           <p className={styles.error}>{errors.description.message}</p>
         )}
       </div>
+
+      <div className={styles.field}>
+        <CustomCheckbox
+          checked={isSetCategory}
+          onChange={() => setIsSetCategory(!isSetCategory)}
+          label={t('Category.modalCreate.isSetCategory')}
+        />
+      </div>
+
       <div className={styles.buttons_wrap}>
         <CancelBtn
           text="DBSettings.form.cancelBtn"
           onClick={() => {
             reset();
+            setIsSetCategory(initialIsSetCategory);
             onClose();
           }}
         />

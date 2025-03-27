@@ -50,30 +50,36 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   } = useForm<FormData>({
     defaultValues: {
       nameField: '',
-      account_category_id: 0,
-      account_subcategory_id: 0,
-      set_price: 0,
-      quantity: 0,
-      cost: 0,
       setDescription: '',
     },
   });
 
-  const quantity = watch('quantity'); // Слідкуємо за значенням кількості
+  const quantity = watch('quantity');
 
   // Опції для категорій
   const categoryOptions = useMemo(
-    () => categories.map(cat => cat.account_category_name),
+    () =>
+      categories
+        .filter(cat => cat.is_set_category === true)
+        .map(cat => cat.account_category_name),
     [categories]
   );
 
-  // Фільтровані підкатегорії залежно від вибраної категорії
+  // Фільтровані підкатегорії залежно від вибраної категорії та вже доданих наборів
   const filteredSubCategoryOptions = useMemo(() => {
     if (selectedCategoryId === 0) return [];
+
+    // Отримуємо ID підкатегорій, які вже додані до наборів
+    const addedSubCategoryIds = subcategorySets.map(set => set.subcategory_id);
+
     return subcategories
-      .filter(sub => sub.account_category_id === selectedCategoryId)
+      .filter(
+        sub =>
+          sub.account_category_id === selectedCategoryId &&
+          !addedSubCategoryIds.includes(sub.account_subcategory_id) // Виключаємо додані підкатегорії
+      )
       .map(sub => sub.account_subcategory_name);
-  }, [subcategories, selectedCategoryId]);
+  }, [subcategories, selectedCategoryId, subcategorySets]); // Додаємо subcategorySets як залежність
 
   // Мапи для швидкого доступу до ID і cost_price
   const categoryMap = useMemo(
@@ -152,7 +158,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
 
   // Додавання набору підкатегорії
   const toggleCreateName = () => {
-    if (selectedSubCategoryId === 0 || quantity <= 0) {
+    if (selectedSubCategoryId === 0 || quantity <= 0 || !quantity) {
       toast.error(t('Names.modalCreateSet.errorSetAddedMessage'));
       return;
     }
@@ -195,8 +201,10 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       })),
     };
 
+    type ApiResponse = { message?: string };
+
     try {
-      await fetchWithErrorHandling(
+      const response = (await fetchWithErrorHandling(
         ENDPOINTS.ACCOUNT_SETS,
         {
           method: 'POST',
@@ -204,9 +212,9 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
           body: JSON.stringify(requestBody),
         },
         () => {}
-      );
+      )) as ApiResponse;
 
-      toast.success(t('Names.modalCreateSet.successMessage'));
+      toast.success(response.message || t('Names.okMessage'));
       reset();
       setSubcategorySets([]);
       setSelectedCategoryId(0);

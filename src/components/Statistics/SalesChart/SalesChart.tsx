@@ -119,7 +119,10 @@ const SalesChart: React.FC = () => {
     setCustomEndDate(end);
   };
 
-  const exportToExcel = useExportToExcel({ sales: chartSales, dateRange });
+  const exportToExcel = useExportToExcel({
+    sales: chartSales,
+    dateRange: dateRange === 'custom' ? customPeriodLabel : dateRange,
+  });
 
   const categoryMap = useMemo(
     () =>
