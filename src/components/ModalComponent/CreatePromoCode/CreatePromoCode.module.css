@@ -42,6 +42,7 @@
 .data_wrap {
   display: flex;
   gap: 16px;
+  flex-direction: column;
 }
 
 .field {
@@ -50,8 +51,5 @@
   gap: 8px;
   & label {
     margin: 0;
-  }
-  & input {
-    width: 135px;
   }
 }

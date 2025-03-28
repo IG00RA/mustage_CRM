@@ -12,6 +12,8 @@ import { useState, useMemo } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
+import { ENDPOINTS } from '@/constants/api';
+import { usePromoCodesStore } from '@/store/promoCodesStore';
 
 type FormData = {
   name: string;
@@ -34,9 +36,10 @@ type SubcategorySet = {
 export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
   const t = useTranslations('');
   const { categories, subcategories } = useCategoriesStore();
+  const { fetchPromoCodes } = usePromoCodesStore();
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<number>(0);
   const [selectedCategories, setSelectedCategories] = useState<CategorySet[]>(
     []
   );
@@ -51,6 +54,29 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     reset,
     formState: { errors },
   } = useForm<FormData>();
+
+  // Мапи для швидкого доступу
+  const categoryMap = useMemo(
+    () =>
+      new Map(
+        categories.map(cat => [
+          cat.account_category_id,
+          cat.account_category_name,
+        ])
+      ),
+    [categories]
+  );
+
+  const subcategoryMap = useMemo(
+    () =>
+      new Map(
+        subcategories.map(sub => [
+          sub.account_subcategory_id,
+          sub.account_subcategory_name,
+        ])
+      ),
+    [subcategories]
+  );
 
   // Опції для категорій
   const categoryOptions = useMemo(
@@ -80,46 +106,62 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
       .map(sub => sub.account_subcategory_name);
   }, [subcategories, selectedCategories, selectedSubcategories]);
 
+  // Обробка вибору категорії
+  const handleCategorySelect = (values: string[]) => {
+    const selectedName = values[0];
+    const selectedCat = categories.find(
+      cat => cat.account_category_name === selectedName
+    );
+    if (selectedCat) {
+      setSelectedCategoryId(selectedCat.account_category_id);
+    } else {
+      setSelectedCategoryId(0);
+    }
+  };
+
+  // Обробка вибору підкатегорії
+  const handleSubcategorySelect = (values: string[]) => {
+    const selectedName = values[0];
+    const selectedSub = subcategories.find(
+      sub => sub.account_subcategory_name === selectedName
+    );
+    if (selectedSub) {
+      setSelectedSubcategoryId(selectedSub.account_subcategory_id);
+    } else {
+      setSelectedSubcategoryId(0);
+    }
+  };
+
   // Додавання категорії
   const handleAddCategory = () => {
-    if (!selectedCategory) {
+    if (!selectedCategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
       return;
     }
-    const category = categories.find(
-      cat => cat.account_category_name === selectedCategory
-    );
-    if (category) {
+    const categoryName = categoryMap.get(selectedCategoryId);
+    if (categoryName) {
       setSelectedCategories(prev => [
         ...prev,
-        {
-          id: category.account_category_id,
-          name: category.account_category_name,
-        },
+        { id: selectedCategoryId, name: categoryName },
       ]);
-      setSelectedCategory('');
+      setSelectedCategoryId(0);
       toast.success(t('PromoCodeSection.modal.categoryAdded'));
     }
   };
 
   // Додавання підкатегорії
   const handleAddSubcategory = () => {
-    if (!selectedSubcategory) {
+    if (!selectedSubcategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
       return;
     }
-    const subcategory = subcategories.find(
-      sub => sub.account_subcategory_name === selectedSubcategory
-    );
-    if (subcategory) {
+    const subcategoryName = subcategoryMap.get(selectedSubcategoryId);
+    if (subcategoryName) {
       setSelectedSubcategories(prev => [
         ...prev,
-        {
-          id: subcategory.account_subcategory_id,
-          name: subcategory.account_subcategory_name,
-        },
+        { id: selectedSubcategoryId, name: subcategoryName },
       ]);
-      setSelectedSubcategory('');
+      setSelectedSubcategoryId(0);
       toast.success(t('PromoCodeSection.modal.subcategoryAdded'));
     }
   };
@@ -136,6 +178,12 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
 
   // Обробка відправки форми
   const onSubmit = async (data: FormData) => {
+    // Перевірка на наявність хоча б однієї підкатегорії
+    if (selectedSubcategories.length === 0) {
+      toast.error(t('PromoCodeSection.modal.noSubcategoriesError'));
+      return;
+    }
+
     let expiresAt: string | undefined;
     if (isExpirationEnabled && data.expires_at_date && data.expires_at_time) {
       expiresAt = new Date(
@@ -152,8 +200,8 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     };
 
     try {
-      const response = await fetchWithErrorHandling(
-        '/promocodes',
+      await fetchWithErrorHandling(
+        ENDPOINTS.PROMOCODES,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -163,18 +211,16 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
       );
 
       toast.success(t('DBSettings.form.okMessage'));
+      fetchPromoCodes();
       reset();
       setSelectedCategories([]);
       setSelectedSubcategories([]);
       setIsExpirationEnabled(false);
+      setSelectedCategoryId(0);
+      setSelectedSubcategoryId(0);
       onClose();
     } catch (error) {
       console.error('Error creating promocode:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('DBSettings.form.errorMessage')
-      );
     }
   };
 
@@ -305,8 +351,14 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
             </label>
             <CustomSelect
               options={categoryOptions}
-              selected={selectedCategory}
-              onSelect={setSelectedCategory}
+              selected={
+                selectedCategoryId
+                  ? [categoryMap.get(selectedCategoryId) || '']
+                  : ['']
+              }
+              onSelect={handleCategorySelect}
+              width={'100%'}
+              multiSelections={false}
             />
             <WhiteBtn
               onClick={handleAddCategory}
@@ -325,9 +377,14 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
             </label>
             <CustomSelect
               options={subcategoryOptions}
-              selected={selectedSubcategory}
-              onSelect={setSelectedSubcategory}
-              width={602}
+              selected={
+                selectedSubcategoryId
+                  ? [subcategoryMap.get(selectedSubcategoryId) || '']
+                  : ['']
+              }
+              onSelect={handleSubcategorySelect}
+              width={'100%'}
+              multiSelections={false}
             />
             <WhiteBtn
               onClick={handleAddSubcategory}
@@ -349,6 +406,8 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
             reset();
             setSelectedCategories([]);
             setSelectedSubcategories([]);
+            setSelectedCategoryId(0);
+            setSelectedSubcategoryId(0);
             onClose();
           }}
         />

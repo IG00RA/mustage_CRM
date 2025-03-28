@@ -40,7 +40,6 @@ export interface PromoCode {
   expires_at?: string;
   subcategory_ids?: number[];
 }
-
 export interface PromoCodesState {
   promoCodes: PromoCode[];
   loading: boolean;

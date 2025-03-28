@@ -448,7 +448,7 @@ export default function PromoCodeSection() {
         title="PromoCodeSection.modal.title"
         text="PromoCodeSection.modal.text"
       >
-        <CreatePromoCode />
+        <CreatePromoCode onClose={toggleResultModal} />
       </ModalComponent>
     </section>
   );
