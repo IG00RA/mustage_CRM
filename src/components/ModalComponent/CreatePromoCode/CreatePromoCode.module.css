@@ -1,3 +1,7 @@
+.form {
+  overflow-y: hidden;
+}
+
 .field_wrap_main {
   display: flex;
   min-width: 830px;

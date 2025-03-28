@@ -18,10 +18,15 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import CreatePromoCode from '../ModalComponent/CreatePromoCode/CreatePromoCode';
+import EditPromoCode from '../ModalComponent/EditPromoCode/EditPromoCode';
 import { usePromoCodesStore } from '@/store/promoCodesStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import Loader from '../Loader/Loader';
 import { PromoCode } from '@/types/componentsTypes';
+import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
+import { ENDPOINTS } from '@/constants/api';
+import { toast } from 'react-toastify';
+import debounce from 'lodash/debounce';
 
 export default function PromoCodeSection() {
   const t = useTranslations();
@@ -44,7 +49,11 @@ export default function PromoCodeSection() {
     [promoCodesError, categoriesError].filter(Boolean).join('; ') || null;
 
   const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenResult, setIsOpenResult] = useState(false);
+  const [isOpenCreateModal, setIsOpenCreateModal] = useState(false);
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false);
+  const [selectedPromoCode, setSelectedPromoCode] = useState<PromoCode | null>(
+    null
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
     string[]
@@ -71,12 +80,12 @@ export default function PromoCodeSection() {
           selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
             ? selectedCategoryIds.map(Number)
             : undefined,
-        status: selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
+        promocode_status:
+          selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
         search_query: globalFilter || undefined,
         limit: updatedPagination.pageSize,
         offset: updatedPagination.pageIndex * updatedPagination.pageSize,
       };
-
       await fetchPromoCodes(fetchParams);
     },
     [
@@ -88,7 +97,6 @@ export default function PromoCodeSection() {
     ]
   );
 
-  // Initial data load
   useEffect(() => {
     const loadInitialData = async () => {
       await Promise.all([
@@ -98,9 +106,8 @@ export default function PromoCodeSection() {
       ]);
     };
     loadInitialData();
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
-  // Reload promo codes when filters or pagination change
   useEffect(() => {
     loadPromoCodes(pagination);
   }, [
@@ -112,9 +119,56 @@ export default function PromoCodeSection() {
     pagination.pageSize,
   ]);
 
-  const toggleResultModal = useCallback(
-    () => setIsOpenResult(prev => !prev),
+  const toggleCreateModal = useCallback(
+    () => setIsOpenCreateModal(prev => !prev),
     []
+  );
+  const toggleEditModal = useCallback((promoCode?: PromoCode) => {
+    setSelectedPromoCode(promoCode || null);
+    setIsOpenEditModal(prev => !prev);
+  }, []);
+
+  const handleDeactivatePromoCode = useCallback(
+    async (promoCode: PromoCode) => {
+      try {
+        await fetchWithErrorHandling(
+          `${ENDPOINTS.PROMOCODES}/${promoCode.promocode_id}`,
+          {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ promocode_status: 'DEACTIVATED' }),
+          },
+          () => {}
+        );
+        toast.success(t('PromoCodeSection.modal.deactivateSuccess'));
+        loadPromoCodes(pagination);
+      } catch (error) {
+        console.error('Error deactivating promocode:', error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : t('PromoCodeSection.modal.error')
+        );
+      }
+    },
+    [loadPromoCodes, pagination, t]
+  );
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string) => {
+        if (query.length >= 2 || query.length === 0) {
+          setGlobalFilter(query);
+        }
+      }, 500),
+    []
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      debouncedSearch(query);
+    },
+    [debouncedSearch]
   );
 
   const categoryMap = useMemo(
@@ -152,15 +206,15 @@ export default function PromoCodeSection() {
       {
         id: 'actions',
         header: t('Names.table.actions'),
-        cell: () => (
+        cell: ({ row }) => (
           <div className={styles.table_buttons}>
             <WhiteBtn
-              onClick={toggleResultModal}
+              onClick={() => toggleEditModal(row.original)}
               text={'Names.table.editBtn'}
               icon="icon-edit-pencil"
             />
             <WhiteBtn
-              onClick={toggleResultModal}
+              onClick={() => handleDeactivatePromoCode(row.original)}
               text={'PromoCodeSection.table.btn'}
               icon="icon-archive-box"
             />
@@ -168,7 +222,7 @@ export default function PromoCodeSection() {
         ),
       },
     ],
-    [t, toggleResultModal]
+    [t, toggleEditModal, handleDeactivatePromoCode]
   );
 
   const table = useReactTable({
@@ -222,13 +276,13 @@ export default function PromoCodeSection() {
         setSelectedSubcategoryIds([]);
       } else {
         const newSelectedIds = filteredValues
-          .map(value => {
-            const category = categories.find(
-              cat => cat.account_category_name === value
-            );
-            return category ? String(category.account_category_id) : null;
-          })
-          .filter((id): id is string => id !== null);
+          .map(
+            value =>
+              categories.find(cat => cat.account_category_name === value)
+                ?.account_category_id
+          )
+          .filter((id): id is number => id !== undefined)
+          .map(String);
         setSelectedCategoryIds(newSelectedIds);
         if (newSelectedIds.length > 0) setSelectedSubcategoryIds([]);
       }
@@ -246,15 +300,13 @@ export default function PromoCodeSection() {
         setSelectedCategoryIds([]);
       } else {
         const newSelectedIds = filteredValues
-          .map(value => {
-            const subcategory = subcategories.find(
-              sub => sub.account_subcategory_name === value
-            );
-            return subcategory
-              ? String(subcategory.account_subcategory_id)
-              : null;
-          })
-          .filter((id): id is string => id !== null);
+          .map(
+            value =>
+              subcategories.find(sub => sub.account_subcategory_name === value)
+                ?.account_subcategory_id
+          )
+          .filter((id): id is number => id !== undefined)
+          .map(String);
         setSelectedSubcategoryIds(newSelectedIds);
         if (newSelectedIds.length > 0) setSelectedCategoryIds([]);
       }
@@ -264,16 +316,16 @@ export default function PromoCodeSection() {
 
   const handleStatusSelect = useCallback(
     (values: string[]) => {
-      const filteredValues = values.filter(
-        value => value !== t('PromoCodeSection.selects.allStatus')
-      );
-      const mappedStatuses = filteredValues.map(value => {
-        if (value === t('PromoCodeSection.selects.active')) return 'ACTIVE';
-        if (value === t('PromoCodeSection.selects.deactivated'))
-          return 'DEACTIVATED';
-        return value;
-      });
-      setSelectedStatuses(mappedStatuses);
+      const selectedValue = values[0]; // Оскільки multiSelections={false}
+      if (selectedValue === t('PromoCodeSection.selects.allStatus')) {
+        setSelectedStatuses([]); // Якщо обрано "Всі статуси", очищаємо масив
+      } else {
+        const status =
+          selectedValue === t('PromoCodeSection.selects.active')
+            ? 'ACTIVE'
+            : 'DEACTIVATED';
+        setSelectedStatuses([status]); // Встановлюємо масив з одним статусом
+      }
     },
     [t]
   );
@@ -329,11 +381,11 @@ export default function PromoCodeSection() {
         </div>
         <div className={styles.search_wrap}>
           <AddBtn
-            onClick={toggleResultModal}
+            onClick={toggleCreateModal}
             text={'PromoCodeSection.addBtn'}
           />
           <SearchInput
-            onSearch={query => setGlobalFilter(query)}
+            onSearch={handleSearch}
             text={'PromoCodeSection.searchBtn'}
             options={Array.from(new Set(promoCodes.map(promo => promo.name)))}
           />
@@ -377,12 +429,11 @@ export default function PromoCodeSection() {
             value={pagination.pageSize}
             onChange={e => {
               const newPageSize = Number(e.target.value);
-              const newPagination = {
+              setPagination({
                 ...pagination,
                 pageSize: newPageSize,
                 pageIndex: 0,
-              };
-              setPagination(newPagination);
+              });
             }}
           >
             {[5, 10, 20, 50, 100].map(size => (
@@ -403,13 +454,12 @@ export default function PromoCodeSection() {
           <div className={styles.pagination_btn_wrap}>
             <button
               className={styles.pagination_btn}
-              onClick={() => {
-                const newPagination = {
+              onClick={() =>
+                setPagination({
                   ...pagination,
                   pageIndex: pagination.pageIndex - 1,
-                };
-                setPagination(newPagination);
-              }}
+                })
+              }
               disabled={pagination.pageIndex === 0}
             >
               <Icon
@@ -421,13 +471,12 @@ export default function PromoCodeSection() {
             </button>
             <button
               className={styles.pagination_btn}
-              onClick={() => {
-                const newPagination = {
+              onClick={() =>
+                setPagination({
                   ...pagination,
                   pageIndex: pagination.pageIndex + 1,
-                };
-                setPagination(newPagination);
-              }}
+                })
+              }
               disabled={
                 (pagination.pageIndex + 1) * pagination.pageSize >= totalRows
               }
@@ -443,12 +492,25 @@ export default function PromoCodeSection() {
         </div>
       </div>
       <ModalComponent
-        isOpen={isOpenResult}
-        onClose={toggleResultModal}
+        isOpen={isOpenCreateModal}
+        onClose={toggleCreateModal}
         title="PromoCodeSection.modal.title"
         text="PromoCodeSection.modal.text"
       >
-        <CreatePromoCode onClose={toggleResultModal} />
+        <CreatePromoCode onClose={toggleCreateModal} />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenEditModal}
+        onClose={() => toggleEditModal()}
+        title="PromoCodeSection.modal.editTitle"
+        text="PromoCodeSection.modal.editText"
+      >
+        {selectedPromoCode && (
+          <EditPromoCode
+            promoCode={selectedPromoCode}
+            onClose={() => toggleEditModal()}
+          />
+        )}
       </ModalComponent>
     </section>
   );

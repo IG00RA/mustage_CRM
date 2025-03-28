@@ -456,7 +456,9 @@
     "selects": {
       "allStatus": "Все",
       "active": "Активные",
-      "deactivated": "Не активные"
+      "deactivated": "Не активные",
+      "activeOne": "Активний",
+      "deactivatedOne": "Неактивний"
     },
     "table": {
       "name": "Название промокода",
@@ -488,7 +490,9 @@
       "editTitle": "Редактировать промокод",
       "editText": "Измените детали промокода ниже",
       "editSuccess": "Промокод успешно обновлен",
-      "saveBtn": "Сохранить изменения"
+      "deactivateSuccess": "Промокод деактивирован",
+      "saveBtn": "Сохранить изменения",
+      "status": "Статус"
     }
   },
   "UserSection": {

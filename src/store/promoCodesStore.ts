@@ -11,7 +11,6 @@ export const usePromoCodesStore = create<PromoCodesState>(set => ({
 
   fetchPromoCodes: async (params = {}) => {
     const queryParams = new URLSearchParams();
-
     if (params.subcategory_ids?.length) {
       params.subcategory_ids.forEach(id => {
         queryParams.append('subcategory_id', String(id));
@@ -23,7 +22,7 @@ export const usePromoCodesStore = create<PromoCodesState>(set => ({
     }
 
     if (params.promocode_status) {
-      queryParams.append('promocode_status', params.promocode_status);
+      queryParams.append('status', params.promocode_status);
     }
 
     if (params.search_query) {
