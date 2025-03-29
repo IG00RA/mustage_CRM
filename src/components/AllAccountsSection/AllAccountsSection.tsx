@@ -29,6 +29,7 @@ import { PaginationState } from '@/types/componentsTypes';
 import DateRangeSelector from '../Buttons/DateRangeSelector/DateRangeSelector';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
+const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';
 
 const settingsOptions = [
   'AllAccounts.modalUpdate.selects.id',
@@ -39,8 +40,6 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.data',
   'AllAccounts.modalUpdate.selects.mega',
 ];
-
-const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';
 
 export default function AllAccountsSection() {
   const t = useTranslations();
@@ -70,7 +69,8 @@ export default function AllAccountsSection() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
   const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
-  const [totalRows, setTotalRows] = useState<number>(0);
+  const [totalRows, setTotalRows] = useState<number>(0); // For paginated table
+  const [totalAllRows, setTotalAllRows] = useState<number>(0); // For all accounts
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(ACCOUNTS_PAGINATION_KEY);
@@ -91,7 +91,7 @@ export default function AllAccountsSection() {
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [selectedColumns, setSelectedColumns] =
     useState<string[]>(settingsOptions);
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Додаємо прапор для початкового завантаження
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -157,16 +157,11 @@ export default function AllAccountsSection() {
       }
 
       if (selectedTransfers.length === 1) {
-        if (selectedTransfers[0] === t('AllAccounts.selects.transferYes')) {
-          fetchParams.with_destination = true;
-        } else if (
-          selectedTransfers[0] === t('AllAccounts.selects.transferNot')
-        ) {
-          fetchParams.with_destination = false;
-        }
+        fetchParams.with_destination =
+          selectedTransfers[0] === t('AllAccounts.selects.transferYes');
       }
 
-      const { total_rows } = await fetchAccounts(fetchParams);
+      const { total_rows } = await fetchAccounts(fetchParams, true);
       setTotalRows(total_rows);
     },
     [
@@ -186,7 +181,12 @@ export default function AllAccountsSection() {
     ]
   );
 
-  // Єдиний useEffect для всіх оновлень
+  // Fetch total count of all accounts
+  const fetchTotalAllRows = useCallback(async () => {
+    const { total_rows } = await fetchAccounts({}, false); // Empty params to get total count
+    setTotalAllRows(total_rows);
+  }, [fetchAccounts]);
+
   useEffect(() => {
     const loadData = async () => {
       if (isInitialLoad) {
@@ -194,6 +194,7 @@ export default function AllAccountsSection() {
           fetchCategories(),
           fetchSubcategories(),
           fetchSellers(),
+          fetchTotalAllRows(), // Fetch total count of all accounts
         ]);
         setIsInitialLoad(false);
       }
@@ -204,6 +205,7 @@ export default function AllAccountsSection() {
     fetchCategories,
     fetchSubcategories,
     fetchSellers,
+    fetchTotalAllRows,
     selectedCategoryIds,
     selectedSubcategoryIds,
     selectedStatuses,
@@ -372,19 +374,90 @@ export default function AllAccountsSection() {
     });
   }, [selectedColumns, t, columnDataMap, fieldMap, categoryMap]);
 
-  const exportToExcel = async () => {
+  const exportFilteredToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Accounts');
+    const sheet = workbook.addWorksheet('Filtered Accounts');
+
     sheet.addRow(selectedColumns.map(colId => t(colId)));
-    table.getFilteredRowModel().rows.forEach(row => {
-      const account = row.original;
+
+    const fetchParams: any = {
+      subcategory_ids:
+        selectedSubcategoryIds.length > 0
+          ? selectedSubcategoryIds.map(Number)
+          : undefined,
+      category_ids:
+        selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
+          ? selectedCategoryIds.map(Number)
+          : undefined,
+      status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
+      seller_id:
+        selectedSellerIds.length > 0
+          ? selectedSellerIds.map(Number)
+          : undefined,
+      limit: totalRows, // Use filtered total
+    };
+
+    if (
+      sellDateRange === 'custom' &&
+      sellCustomStartDate &&
+      sellCustomEndDate
+    ) {
+      fetchParams.sold_start_date = sellCustomStartDate;
+      fetchParams.sold_end_date = sellCustomEndDate;
+    } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
+      const { start, end } = getDateRange(sellDateRange);
+      fetchParams.sold_start_date = formatDate(start);
+      fetchParams.sold_end_date = formatDate(end);
+    }
+
+    if (
+      loadDateRange === 'custom' &&
+      loadCustomStartDate &&
+      loadCustomEndDate
+    ) {
+      fetchParams.upload_start_date = loadCustomStartDate;
+      fetchParams.upload_end_date = loadCustomEndDate;
+    } else if (loadDateRange !== 'custom' && loadDateRange !== 'all') {
+      const { start, end } = getDateRange(loadDateRange);
+      fetchParams.upload_start_date = formatDate(start);
+      fetchParams.upload_end_date = formatDate(end);
+    }
+
+    if (selectedTransfers.length === 1) {
+      fetchParams.with_destination =
+        selectedTransfers[0] === t('AllAccounts.selects.transferYes');
+    }
+
+    const { items } = await fetchAccounts(fetchParams, false);
+
+    items.forEach(account => {
       sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
     });
+
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    saveAs(blob, 'accounts_report.xlsx');
+    saveAs(blob, 'filtered_accounts_report.xlsx');
+  };
+
+  const exportAllToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('All Accounts');
+
+    sheet.addRow(selectedColumns.map(colId => t(colId)));
+
+    const { items } = await fetchAccounts({ limit: totalAllRows }, false); // Use total of all accounts
+
+    items.forEach(account => {
+      sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, 'all_accounts_report.xlsx');
   };
 
   const categoryOptions = useMemo(
@@ -875,13 +948,13 @@ export default function AllAccountsSection() {
       >
         <div className={styles.modal_btn_wrap}>
           <WhiteBtn
-            onClick={exportToExcel}
+            onClick={exportFilteredToExcel}
             text={'AllAccounts.downloadBtn'}
             icon="icon-cloud-download"
             iconFill="icon-cloud-download-fill"
           />
           <WhiteBtn
-            onClick={exportToExcel}
+            onClick={exportAllToExcel}
             text={'AllAccounts.downloadBtnAll'}
             icon="icon-cloud-download"
             iconFill="icon-cloud-download-fill"

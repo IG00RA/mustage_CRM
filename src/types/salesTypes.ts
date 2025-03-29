@@ -112,23 +112,27 @@ export interface CategoriesState {
   fetchSubcategories: (categoryId?: number) => Promise<void>;
 }
 
+interface FetchAccountsParams {
+  category_ids?: number[];
+  subcategory_ids?: number[];
+  status?: string[];
+  seller_id?: number[];
+  limit?: number;
+  offset?: number;
+  with_destination?: boolean;
+  sold_start_date?: string;
+  sold_end_date?: string;
+  upload_start_date?: string;
+  upload_end_date?: string;
+}
 export interface AccountsState {
   accounts: Account[];
   loading: boolean;
   error: string | null;
-  fetchAccounts: (params?: {
-    category_ids?: number[];
-    subcategory_ids?: number[];
-    status?: string[];
-    seller_id?: number[];
-    limit?: number;
-    offset?: number;
-    with_destination?: boolean;
-    sold_start_date?: string;
-    sold_end_date?: string;
-    upload_start_date?: string;
-    upload_end_date?: string;
-  }) => Promise<{ items: Account[]; total_rows: number }>;
+  fetchAccounts: (
+    params?: FetchAccountsParams,
+    updateState?: boolean
+  ) => Promise<{ items: Account[]; total_rows: number }>;
 }
 export interface SellersState {
   sellers: Seller[];

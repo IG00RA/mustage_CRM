@@ -8,61 +8,75 @@ export const useAccountsStore = create<AccountsState>(set => ({
   loading: false,
   error: null,
 
-  fetchAccounts: async (params = {}) => {
-    const queryParams = new URLSearchParams();
+  fetchAccounts: async (params = {}, updateState = true) => {
+    const requestBody: Record<string, any> = {};
 
     if (params.subcategory_ids?.length) {
-      params.subcategory_ids.forEach(id => {
-        queryParams.append('subcategory_id', String(id));
-      });
+      requestBody.subcategory_id =
+        params.subcategory_ids.length === 1
+          ? params.subcategory_ids[0]
+          : params.subcategory_ids;
     } else if (params.category_ids?.length) {
-      params.category_ids.forEach(id => {
-        queryParams.append('category_id', String(id));
-      });
+      requestBody.category_id =
+        params.category_ids.length === 1
+          ? params.category_ids[0]
+          : params.category_ids;
     }
 
     if (params.status?.length) {
-      queryParams.append('status', params.status.join(','));
+      requestBody.status =
+        params.status.length === 1 ? params.status[0] : params.status;
     }
 
     if (params.seller_id?.length) {
-      queryParams.append('seller_id', params.seller_id.join(','));
+      requestBody.seller_id =
+        params.seller_id.length === 1 ? params.seller_id[0] : params.seller_id;
     }
 
     if (params.limit) {
-      queryParams.append('limit', String(params.limit));
+      requestBody.limit = params.limit;
     }
     if (params.offset) {
-      queryParams.append('offset', String(params.offset));
+      requestBody.offset = params.offset;
     }
 
     if (typeof params.with_destination === 'boolean') {
-      queryParams.append('with_destination', String(params.with_destination));
+      requestBody.with_destination = params.with_destination;
     }
 
-    // Додаємо параметри для дати продажу
     if (params.sold_start_date) {
-      queryParams.append('sold_start_date', params.sold_start_date);
+      requestBody.sold_start_date = params.sold_start_date;
     }
     if (params.sold_end_date) {
-      queryParams.append('sold_end_date', params.sold_end_date);
+      requestBody.sold_end_date = params.sold_end_date;
     }
 
-    // Додаємо параметри для дати завантаження
     if (params.upload_start_date) {
-      queryParams.append('upload_start_date', params.upload_start_date);
+      requestBody.upload_start_date = params.upload_start_date;
     }
     if (params.upload_end_date) {
-      queryParams.append('upload_end_date', params.upload_end_date);
+      requestBody.upload_end_date = params.upload_end_date;
     }
 
-    const url = `${ENDPOINTS.ACCOUNTS}?${queryParams.toString()}`;
+    const url = ENDPOINTS.ACCOUNTS;
     const data = await fetchWithErrorHandling<Response<Account>>(
       url,
-      { method: 'GET', headers: getAuthHeaders(), credentials: 'include' },
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestBody),
+      },
       set
     );
-    set({ accounts: data.items });
+
+    if (updateState) {
+      set({ accounts: data.items });
+    }
+
     return { items: data.items, total_rows: data.total_rows };
   },
 }));
