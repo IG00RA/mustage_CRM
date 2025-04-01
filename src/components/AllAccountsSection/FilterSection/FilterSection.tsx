@@ -33,6 +33,8 @@ interface FilterSectionProps {
   onSearch: (query: string) => void;
   accounts: Account[];
   categoryMap: Map<number, string>;
+  subcategoryMap: Map<number, string>;
+  sellerMap: Map<number, string | null | undefined>;
   t: (key: string) => string;
 }
 
@@ -65,6 +67,8 @@ export const FilterSection = ({
   onSearch,
   accounts,
   categoryMap,
+  subcategoryMap, // Додаємо в пропси
+  sellerMap, // Додаємо в пропси
   t,
 }: FilterSectionProps) => (
   <div className={styles.select_wrap}>
@@ -100,7 +104,7 @@ export const FilterSection = ({
       options={sellerOptions}
       selected={
         selectedSellerIds.length > 0
-          ? selectedSellerIds.map(id => categoryMap.get(parseInt(id)) || '')
+          ? selectedSellerIds.map(id => sellerMap.get(parseInt(id)) || '') // Використовуємо sellerMap
           : [t('AllAccounts.selects.sellerAll')]
       }
       onSelect={onSellerSelect}
@@ -125,7 +129,7 @@ export const FilterSection = ({
       selected={
         selectedSubcategoryIds.length > 0
           ? selectedSubcategoryIds.map(
-              id => categoryMap.get(parseInt(id)) || ''
+              id => subcategoryMap.get(parseInt(id)) || ''
             )
           : [t('AllAccounts.selects.allNames')]
       }

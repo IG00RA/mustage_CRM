@@ -119,6 +119,7 @@ interface FetchAccountsParams {
   seller_id?: number[];
   limit?: number;
   offset?: number;
+  like_query?: string;
   with_destination?: boolean;
   sold_start_date?: string;
   sold_end_date?: string;
@@ -126,10 +127,37 @@ interface FetchAccountsParams {
   upload_end_date?: string;
 }
 
-export interface SearchAccountsParams {
-  like_query?: string;
-  subcategory_id?: number;
+export interface SearchResponse {
+  found_accounts: Account[];
+  not_found_accounts: Record<string, (number | string)[]>;
 }
+
+export interface ReplaceRequest {
+  account_ids: number[];
+  subcategory_id: number;
+  seller_id: number;
+  replace_reason: string;
+  new_price: number;
+  client_name: string;
+  client_dolphin_email?: string;
+}
+
+export interface ReplaceResponse {
+  success: boolean;
+  subcategory_id: number;
+  seller_id: number;
+  quantity: number;
+  price: number;
+  client_name: string;
+  client_dolphin_email?: string;
+  account_data: {
+    transfer_requested: boolean;
+    transfer_success: boolean;
+    transfer_message: string;
+    account: Account;
+  }[];
+}
+
 export interface AccountsState {
   accounts: Account[];
   loading: boolean;
@@ -138,9 +166,8 @@ export interface AccountsState {
     params?: FetchAccountsParams,
     updateState?: boolean
   ) => Promise<{ items: Account[]; total_rows: number }>;
-  searchAccounts: (
-    params: SearchAccountsParams
-  ) => Promise<{ items: Account[]; total_rows: number }>;
+  searchAccounts: (accountNames: string[]) => Promise<SearchResponse>;
+  replaceAccounts: (data: ReplaceRequest) => Promise<ReplaceResponse>;
 }
 export interface SellersState {
   sellers: Seller[];

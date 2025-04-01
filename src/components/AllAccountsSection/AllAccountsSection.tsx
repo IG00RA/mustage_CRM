@@ -39,12 +39,7 @@ const settingsOptions = [
 export default function AllAccountsSection() {
   const t = useTranslations();
 
-  const {
-    accounts,
-    fetchAccounts,
-    searchAccounts,
-    error: accountsError,
-  } = useAccountsStore();
+  const { accounts, fetchAccounts, error: accountsError } = useAccountsStore();
   const {
     categories,
     subcategories,
@@ -74,7 +69,7 @@ export default function AllAccountsSection() {
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(ACCOUNTS_PAGINATION_KEY);
-      return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 20 }; // Змінено pageSize на 20, як у логах
+      return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 20 };
     }
     return { pageIndex: 0, pageSize: 20 };
   });
@@ -126,6 +121,7 @@ export default function AllAccountsSection() {
             : undefined,
         limit: updatedPagination.pageSize,
         offset: updatedPagination.pageIndex * updatedPagination.pageSize,
+        like_query: globalFilter.length >= 2 ? globalFilter : undefined, // Додаємо like_query
       };
 
       if (
@@ -177,30 +173,21 @@ export default function AllAccountsSection() {
       loadDateRange,
       loadCustomStartDate,
       loadCustomEndDate,
+      globalFilter,
       fetchAccounts,
       t,
     ]
   );
 
-  const debouncedSearch = useCallback(
-    debounce(async (query: string) => {
+  const debouncedLoadAccounts = useCallback(
+    debounce((query: string) => {
       if (query.length < 2) {
-        await loadAccounts(pagination);
+        loadAccounts(pagination);
         return;
       }
-
-      const searchParams: { like_query: string; subcategory_id?: number } = {
-        like_query: query,
-      };
-
-      if (selectedSubcategoryIds.length === 1) {
-        searchParams.subcategory_id = parseInt(selectedSubcategoryIds[0], 10);
-      }
-
-      const { total_rows } = await searchAccounts(searchParams);
-      setTotalRows(total_rows);
+      loadAccounts(pagination); // Використовуємо loadAccounts із like_query
     }, 300),
-    [selectedSubcategoryIds, searchAccounts, loadAccounts, pagination]
+    [loadAccounts, pagination]
   );
 
   const handleSearch = useCallback(
@@ -209,9 +196,9 @@ export default function AllAccountsSection() {
         return; // Уникаємо повторних викликів із тим самим запитом
       }
       setGlobalFilter(query);
-      debouncedSearch(query);
+      debouncedLoadAccounts(query);
     },
-    [debouncedSearch, globalFilter]
+    [debouncedLoadAccounts, globalFilter]
   );
 
   const fetchTotalAllRows = useCallback(async () => {
@@ -219,7 +206,6 @@ export default function AllAccountsSection() {
     setTotalAllRows(total_rows);
   }, [fetchAccounts]);
 
-  // Початкове завантаження даних
   useEffect(() => {
     const loadInitialData = async () => {
       if (!isInitialLoad) {
@@ -245,17 +231,9 @@ export default function AllAccountsSection() {
     isInitialLoad,
   ]);
 
-  // Оновлення при зміні фільтрів або пагінації
-  const debouncedLoadAccounts = useCallback(
-    debounce((pag: PaginationState) => {
-      loadAccounts(pag);
-    }, 300),
-    [loadAccounts]
-  );
-
   useEffect(() => {
     if (!isInitialLoad) {
-      debouncedLoadAccounts(pagination);
+      debouncedLoadAccounts(globalFilter);
     }
   }, [
     selectedCategoryIds,
@@ -270,6 +248,7 @@ export default function AllAccountsSection() {
     loadCustomStartDate,
     loadCustomEndDate,
     pagination,
+    globalFilter,
     debouncedLoadAccounts,
     isInitialLoad,
   ]);
@@ -446,6 +425,7 @@ export default function AllAccountsSection() {
           ? selectedSellerIds.map(Number)
           : undefined,
       limit: totalRows,
+      like_query: globalFilter.length >= 2 ? globalFilter : undefined, // Додаємо like_query
     };
 
     if (
@@ -766,6 +746,8 @@ export default function AllAccountsSection() {
           onSearch={handleSearch}
           accounts={accounts}
           categoryMap={categoryMap}
+          subcategoryMap={subcategoryMap}
+          sellerMap={sellerMap}
           t={t}
         />
       </div>

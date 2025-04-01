@@ -1,15 +1,13 @@
 import { create } from 'zustand';
-import { Account, AccountsState, Response } from '../types/salesTypes';
+import {
+  AccountsState,
+  SearchResponse,
+  Account,
+  ReplaceRequest,
+  ReplaceResponse,
+} from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
-
-interface ServerResponse {
-  found_accounts: Account[];
-  not_found_accounts: {
-    account_ids: number[];
-    account_names: string[];
-  };
-}
 
 export const useAccountsStore = create<AccountsState>(set => ({
   accounts: [],
@@ -41,33 +39,25 @@ export const useAccountsStore = create<AccountsState>(set => ({
         params.seller_id.length === 1 ? params.seller_id[0] : params.seller_id;
     }
 
-    if (params.limit) {
-      requestBody.limit = params.limit;
-    }
-    if (params.offset) {
-      requestBody.offset = params.offset;
-    }
-
+    if (params.limit) requestBody.limit = params.limit;
+    if (params.offset) requestBody.offset = params.offset;
     if (typeof params.with_destination === 'boolean') {
       requestBody.with_destination = params.with_destination;
     }
-
-    if (params.sold_start_date) {
+    if (params.sold_start_date)
       requestBody.sold_start_date = params.sold_start_date;
-    }
-    if (params.sold_end_date) {
-      requestBody.sold_end_date = params.sold_end_date;
-    }
-
-    if (params.upload_start_date) {
+    if (params.sold_end_date) requestBody.sold_end_date = params.sold_end_date;
+    if (params.upload_start_date)
       requestBody.upload_start_date = params.upload_start_date;
-    }
-    if (params.upload_end_date) {
+    if (params.upload_end_date)
       requestBody.upload_end_date = params.upload_end_date;
-    }
+    if (params.like_query) requestBody.like_query = params.like_query;
 
     const url = ENDPOINTS.ACCOUNTS;
-    const data = await fetchWithErrorHandling<Response<Account>>(
+    const data = await fetchWithErrorHandling<{
+      items: Account[];
+      total_rows: number;
+    }>(
       url,
       {
         method: 'POST',
@@ -87,39 +77,67 @@ export const useAccountsStore = create<AccountsState>(set => ({
 
     return { items: data.items, total_rows: data.total_rows };
   },
-  searchAccounts: async (searchParams: {
-    like_query?: string;
-    subcategory_id?: number;
-  }) => {
-    const requestBody: Record<string, any> = {
-      account_ids: [],
-      account_names: [],
-      like_query: searchParams.like_query || '',
+
+  searchAccounts: async (accountNames: string[]) => {
+    set({ loading: true, error: null });
+
+    const requestBody = {
+      account_names: accountNames,
     };
 
-    if (searchParams.subcategory_id) {
-      requestBody.subcategory_id = searchParams.subcategory_id;
-    }
-
-    const url = `${ENDPOINTS.ACCOUNTS}/search`;
-    const data = await fetchWithErrorHandling<ServerResponse>(
-      url,
-      {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
+    try {
+      const url = ENDPOINTS.ACCOUNTS_SEARCH || '/accounts/search';
+      const data = await fetchWithErrorHandling<SearchResponse>(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(requestBody),
         },
-        credentials: 'include',
-        body: JSON.stringify(requestBody),
-      },
-      set
-    );
+        set
+      );
 
-    set({ accounts: data.found_accounts });
-    return {
-      items: data.found_accounts,
-      total_rows: data.found_accounts.length,
-    };
+      set({ loading: false });
+      return data;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+  replaceAccounts: async (data: ReplaceRequest) => {
+    set({ loading: true, error: null });
+
+    try {
+      const url = ENDPOINTS.ACCOUNTS_REPLACE || '/accounts/replace';
+      const response = await fetchWithErrorHandling<ReplaceResponse>(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        },
+        set
+      );
+
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 }));

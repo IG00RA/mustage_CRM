@@ -11,5 +11,7 @@ export const ENDPOINTS = {
   ACCOUNTS: `${BASE_URL}/accounts`,
   SELLERS: `${BASE_URL}/sellers`,
   ACCOUNT_SETS: `${BASE_URL}/account-sets`,
+  ACCOUNTS_SEARCH: `${BASE_URL}/accounts/search`,
+  ACCOUNTS_REPLACE: `${BASE_URL}/accounts/replace`,
   PROMOCODES: `${BASE_URL}/promocodes`,
 };
