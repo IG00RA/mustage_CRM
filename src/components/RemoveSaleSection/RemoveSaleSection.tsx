@@ -123,19 +123,19 @@ export default function RemoveSaleSection() {
     },
     {
       accessorKey: 'name',
-      header: t('AllAccounts.table.name'),
+      header: t('RemoveSaleSection.table.name'),
     },
     {
       accessorKey: 'category',
-      header: t('AllAccounts.table.category'),
+      header: t('RemoveSaleSection.table.category'),
     },
     {
       accessorKey: 'seller',
-      header: t('AllAccounts.table.seller'),
+      header: t('RemoveSaleSection.table.seller'),
     },
     {
       accessorKey: 'status',
-      header: t('AllAccounts.table.status'),
+      header: t('RemoveSaleSection.table.status'),
     },
   ];
 

@@ -125,6 +125,11 @@ interface FetchAccountsParams {
   upload_start_date?: string;
   upload_end_date?: string;
 }
+
+export interface SearchAccountsParams {
+  like_query?: string;
+  subcategory_id?: number;
+}
 export interface AccountsState {
   accounts: Account[];
   loading: boolean;
@@ -132,6 +137,9 @@ export interface AccountsState {
   fetchAccounts: (
     params?: FetchAccountsParams,
     updateState?: boolean
+  ) => Promise<{ items: Account[]; total_rows: number }>;
+  searchAccounts: (
+    params: SearchAccountsParams
   ) => Promise<{ items: Account[]; total_rows: number }>;
 }
 export interface SellersState {

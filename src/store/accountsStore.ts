@@ -3,6 +3,14 @@ import { Account, AccountsState, Response } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 
+interface ServerResponse {
+  found_accounts: Account[];
+  not_found_accounts: {
+    account_ids: number[];
+    account_names: string[];
+  };
+}
+
 export const useAccountsStore = create<AccountsState>(set => ({
   accounts: [],
   loading: false,
@@ -78,5 +86,40 @@ export const useAccountsStore = create<AccountsState>(set => ({
     }
 
     return { items: data.items, total_rows: data.total_rows };
+  },
+  searchAccounts: async (searchParams: {
+    like_query?: string;
+    subcategory_id?: number;
+  }) => {
+    const requestBody: Record<string, any> = {
+      account_ids: [],
+      account_names: [],
+      like_query: searchParams.like_query || '',
+    };
+
+    if (searchParams.subcategory_id) {
+      requestBody.subcategory_id = searchParams.subcategory_id;
+    }
+
+    const url = `${ENDPOINTS.ACCOUNTS}/search`;
+    const data = await fetchWithErrorHandling<ServerResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestBody),
+      },
+      set
+    );
+
+    set({ accounts: data.found_accounts });
+    return {
+      items: data.found_accounts,
+      total_rows: data.found_accounts.length,
+    };
   },
 }));

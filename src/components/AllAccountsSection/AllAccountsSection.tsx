@@ -1,5 +1,6 @@
 'use client';
 
+import { debounce } from 'lodash';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import styles from './AllAccountsSection.module.css';
@@ -7,26 +8,20 @@ import { useTranslations } from 'next-intl';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import SearchInput from '../Buttons/SearchInput/SearchInput';
-import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
-import Icon from '@/helpers/Icon';
-import ModalComponent from '../ModalComponent/ModalComponent';
-import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
-import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
-import Loader from '../Loader/Loader';
 import { Account, RangeType } from '@/types/salesTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
-import DateRangeSelector from '../Buttons/DateRangeSelector/DateRangeSelector';
+import { FilterSection } from './FilterSection/FilterSection';
+import { TableSection } from './TableSection/TableSection';
+import { ModalsSection } from './ModalsSection/ModalsSection';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';
@@ -44,7 +39,12 @@ const settingsOptions = [
 export default function AllAccountsSection() {
   const t = useTranslations();
 
-  const { accounts, fetchAccounts, error: accountsError } = useAccountsStore();
+  const {
+    accounts,
+    fetchAccounts,
+    searchAccounts,
+    error: accountsError,
+  } = useAccountsStore();
   const {
     categories,
     subcategories,
@@ -69,16 +69,14 @@ export default function AllAccountsSection() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
   const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
-  const [totalRows, setTotalRows] = useState<number>(0); // For paginated table
-  const [totalAllRows, setTotalAllRows] = useState<number>(0); // For all accounts
+  const [totalRows, setTotalRows] = useState<number>(0);
+  const [totalAllRows, setTotalAllRows] = useState<number>(0);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(ACCOUNTS_PAGINATION_KEY);
-      return saved
-        ? (JSON.parse(saved) as PaginationState)
-        : { pageIndex: 0, pageSize: 5 };
+      return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 20 }; // Змінено pageSize на 20, як у логах
     }
-    return { pageIndex: 0, pageSize: 5 };
+    return { pageIndex: 0, pageSize: 20 };
   });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [sellDateRange, setSellDateRange] = useState<RangeType>('all');
@@ -111,7 +109,7 @@ export default function AllAccountsSection() {
   }, [accounts]);
 
   const loadAccounts = useCallback(
-    async (updatedPagination: PaginationState) => {
+    async (updatedPagination: PaginationState, updateState = true) => {
       const fetchParams: any = {
         subcategory_ids:
           selectedSubcategoryIds.length > 0
@@ -161,7 +159,10 @@ export default function AllAccountsSection() {
           selectedTransfers[0] === t('AllAccounts.selects.transferYes');
       }
 
-      const { total_rows } = await fetchAccounts(fetchParams, true);
+      const { total_rows, items } = await fetchAccounts(
+        fetchParams,
+        updateState
+      );
       setTotalRows(total_rows);
     },
     [
@@ -181,31 +182,82 @@ export default function AllAccountsSection() {
     ]
   );
 
-  // Fetch total count of all accounts
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        await loadAccounts(pagination);
+        return;
+      }
+
+      const searchParams: { like_query: string; subcategory_id?: number } = {
+        like_query: query,
+      };
+
+      if (selectedSubcategoryIds.length === 1) {
+        searchParams.subcategory_id = parseInt(selectedSubcategoryIds[0], 10);
+      }
+
+      const { total_rows } = await searchAccounts(searchParams);
+      setTotalRows(total_rows);
+    }, 300),
+    [selectedSubcategoryIds, searchAccounts, loadAccounts, pagination]
+  );
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (query === globalFilter) {
+        return; // Уникаємо повторних викликів із тим самим запитом
+      }
+      setGlobalFilter(query);
+      debouncedSearch(query);
+    },
+    [debouncedSearch, globalFilter]
+  );
+
   const fetchTotalAllRows = useCallback(async () => {
-    const { total_rows } = await fetchAccounts({}, false); // Empty params to get total count
+    const { total_rows } = await fetchAccounts({}, false);
     setTotalAllRows(total_rows);
   }, [fetchAccounts]);
 
+  // Початкове завантаження даних
   useEffect(() => {
-    const loadData = async () => {
-      if (isInitialLoad) {
-        await Promise.all([
-          fetchCategories(),
-          fetchSubcategories(),
-          fetchSellers(),
-          fetchTotalAllRows(), // Fetch total count of all accounts
-        ]);
-        setIsInitialLoad(false);
+    const loadInitialData = async () => {
+      if (!isInitialLoad) {
+        return;
       }
-      await loadAccounts(pagination);
+      await Promise.all([
+        fetchCategories(),
+        fetchSubcategories(),
+        fetchSellers(),
+        fetchTotalAllRows(),
+        loadAccounts(pagination),
+      ]);
+      setIsInitialLoad(false);
     };
-    loadData();
+    loadInitialData();
   }, [
     fetchCategories,
     fetchSubcategories,
     fetchSellers,
     fetchTotalAllRows,
+    loadAccounts,
+    pagination,
+    isInitialLoad,
+  ]);
+
+  // Оновлення при зміні фільтрів або пагінації
+  const debouncedLoadAccounts = useCallback(
+    debounce((pag: PaginationState) => {
+      loadAccounts(pag);
+    }, 300),
+    [loadAccounts]
+  );
+
+  useEffect(() => {
+    if (!isInitialLoad) {
+      debouncedLoadAccounts(pagination);
+    }
+  }, [
     selectedCategoryIds,
     selectedSubcategoryIds,
     selectedStatuses,
@@ -218,7 +270,7 @@ export default function AllAccountsSection() {
     loadCustomStartDate,
     loadCustomEndDate,
     pagination,
-    loadAccounts,
+    debouncedLoadAccounts,
     isInitialLoad,
   ]);
 
@@ -377,7 +429,6 @@ export default function AllAccountsSection() {
   const exportFilteredToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Filtered Accounts');
-
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
     const fetchParams: any = {
@@ -394,7 +445,7 @@ export default function AllAccountsSection() {
         selectedSellerIds.length > 0
           ? selectedSellerIds.map(Number)
           : undefined,
-      limit: totalRows, // Use filtered total
+      limit: totalRows,
     };
 
     if (
@@ -429,7 +480,6 @@ export default function AllAccountsSection() {
     }
 
     const { items } = await fetchAccounts(fetchParams, false);
-
     items.forEach(account => {
       sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
     });
@@ -444,11 +494,9 @@ export default function AllAccountsSection() {
   const exportAllToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('All Accounts');
-
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
-    const { items } = await fetchAccounts({ limit: totalAllRows }, false); // Use total of all accounts
-
+    const { items } = await fetchAccounts({ limit: totalAllRows }, false);
     items.forEach(account => {
       sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
     });
@@ -689,278 +737,61 @@ export default function AllAccountsSection() {
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('Sidebar.accParMenu.allAcc')}</h2>
         <p className={styles.header_text}>{t('Category.headerText')}</p>
-        <div className={styles.select_wrap}>
-          <CustomSelect
-            label={t('AllAccounts.selects.status')}
-            options={statusOptions}
-            selected={
-              selectedStatuses.length > 0
-                ? selectedStatuses.map(status =>
-                    t(`AllAccounts.selects.status${status}`)
-                  )
-                : [t('AllAccounts.selects.allStatus')]
-            }
-            onSelect={handleStatusSelect}
-            width={508}
-            selectWidth={383}
-          />
-          <CustomSelect
-            label={t('AllAccounts.selects.transfer')}
-            options={transferOptions}
-            selected={
-              selectedTransfers.length > 0
-                ? selectedTransfers
-                : [t('AllAccounts.selects.allTransfer')]
-            }
-            multiSelections={false}
-            onSelect={handleTransferSelect}
-            width={508}
-            selectWidth={383}
-          />
-          <CustomSelect
-            label={t('AllAccounts.selects.seller')}
-            options={sellerOptions}
-            selected={
-              selectedSellerIds.length > 0
-                ? selectedSellerIds.map(id => sellerMap.get(parseInt(id)) || '')
-                : [t('AllAccounts.selects.sellerAll')]
-            }
-            onSelect={handleSellerSelect}
-            width={508}
-            selectWidth={383}
-          />
-          <CustomSelect
-            label={t('AllAccounts.selects.categories')}
-            options={categoryOptions}
-            selected={
-              selectedCategoryIds.length > 0
-                ? selectedCategoryIds.map(
-                    id => categoryMap.get(parseInt(id)) || ''
-                  )
-                : [t('AllAccounts.selects.allCategories')]
-            }
-            onSelect={handleCategorySelect}
-            width={508}
-            selectWidth={383}
-          />
-          <CustomSelect
-            label={t('AllAccounts.selects.names')}
-            options={subcategoryOptions}
-            selected={
-              selectedSubcategoryIds.length > 0
-                ? selectedSubcategoryIds.map(
-                    id => subcategoryMap.get(parseInt(id)) || ''
-                  )
-                : [t('AllAccounts.selects.allNames')]
-            }
-            onSelect={handleSubcategorySelect}
-            width={508}
-            selectWidth={383}
-          />
-        </div>
-        <div className={styles.sell_wrap}>
-          <DateRangeSelector
-            label="AllAccounts.sellDate"
-            dateRange={sellDateRange}
-            customPeriodLabel={
-              sellCustomStartDate && sellCustomEndDate
-                ? `${sellCustomStartDate} - ${sellCustomEndDate}`
-                : ''
-            }
-            onDateRangeChange={handleSellDateRangeChange}
-            onCustomDatesChange={handleSellCustomDatesChange}
-            initialStartDate={sellCustomStartDate}
-            initialEndDate={sellCustomEndDate}
-          />
-        </div>
-        <div className={styles.search_wrap}>
-          <DateRangeSelector
-            label="AllAccounts.loadDate"
-            dateRange={loadDateRange}
-            customPeriodLabel={
-              loadCustomStartDate && loadCustomEndDate
-                ? `${loadCustomStartDate} - ${loadCustomEndDate}`
-                : ''
-            }
-            onDateRangeChange={handleLoadDateRangeChange}
-            onCustomDatesChange={handleLoadCustomDatesChange}
-            initialStartDate={loadCustomStartDate}
-            initialEndDate={loadCustomEndDate}
-          />
-          <SearchInput
-            onSearch={query => setCategoryFilter(query)}
-            text={'AllAccounts.searchBtn'}
-            options={Array.from(
-              new Set(
-                accounts.map(
-                  acc =>
-                    categoryMap.get(acc.subcategory?.account_category_id) ||
-                    'N/A'
-                )
-              )
-            )}
-          />
-        </div>
-      </div>
-      <div className={styles.table_container}>
-        {showLoader && <Loader error={error} />}
-        <table className={styles.table}>
-          <thead className={styles.thead}>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th
-                    className={styles.th}
-                    key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {{ asc: ' ↑', desc: ' ↓' }[
-                      header.column.getIsSorted() as string
-                    ] ?? null}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className={styles.tbody}>
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <td className={styles.td} key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className={styles.bottom_wrap}>
-          <div className={styles.download_wrap}>
-            <WhiteBtn
-              onClick={toggleDownload}
-              text={'AllAccounts.downloadBtn'}
-              icon="icon-cloud-download"
-              iconFill="icon-cloud-download-fill"
-            />
-            <WhiteBtn
-              onClick={toggleEditModal}
-              text={'AllAccounts.editBtn'}
-              icon="icon-palette"
-            />
-          </div>
-          <div className={styles.pagination}>
-            <span className={styles.pagination_text}>
-              {t('Category.table.pagination')}
-            </span>
-            <select
-              className={styles.pagination_select}
-              value={pagination.pageSize}
-              onChange={e => {
-                const newPageSize = Number(e.target.value);
-                const newPagination = {
-                  ...pagination,
-                  pageSize: newPageSize,
-                  pageIndex: 0,
-                };
-                setPagination(newPagination);
-                loadAccounts(newPagination);
-              }}
-            >
-              {[5, 10, 20, 50, 100].map(size => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-            <span className={styles.pagination_text}>
-              {pagination.pageIndex * pagination.pageSize + 1}-
-              {Math.min(
-                (pagination.pageIndex + 1) * pagination.pageSize,
-                totalRows
-              )}{' '}
-              {t('Category.table.pages')} {totalRows}
-            </span>
-            <div className={styles.pagination_btn_wrap}>
-              <button
-                className={styles.pagination_btn}
-                onClick={() => {
-                  const newPagination = {
-                    ...pagination,
-                    pageIndex: pagination.pageIndex - 1,
-                  };
-                  setPagination(newPagination);
-                  loadAccounts(newPagination);
-                }}
-                disabled={pagination.pageIndex === 0}
-              >
-                <Icon
-                  className={styles.icon_back}
-                  name="icon-table_arrow"
-                  width={20}
-                  height={20}
-                />
-              </button>
-              <button
-                className={styles.pagination_btn}
-                onClick={() => {
-                  const newPagination = {
-                    ...pagination,
-                    pageIndex: pagination.pageIndex + 1,
-                  };
-                  setPagination(newPagination);
-                  loadAccounts(newPagination);
-                }}
-                disabled={
-                  (pagination.pageIndex + 1) * pagination.pageSize >= totalRows
-                }
-              >
-                <Icon
-                  className={styles.icon_forward}
-                  name="icon-table_arrow"
-                  width={20}
-                  height={20}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <ModalComponent
-        isOpen={isOpenEdit}
-        onClose={toggleEditModal}
-        title="AllAccounts.modalUpdate.title"
-        text="AllAccounts.modalUpdate.description"
-      >
-        <ViewSettings
-          onClose={toggleEditModal}
-          selectedColumns={selectedColumns}
-          onSave={handleSaveSettings}
+        <FilterSection
+          categoryOptions={categoryOptions}
+          subcategoryOptions={subcategoryOptions}
+          statusOptions={statusOptions}
+          transferOptions={transferOptions}
+          sellerOptions={sellerOptions}
+          selectedCategoryIds={selectedCategoryIds}
+          selectedSubcategoryIds={selectedSubcategoryIds}
+          selectedStatuses={selectedStatuses}
+          selectedTransfers={selectedTransfers}
+          selectedSellerIds={selectedSellerIds}
+          sellDateRange={sellDateRange}
+          loadDateRange={loadDateRange}
+          sellCustomStartDate={sellCustomStartDate}
+          sellCustomEndDate={sellCustomEndDate}
+          loadCustomStartDate={loadCustomStartDate}
+          loadCustomEndDate={loadCustomEndDate}
+          onCategorySelect={handleCategorySelect}
+          onSubcategorySelect={handleSubcategorySelect}
+          onStatusSelect={handleStatusSelect}
+          onTransferSelect={handleTransferSelect}
+          onSellerSelect={handleSellerSelect}
+          onSellDateRangeChange={handleSellDateRangeChange}
+          onSellCustomDatesChange={handleSellCustomDatesChange}
+          onLoadDateRangeChange={handleLoadDateRangeChange}
+          onLoadCustomDatesChange={handleLoadCustomDatesChange}
+          onSearch={handleSearch}
+          accounts={accounts}
+          categoryMap={categoryMap}
+          t={t}
         />
-      </ModalComponent>
-      <ModalComponent
-        title="AllAccounts.modalUpdate.titleDownload"
-        isOpen={isOpenDownload}
-        onClose={toggleDownload}
-      >
-        <div className={styles.modal_btn_wrap}>
-          <WhiteBtn
-            onClick={exportFilteredToExcel}
-            text={'AllAccounts.downloadBtn'}
-            icon="icon-cloud-download"
-            iconFill="icon-cloud-download-fill"
-          />
-          <WhiteBtn
-            onClick={exportAllToExcel}
-            text={'AllAccounts.downloadBtnAll'}
-            icon="icon-cloud-download"
-            iconFill="icon-cloud-download-fill"
-          />
-        </div>
-      </ModalComponent>
+      </div>
+      <TableSection
+        table={table}
+        totalRows={totalRows}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        showLoader={showLoader}
+        error={error}
+        onToggleDownload={toggleDownload}
+        onToggleEditModal={toggleEditModal}
+        loadAccounts={loadAccounts}
+        t={t}
+      />
+      <ModalsSection
+        isOpenEdit={isOpenEdit}
+        isOpenDownload={isOpenDownload}
+        onToggleEditModal={toggleEditModal}
+        onToggleDownload={toggleDownload}
+        selectedColumns={selectedColumns}
+        onSaveSettings={handleSaveSettings}
+        onExportFilteredToExcel={exportFilteredToExcel}
+        onExportAllToExcel={exportAllToExcel}
+        t={t}
+      />
     </section>
   );
 }

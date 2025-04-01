@@ -160,7 +160,7 @@ export default function ReplacementSection() {
               </label>
               <SearchInput
                 onSearch={query => setGlobalFilter(query)}
-                text={'Category.searchBtn'}
+                text={'ReplacementSection.searchBtn'}
                 options={categoryNames}
                 width="100%"
               />
