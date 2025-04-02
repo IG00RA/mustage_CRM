@@ -22,3 +22,7 @@
     font-size: var(--fs_small);
   }
 }
+
+.form {
+  min-width: 580px;
+}

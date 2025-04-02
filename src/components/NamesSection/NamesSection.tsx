@@ -49,6 +49,32 @@ export default function NamesSection() {
 
   const didFetchRef = useRef(false);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [isOpenCreate, setIsOpenCreate] = useState(false);
+  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
+  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
+  const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
+    useState(false);
+  const [updateTitle, setUpdateTitle] = useState('');
+  const [selectedDescription, setSelectedDescription] = useState<string>('');
+  const [selectedSubcategory, setSelectedSubcategory] =
+    useState<Subcategory | null>(null); // Додаємо стан для обраної підкатегорії
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(NAMES_PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : {
+            pageIndex: 0,
+            pageSize: 5,
+          };
+    }
+    return {
+      pageIndex: 0,
+      pageSize: 5,
+    };
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -78,33 +104,6 @@ export default function NamesSection() {
       setShowLoader(false);
     }
   }, [subcategories, showLoader]);
-
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
-  const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
-    useState(false);
-  const [updateTitle, setUpdateTitle] = useState('');
-  const [selectedDescription, setSelectedDescription] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] =
-    useState<Subcategory | null>(null); // Додаємо стан для обраної підкатегорії
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [pagination, setPagination] = useState<PaginationState>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(NAMES_PAGINATION_KEY);
-      return saved
-        ? (JSON.parse(saved) as PaginationState)
-        : {
-            pageIndex: 0,
-            pageSize: 5,
-          };
-    }
-    return {
-      pageIndex: 0,
-      pageSize: 5,
-    };
-  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

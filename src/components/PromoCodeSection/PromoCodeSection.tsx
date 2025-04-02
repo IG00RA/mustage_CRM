@@ -22,11 +22,13 @@ import EditPromoCode from '../ModalComponent/EditPromoCode/EditPromoCode';
 import { usePromoCodesStore } from '@/store/promoCodesStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import Loader from '../Loader/Loader';
-import { PromoCode } from '@/types/componentsTypes';
+import { PaginationState, PromoCode } from '@/types/componentsTypes';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
 import { toast } from 'react-toastify';
 import debounce from 'lodash/debounce';
+
+const PAGINATION_KEY = 'promoSectionPaginationSettings';
 
 export default function PromoCodeSection() {
   const t = useTranslations();
@@ -59,15 +61,34 @@ export default function PromoCodeSection() {
     string[]
   >([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5,
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : {
+            pageIndex: 0,
+            pageSize: 5,
+          };
+    }
+    return {
+      pageIndex: 0,
+      pageSize: 5,
+    };
   });
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
   useEffect(() => {
-    if (categories.length !== 0) setShowLoader(false);
-  }, [categories]);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PAGINATION_KEY, JSON.stringify(pagination));
+    }
+  }, [pagination]);
+
+  useEffect(() => {
+    if (promoCodes.length > 0 && showLoader) {
+      setShowLoader(false);
+    }
+  }, [promoCodes, showLoader]);
 
   const loadPromoCodes = useCallback(
     async (updatedPagination: { pageIndex: number; pageSize: number }) => {

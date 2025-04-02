@@ -2,7 +2,7 @@
 
 import styles from './UserSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -18,186 +18,80 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateUser from '../ModalComponent/CreateUser/CreateUser';
 import UserRoles from '../ModalComponent/UserRoles/UserRoles';
+import { useUsersStore } from '@/store/usersStore';
+import { PaginationState } from '@/types/componentsTypes';
+import Loader from '../Loader/Loader';
 
-interface Category {
-  id: number;
-  fullName: string;
-  telegramId: string;
+interface User {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  telegram_id: number;
 }
 
-const data: Category[] = [
-  {
-    id: 1,
-    fullName: 'Максим Куролап',
-    telegramId: '156131',
-  },
-  {
-    id: 2,
-    fullName: 'Олена Петренко',
-    telegramId: '245789',
-  },
-  {
-    id: 3,
-    fullName: 'Іван Шевченко',
-    telegramId: '378912',
-  },
-  {
-    id: 4,
-    fullName: 'Софія Коваленко',
-    telegramId: '412356',
-  },
-  {
-    id: 5,
-    fullName: 'Дмитро Бондар',
-    telegramId: '589123',
-  },
-  {
-    id: 6,
-    fullName: 'Анна Грищенко',
-    telegramId: '674890',
-  },
-  {
-    id: 7,
-    fullName: 'Олег Ткачук',
-    telegramId: '723451',
-  },
-  {
-    id: 8,
-    fullName: 'Юлія Савчук',
-    telegramId: '891234',
-  },
-  {
-    id: 9,
-    fullName: 'Павло Литвин',
-    telegramId: '956781',
-  },
-  {
-    id: 10,
-    fullName: 'Марія Зайцева',
-    telegramId: '103214',
-  },
-  {
-    id: 11,
-    fullName: 'Андрій Мельник',
-    telegramId: '117890',
-  },
-  {
-    id: 12,
-    fullName: 'Катерина Дубова',
-    telegramId: '128934',
-  },
-  {
-    id: 13,
-    fullName: 'Сергій Кравець',
-    telegramId: '134567',
-  },
-  {
-    id: 14,
-    fullName: 'Наталія Сидоренко',
-    telegramId: '145678',
-  },
-  {
-    id: 15,
-    fullName: 'Віталій Руденко',
-    telegramId: '156789',
-  },
-  {
-    id: 16,
-    fullName: 'Тетяна Мороз',
-    telegramId: '167890',
-  },
-  {
-    id: 17,
-    fullName: 'Олександр Яременко',
-    telegramId: '178901',
-  },
-  {
-    id: 18,
-    fullName: 'Людмила Гордієнко',
-    telegramId: '189012',
-  },
-  {
-    id: 19,
-    fullName: 'Роман Левчук',
-    telegramId: '190123',
-  },
-  {
-    id: 20,
-    fullName: 'Вікторія Олійник',
-    telegramId: '201234',
-  },
-  {
-    id: 21,
-    fullName: 'Михайло Соколов',
-    telegramId: '212345',
-  },
-  {
-    id: 22,
-    fullName: 'Дарина Лозова',
-    telegramId: '223456',
-  },
-  {
-    id: 23,
-    fullName: 'Євген Козлов',
-    telegramId: '234567',
-  },
-  {
-    id: 24,
-    fullName: 'Ірина Білик',
-    telegramId: '245678',
-  },
-  {
-    id: 25,
-    fullName: 'Артем Дорошенко',
-    telegramId: '256789',
-  },
-  {
-    id: 26,
-    fullName: 'Оксана Власенко',
-    telegramId: '267890',
-  },
-  {
-    id: 27,
-    fullName: 'Владислав Гринько',
-    telegramId: '278901',
-  },
-];
+const PAGINATION_KEY = 'userSectionPaginationSettings';
 
 export default function UserSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  useState(false);
-
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5, // Початковий розмір сторінки
+  const [showLoader, setShowLoader] = useState<boolean>(true);
+  const { users, totalRows, error, fetchUsers } = useUsersStore();
+  const [pagination, setPagination] = useState<PaginationState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(PAGINATION_KEY);
+      return saved
+        ? (JSON.parse(saved) as PaginationState)
+        : {
+            pageIndex: 0,
+            pageSize: 5,
+          };
+    }
+    return {
+      pageIndex: 0,
+      pageSize: 5,
+    };
   });
+  useEffect(() => {
+    fetchUsers({
+      limit: pagination.pageSize,
+      offset: pagination.pageIndex * pagination.pageSize,
+    });
+  }, [pagination.pageIndex, pagination.pageSize, fetchUsers]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PAGINATION_KEY, JSON.stringify(pagination));
+    }
+  }, [pagination]);
+
+  useEffect(() => {
+    if (users.length > 0 && showLoader) {
+      setShowLoader(false);
+    }
+  }, [users, showLoader]);
 
   const toggleCreateModal = () => {
     setIsOpenCreate(!isOpenCreate);
-  };
-
-  const editUpdateModal = () => {
-    toggleUpdateModal();
   };
 
   const toggleUpdateModal = () => {
     setIsOpenUpdate(!isOpenUpdate);
   };
 
-  const columns: ColumnDef<Category>[] = [
+  const columns: ColumnDef<User>[] = [
     {
-      accessorKey: 'id',
+      accessorKey: 'user_id',
       header: 'ID',
     },
     {
       accessorKey: 'fullName',
       header: t('UserSection.table.name'),
+      cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
     },
     {
-      accessorKey: 'telegramId',
+      accessorKey: 'telegram_id',
       header: t('UserSection.table.tgId'),
     },
     {
@@ -206,7 +100,7 @@ export default function UserSection() {
       cell: () => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={() => editUpdateModal()}
+            onClick={toggleUpdateModal}
             text={'Names.table.editBtn'}
             icon="icon-edit-pencil"
           />
@@ -216,7 +110,7 @@ export default function UserSection() {
   ];
 
   const table = useReactTable({
-    data,
+    data: users,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -234,9 +128,13 @@ export default function UserSection() {
       },
     },
     onPaginationChange: setPagination,
+    manualPagination: true,
+    pageCount: Math.ceil(totalRows / pagination.pageSize),
   });
 
-  const categoryNames = [...new Set(data.map(category => category.fullName))];
+  const userNames = [
+    ...new Set(users.map(user => `${user.first_name} ${user.last_name}`)),
+  ];
 
   return (
     <section className={styles.section}>
@@ -247,12 +145,13 @@ export default function UserSection() {
           <AddBtn onClick={toggleCreateModal} text={'UserSection.addBtn'} />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
-            text={'Category.searchBtn'}
-            options={categoryNames}
+            text={'UserSection.searchBtn'}
+            options={userNames}
           />
         </div>
       </div>
       <div className={styles.table_container}>
+        {showLoader && <Loader error={error} />}
         <table className={styles.table}>
           <thead className={styles.thead}>
             {table.getHeaderGroups().map(headerGroup => (
@@ -291,6 +190,7 @@ export default function UserSection() {
               setPagination(prev => ({
                 ...prev,
                 pageSize: Number(e.target.value),
+                pageIndex: 0,
               }))
             }
           >
@@ -304,10 +204,10 @@ export default function UserSection() {
             {pagination.pageIndex * pagination.pageSize + 1}-
             {Math.min(
               (pagination.pageIndex + 1) * pagination.pageSize,
-              data.length
+              totalRows
             )}
             {t('Category.table.pages')}
-            {data.length}
+            {totalRows}
           </span>
           <div className={styles.pagination_btn_wrap}>
             <button
@@ -342,7 +242,7 @@ export default function UserSection() {
         onClose={toggleCreateModal}
         title="UserSection.modalCreate.title"
       >
-        <CreateUser />
+        <CreateUser onClose={toggleCreateModal} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}

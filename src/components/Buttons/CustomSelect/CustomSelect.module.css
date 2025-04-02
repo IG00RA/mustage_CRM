@@ -81,6 +81,8 @@
 .select_open.select_options {
   z-index: 2;
   opacity: 1;
+  max-height: 215px;
+  overflow-y: auto;
   visibility: visible;
   transform: translateY(0);
 }
