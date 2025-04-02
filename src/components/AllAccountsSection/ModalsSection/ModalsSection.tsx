@@ -4,16 +4,26 @@ import ViewSettings from '@/components/ModalComponent/ViewSettings/ViewSettings'
 import styles from '../AllAccountsSection.module.css';
 
 interface ModalsSectionProps {
-  isOpenEdit: boolean; // Чи відкрите модальне вікно редагування
-  isOpenDownload: boolean; // Чи відкрите модальне вікно завантаження
-  onToggleEditModal: () => void; // Функція для перемикання модального вікна редагування
-  onToggleDownload: () => void; // Функція для перемикання модального вікна завантаження
-  selectedColumns: string[]; // Обрані колонки для відображення в таблиці
-  onSaveSettings: (newSelectedColumns: string[]) => void; // Функція для збереження налаштувань колонок
-  onExportFilteredToExcel: () => Promise<void>; // Функція для експорту відфільтрованих даних у Excel
-  onExportAllToExcel: () => Promise<void>; // Функція для експорту всіх даних у Excel
-  t: (key: string) => string; // Функція перекладу з next-intl
+  isOpenEdit: boolean;
+  isOpenDownload: boolean;
+  onToggleEditModal: () => void;
+  onToggleDownload: () => void;
+  selectedColumns: string[];
+  onSaveSettings: (newSelectedColumns: string[]) => void;
+  onExportFilteredToExcel: () => Promise<void>;
+  onExportAllToExcel: () => Promise<void>;
+  t: (key: string) => string;
 }
+
+const settingsOptions = [
+  'AllAccounts.modalUpdate.selects.id',
+  'AllAccounts.modalUpdate.selects.name',
+  'AllAccounts.modalUpdate.selects.category',
+  'AllAccounts.modalUpdate.selects.seller',
+  'AllAccounts.modalUpdate.selects.transfer',
+  'AllAccounts.modalUpdate.selects.data',
+  'AllAccounts.modalUpdate.selects.mega',
+];
 
 export const ModalsSection = ({
   isOpenEdit,
@@ -34,6 +44,7 @@ export const ModalsSection = ({
       text="AllAccounts.modalUpdate.description"
     >
       <ViewSettings
+        defaultColumns={settingsOptions}
         onClose={onToggleEditModal}
         selectedColumns={selectedColumns}
         onSave={onSaveSettings}

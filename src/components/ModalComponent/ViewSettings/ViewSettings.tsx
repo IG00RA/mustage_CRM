@@ -12,21 +12,13 @@ import CustomDragDrop from '@/components/Buttons/CustomDragDrop/CustomDragDrop';
 interface ViewSettingsProps {
   onClose: () => void;
   selectedColumns: string[];
+  defaultColumns: string[];
   onSave: (newSelectedColumns: string[]) => void;
 }
 
-const settingsOptions = [
-  'AllAccounts.modalUpdate.selects.id',
-  'AllAccounts.modalUpdate.selects.name',
-  'AllAccounts.modalUpdate.selects.category',
-  'AllAccounts.modalUpdate.selects.seller',
-  'AllAccounts.modalUpdate.selects.transfer',
-  'AllAccounts.modalUpdate.selects.data',
-  'AllAccounts.modalUpdate.selects.mega',
-];
-
 export default function ViewSettings({
   selectedColumns,
+  defaultColumns,
   onClose,
   onSave,
 }: ViewSettingsProps) {
@@ -36,19 +28,19 @@ export default function ViewSettings({
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >(
-    settingsOptions.reduce(
+    defaultColumns.reduce(
       (acc, id) => ({ ...acc, [id]: selectedColumns.includes(id) }),
       {}
     )
   );
 
   // Стан для порядку елементів
-  const [order, setOrder] = useState<string[]>(settingsOptions);
+  const [order, setOrder] = useState<string[]>(defaultColumns);
 
   useEffect(() => {
     // Синхронізація чекбоксів і порядку із selectedColumns при зміні пропса
     setCheckedSettings(
-      settingsOptions.reduce(
+      defaultColumns.reduce(
         (acc, id) => ({ ...acc, [id]: selectedColumns.includes(id) }),
         {}
       )
@@ -56,9 +48,9 @@ export default function ViewSettings({
 
     // Оновлюємо порядок: спочатку вибрані колонки в їх збереженому порядку, потім решта
     const selectedInOrder = selectedColumns.filter(id =>
-      settingsOptions.includes(id)
+      defaultColumns.includes(id)
     );
-    const unselected = settingsOptions.filter(
+    const unselected = defaultColumns.filter(
       id => !selectedColumns.includes(id)
     );
     setOrder([...selectedInOrder, ...unselected]);
@@ -76,7 +68,7 @@ export default function ViewSettings({
   };
 
   const handleRemoveButton = (label: string) => {
-    const id = settingsOptions.find(id => t(id) === label);
+    const id = defaultColumns.find(id => t(id) === label);
     if (id) {
       setCheckedSettings(prev => ({
         ...prev,

@@ -10,14 +10,71 @@ import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect } from 'react';
-import { Account, ReplaceRequest, Subcategory } from '@/types/salesTypes';
+import { ReplaceRequest } from '@/types/salesTypes';
 import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
+
+interface Seller {
+  seller_id: number;
+  seller_name: string;
+  visible_in_bot: boolean;
+}
+
+interface Category {
+  account_category_id: number;
+  account_category_name: string;
+  description: string;
+  is_set_category: boolean;
+}
+
+interface Subcategory {
+  account_subcategory_id: number;
+  account_subcategory_name: string;
+  account_category_id: number;
+  price: number;
+  cost_price: number;
+  description: string;
+  output_format_field: string[];
+  output_separator: string;
+  category: Category;
+}
+
+interface Browser {
+  browser_id: number;
+  browser_name: string;
+}
+
+interface Destination {
+  destination_id: number;
+  browser_id: number;
+  username: string;
+  browser: Browser;
+}
+
+interface Account {
+  account_id: number;
+  upload_datetime: string;
+  sold_datetime: string;
+  worker_name: string;
+  teamlead_name: string;
+  client_name: string;
+  account_name: string;
+  price: number;
+  status: string;
+  frozen_at: string;
+  replace_reason: string;
+  profile_link: string;
+  archive_link: string;
+  account_data: string;
+  seller: Seller;
+  subcategory: Subcategory;
+  destination: Destination;
+}
 
 interface SearchResults {
   inputAccounts: string[];
   foundAccounts: Account[];
-  notFoundAccounts: (number | string)[];
+  notFoundAccounts: Record<string | number, (number | string)[]>;
 }
 
 interface ResultReplaceProps {
@@ -81,6 +138,7 @@ export default function ResultReplace({
   };
 
   const majoritySubcategory = getMajoritySubcategory();
+
   const filteredAccounts =
     searchResults?.foundAccounts.filter(
       acc =>
@@ -89,7 +147,7 @@ export default function ResultReplace({
     ) || [];
 
   useEffect(() => {
-    fetchSellers(true);
+    fetchSellers();
   }, [fetchSellers]);
 
   const toggleCheckbox = (id: string) => {
@@ -167,8 +225,8 @@ export default function ResultReplace({
             {t('ReplacementSection.modalReplace.category')}
           </label>
           <input
-            className={`${styles.input} ${ownStyles.input_numb} ${ownStyles.input}`}
-            value={majoritySubcategory?.account_category_id || ''}
+            className={`${styles.input} ${ownStyles.input}`}
+            value={majoritySubcategory?.category.account_category_name || ''}
             readOnly
             disabled
           />
@@ -277,6 +335,7 @@ export default function ResultReplace({
               }`}
               placeholder={t('DBSettings.form.placeholder')}
               {...register('dolphinMail', {
+                required: t('DBSettings.form.errorMessage'),
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                   message: t('ReplacementSection.invalidEmail'),

@@ -5,6 +5,7 @@ import {
   Account,
   ReplaceRequest,
   ReplaceResponse,
+  StopSellingResponse,
 } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -52,6 +53,8 @@ export const useAccountsStore = create<AccountsState>(set => ({
     if (params.upload_end_date)
       requestBody.upload_end_date = params.upload_end_date;
     if (params.like_query) requestBody.like_query = params.like_query;
+    if (params.sort_by_upload)
+      requestBody.sort_by_upload = params.sort_by_upload; // Додано сортування
 
     const url = ENDPOINTS.ACCOUNTS;
     const data = await fetchWithErrorHandling<{
@@ -111,6 +114,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
       throw error;
     }
   },
+
   replaceAccounts: async (data: ReplaceRequest) => {
     set({ loading: true, error: null });
 
@@ -126,6 +130,40 @@ export const useAccountsStore = create<AccountsState>(set => ({
           },
           credentials: 'include',
           body: JSON.stringify(data),
+        },
+        set
+      );
+
+      set({ loading: false });
+      return response;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+
+  stopSellingAccounts: async (accountIds: number[]) => {
+    set({ loading: true, error: null });
+
+    const requestBody = {
+      account_ids: accountIds,
+    };
+
+    try {
+      const url = ENDPOINTS.ACCOUNTS_STOP_SELLING || '/accounts/stop-selling';
+      const response = await fetchWithErrorHandling<StopSellingResponse>(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(requestBody),
         },
         set
       );

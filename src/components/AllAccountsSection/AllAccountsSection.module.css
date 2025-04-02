@@ -33,9 +33,8 @@
   border-bottom: 1px solid var(--grey);
 }
 
-.sell_wrap{
+.sell_wrap {
   margin-bottom: 10px;
-
 }
 
 .search_wrap {
@@ -151,10 +150,6 @@
   width: 36px;
   height: 36px;
   padding: 8px;
-
-  &:hover,
-  &:focus {
-  }
 }
 
 .icon_back {

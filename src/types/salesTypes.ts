@@ -120,6 +120,7 @@ interface FetchAccountsParams {
   limit?: number;
   offset?: number;
   like_query?: string;
+  sort_by_upload?: string;
   with_destination?: boolean;
   sold_start_date?: string;
   sold_end_date?: string;
@@ -158,6 +159,12 @@ export interface ReplaceResponse {
   }[];
 }
 
+export interface StopSellingResponse {
+  detail: string;
+  message: string;
+  success: boolean;
+}
+
 export interface AccountsState {
   accounts: Account[];
   loading: boolean;
@@ -168,6 +175,7 @@ export interface AccountsState {
   ) => Promise<{ items: Account[]; total_rows: number }>;
   searchAccounts: (accountNames: string[]) => Promise<SearchResponse>;
   replaceAccounts: (data: ReplaceRequest) => Promise<ReplaceResponse>;
+  stopSellingAccounts: (accountIds: number[]) => Promise<StopSellingResponse>;
 }
 export interface SellersState {
   sellers: Seller[];
