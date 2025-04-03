@@ -28,6 +28,7 @@ import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
 import { Category } from '@/types/salesTypes';
+import { toast } from 'react-toastify';
 
 const CATEGORY_PAGINATION_KEY = 'categoryPaginationSettings';
 
@@ -47,6 +48,7 @@ export default function CategorySection() {
       ) {
         didFetchRef.current = true;
         fetchCategories().catch(err => {
+          toast.error(t('Category.errorMessage', err));
           console.error('Fetch failed:', err);
           didFetchRef.current = false;
         });

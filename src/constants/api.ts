@@ -17,4 +17,5 @@ export const ENDPOINTS = {
   PROMOCODES: `${BASE_URL}/promocodes`,
   USERS: `${BASE_URL}/users`,
   REGISTER_USER: `${BASE_URL}/register-user`,
+  CRM_FUNCTIONS: `${BASE_URL}/crm-functions`,
 };

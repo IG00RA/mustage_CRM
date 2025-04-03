@@ -148,11 +148,8 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       setSelectedCategoryId(0);
       onClose();
     } catch (error) {
-      console.error(
-        'Error creating subcategory:',
-        typeof error === 'string' ? error : 'Произошла ошибка'
-      );
-    }
+      toast.error(t('Names.modalCreate.errorMessage'), error || "");
+      }
   };
   return (
     <form

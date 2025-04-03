@@ -7,18 +7,18 @@ interface User {
   login: string;
   first_name: string;
   last_name: string;
-  is_admin: boolean;
-  is_referral: boolean;
-  email: string;
+  is_admin?: boolean;
+  is_referral?: boolean;
+  email?: string;
   telegram_id: number;
   telegram_username: string;
   functions: {
     function_id: number;
     function_name: string;
-    operations: string[];
-    subcategories: number[];
+    operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
+    subcategories: number[] | null;
   }[];
-  notifications_for_subcategories: number[];
+  notifications_for_subcategories: number[] | null;
 }
 
 interface UsersState {

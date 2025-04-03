@@ -220,7 +220,7 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
       setSelectedSubcategoryId(0);
       onClose();
     } catch (error) {
-      console.error('Error creating promocode:', error);
+      toast.error(t('PromoCodeSection.modal.error'), error || '');
     }
   };
 

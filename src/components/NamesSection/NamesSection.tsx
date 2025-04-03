@@ -32,6 +32,7 @@ import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { PaginationState } from '@/types/componentsTypes';
 import { Subcategory } from '@/types/salesTypes';
+import { toast } from 'react-toastify';
 
 const NAMES_PAGINATION_KEY = 'namesPaginationSettings';
 
@@ -86,13 +87,13 @@ export default function NamesSection() {
       ) {
         didFetchRef.current = true;
         fetchSubcategories().catch(err => {
-          console.error('Fetch subcategories failed:', err);
+          toast.error(t('Names.errorMessage'), err || '');
           didFetchRef.current = false;
         });
       }
       if (categories.length === 0 && !loading && !error) {
         fetchCategories().catch(err => {
-          console.error('Fetch categories failed:', err);
+          toast.error(t('Category.errorMessage'), err || '');
         });
       }
     }, 0);

@@ -1,5 +1,3 @@
-import { toast } from 'react-toastify';
-
 export const getCookie = (name: string): string | undefined => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -34,7 +32,6 @@ export const fetchWithErrorHandling = async <T>(
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
     set({ loading: false, error: errorMessage });
-    toast.error(typeof error === 'string' ? error : 'Произошла ошибка');
     throw error;
   }
 };

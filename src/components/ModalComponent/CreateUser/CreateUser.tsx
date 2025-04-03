@@ -40,7 +40,7 @@ export default function CreateUser({ onClose }: { onClose: () => void }) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
-
+  const [userFunctions, setUserFunctions] = useState<any[]>([]);
   const hasLoadedRef = useRef(false);
 
   const {
@@ -87,7 +87,7 @@ export default function CreateUser({ onClose }: { onClose: () => void }) {
       is_referral: false,
       telegram_id: Number(data.tgId),
       telegram_username: data.tgNick,
-      functions: [],
+      functions: userFunctions,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
 
@@ -110,6 +110,11 @@ export default function CreateUser({ onClose }: { onClose: () => void }) {
         t('UserSection.modalCreate.errorMessage') || 'Failed to create user'
       );
     }
+  };
+
+  const handleRolesSubmit = (functions: any[]) => {
+    setUserFunctions(functions);
+    setIsRolesModalOpen(false);
   };
 
   const handleClose = () => {
@@ -390,7 +395,7 @@ export default function CreateUser({ onClose }: { onClose: () => void }) {
         onClose={toggleRolesModal}
         title="UserSection.modalRoles.title"
       >
-        <UserRoles />
+        <UserRoles onRolesSubmit={handleRolesSubmit} />
       </ModalComponent>
     </>
   );

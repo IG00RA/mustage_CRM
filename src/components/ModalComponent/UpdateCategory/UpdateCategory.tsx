@@ -70,7 +70,7 @@ export default function UpdateCategory({
       setIsSetCategory(initialIsSetCategory);
       onClose();
     } catch (error) {
-      console.error('Error updating category:', error);
+      toast.error(t('Category.modalUpdate.errorMessage'), error || '');
     }
   };
 
