@@ -1,3 +1,5 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
 import styles from '../ModalComponent.module.css';
 import ownStyles from './CreateReferral.module.css';
@@ -8,20 +10,58 @@ import { toast } from 'react-toastify';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
+import { useUsersStore } from '@/store/usersStore';
+import { useReferralsStore } from '@/store/referralsStore';
 
-type FormData = {
-  columnName: string;
-  displayName: string;
-};
+interface FormData {
+  login: string;
+  pass: string;
+  name: string;
+  secondName: string;
+  tgId: number;
+  tgNick: string;
+  email: string;
+  sellPay?: number; // Percentage for RevShare
+  sellSum?: number; // Fixed sum for CPA
+  addPay?: number; // Percentage for RevShare
+  addSum?: number; // Fixed sum for CPA
+  minPay?: number; // Minimum payment amount
+  minPaySell?: number; // Minimum payment amount for sell
+}
 
-export default function CreateReferral() {
+interface PaymentModel {
+  payment_model: 'RevShare' | 'CPA';
+  payment_reason: 'BalanceTopUp';
+  percentage?: number;
+  fixed?: number;
+  min_amount: number;
+}
+
+export default function CreateReferral({ onClose }: { onClose: () => void }) {
   const t = useTranslations('');
-
-  const [selectCategory, setSelectCategory] = useState('');
+  const { createUser, loading: userLoading } = useUsersStore();
+  const { savePaymentSettings, loading: referralLoading } = useReferralsStore();
 
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
-  >({});
+  >({
+    'ReferralsAll.modalCreate.sellCheck': false,
+    'ReferralsAll.modalCreate.add': false,
+  });
+  const [sellModel, setSellModel] = useState<string[]>([]);
+  const [addModel, setAddModel] = useState<string[]>([]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      minPay: 0,
+      minPaySell: 0,
+    },
+  });
 
   const toggleCheckbox = (id: string) => {
     setCheckedSettings(prev => ({
@@ -30,18 +70,80 @@ export default function CreateReferral() {
     }));
   };
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>();
+  const onSubmit = async (data: FormData) => {
+    try {
+      const userData = {
+        login: data.login,
+        password: data.pass,
+        first_name: data.name,
+        last_name: data.secondName,
+        email: data.email,
+        is_admin: false,
+        is_referral: true,
+        telegram_id: data.tgId,
+        telegram_username: data.tgNick,
+        functions: [],
+        notifications_for_subcategories: [],
+      };
 
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-    toast.success(t('DBSettings.form.okMessage'));
-    reset();
+      const userResponse = await createUser(userData);
+      const referrerId = userResponse.referrer_id || Number(userResponse.login);
+
+      const paymentModels: PaymentModel[] = [];
+
+      if (
+        checkedSettings['ReferralsAll.modalCreate.sellCheck'] &&
+        sellModel.length > 0
+      ) {
+        const selectedSellModel = sellModel[0];
+        paymentModels.push({
+          payment_model: selectedSellModel as 'RevShare' | 'CPA',
+          payment_reason: 'BalanceTopUp',
+          ...(selectedSellModel === 'RevShare' && { percentage: data.sellPay }),
+          ...(selectedSellModel === 'CPA' && { fixed: data.sellSum }),
+          min_amount: data.minPay || 0,
+        });
+      }
+
+      if (
+        checkedSettings['ReferralsAll.modalCreate.add'] &&
+        addModel.length > 0
+      ) {
+        const selectedAddModel = addModel[0];
+        paymentModels.push({
+          payment_model: selectedAddModel as 'RevShare' | 'CPA',
+          payment_reason: 'BalanceTopUp',
+          ...(selectedAddModel === 'RevShare' && { percentage: data.addPay }),
+          ...(selectedAddModel === 'CPA' && { fixed: data.addSum }),
+          min_amount: data.minPay || 0,
+        });
+      }
+
+      if (paymentModels.length > 0) {
+        await savePaymentSettings({
+          referrer_id: referrerId,
+          payment_models: paymentModels,
+        });
+      }
+
+      toast.success(
+        t('ReferralsAll.modalCreate.successMessage') ||
+          'Referral created successfully'
+      );
+      reset();
+      onClose();
+    } catch (error) {
+      toast.error(
+        t('ReferralsAll.modalCreate.errorMessage') ||
+          'Failed to create referral'
+      );
+    }
   };
+
+  const isSellChecked = checkedSettings['ReferralsAll.modalCreate.sellCheck'];
+  const isAddChecked = checkedSettings['ReferralsAll.modalCreate.add'];
+  const selectedSellModel = sellModel[0] || '';
+  const selectedAddModel = addModel[0] || '';
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
@@ -53,15 +155,32 @@ export default function CreateReferral() {
             </label>
             <input
               className={`${styles.input} ${
-                errors.displayName ? styles.input_error : ''
+                errors.name ? styles.input_error : ''
               }`}
               placeholder={t('DBSettings.form.placeholder')}
-              {...register('displayName', {
+              {...register('name', {
                 required: t('DBSettings.form.errorMessage'),
               })}
             />
-            {errors.displayName && (
-              <p className={styles.error}>{errors.displayName.message}</p>
+            {errors.name && (
+              <p className={styles.error}>{errors.name.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>
+              {t('ReferralsAll.modalCreate.secondName')}
+            </label>
+            <input
+              className={`${styles.input} ${
+                errors.secondName ? styles.input_error : ''
+              }`}
+              placeholder={t('DBSettings.form.placeholder')}
+              {...register('secondName', {
+                required: t('DBSettings.form.errorMessage'),
+              })}
+            />
+            {errors.secondName && (
+              <p className={styles.error}>{errors.secondName.message}</p>
             )}
           </div>
           <div className={styles.field}>
@@ -70,15 +189,37 @@ export default function CreateReferral() {
             </label>
             <input
               className={`${styles.input} ${
-                errors.displayName ? styles.input_error : ''
+                errors.tgId ? styles.input_error : ''
+              }`}
+              type="number"
+              placeholder={t('DBSettings.form.placeholder')}
+              {...register('tgId', {
+                required: t('DBSettings.form.errorMessage'),
+                min: {
+                  value: 0,
+                  message: t('ReferralsAll.modalCreate.minValueError'),
+                },
+              })}
+            />
+            {errors.tgId && (
+              <p className={styles.error}>{errors.tgId.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>
+              {t('ReferralsAll.modalCreate.tgNick')}
+            </label>
+            <input
+              className={`${styles.input} ${
+                errors.tgNick ? styles.input_error : ''
               }`}
               placeholder={t('DBSettings.form.placeholder')}
-              {...register('displayName', {
+              {...register('tgNick', {
                 required: t('DBSettings.form.errorMessage'),
               })}
             />
-            {errors.displayName && (
-              <p className={styles.error}>{errors.displayName.message}</p>
+            {errors.tgNick && (
+              <p className={styles.error}>{errors.tgNick.message}</p>
             )}
           </div>
           <div className={styles.field}>
@@ -87,15 +228,20 @@ export default function CreateReferral() {
             </label>
             <input
               className={`${styles.input} ${
-                errors.displayName ? styles.input_error : ''
+                errors.email ? styles.input_error : ''
               }`}
               placeholder={t('DBSettings.form.placeholder')}
-              {...register('displayName', {
+              type="email"
+              {...register('email', {
                 required: t('DBSettings.form.errorMessage'),
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: t('ReplacementSection.invalidEmail'),
+                },
               })}
             />
-            {errors.displayName && (
-              <p className={styles.error}>{errors.displayName.message}</p>
+            {errors.email && (
+              <p className={styles.error}>{errors.email.message}</p>
             )}
           </div>
           <div className={styles.field}>
@@ -104,15 +250,21 @@ export default function CreateReferral() {
             </label>
             <input
               className={`${styles.input} ${
-                errors.displayName ? styles.input_error : ''
+                errors.login ? styles.input_error : ''
               }`}
               placeholder={t('DBSettings.form.placeholder')}
-              {...register('displayName', {
+              {...register('login', {
                 required: t('DBSettings.form.errorMessage'),
+                minLength: {
+                  value: 5,
+                  message: `${t('DBSettings.form.minLengthError')} 5 ${t(
+                    'DBSettings.form.minLengthErrorSec'
+                  )}`,
+                },
               })}
             />
-            {errors.displayName && (
-              <p className={styles.error}>{errors.displayName.message}</p>
+            {errors.login && (
+              <p className={styles.error}>{errors.login.message}</p>
             )}
           </div>
           <div className={styles.field}>
@@ -121,15 +273,26 @@ export default function CreateReferral() {
             </label>
             <input
               className={`${styles.input} ${
-                errors.columnName ? styles.input_error : ''
+                errors.pass ? styles.input_error : ''
               }`}
               placeholder={t('DBSettings.form.placeholder')}
-              {...register('columnName', {
+              type="password"
+              {...register('pass', {
                 required: t('DBSettings.form.errorMessage'),
+                minLength: {
+                  value: 8,
+                  message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
+                    'DBSettings.form.minLengthPassErrorSec'
+                  )}`,
+                },
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+                  message: t('DBSettings.form.passwordPatternError'),
+                },
               })}
             />
-            {errors.columnName && (
-              <p className={styles.error}>{errors.columnName.message}</p>
+            {errors.pass && (
+              <p className={styles.error}>{errors.pass.message}</p>
             )}
           </div>
         </div>
@@ -139,90 +302,228 @@ export default function CreateReferral() {
               {t('ReferralsAll.modalCreate.defaultModel')}
             </label>
             <CustomCheckbox
-              checked={
-                checkedSettings['ReferralsAll.modalCreate.sellCheck'] || false
-              }
+              checked={checkedSettings['ReferralsAll.modalCreate.sellCheck']}
               onChange={() =>
                 toggleCheckbox('ReferralsAll.modalCreate.sellCheck')
               }
               label={t('ReferralsAll.modalCreate.sellCheck')}
             />
           </div>
-          <div className={ownStyles.buttons_wrap}>
+          {isSellChecked && (
+            <div className={ownStyles.buttons_wrap}>
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  {t('ReferralsAll.modalCreate.sellModel')}
+                </label>
+                <CustomSelect
+                  options={[
+                    t('ReferralsAll.modalCreate.all'),
+                    'RevShare',
+                    'CPA',
+                  ]}
+                  selected={sellModel}
+                  width={180}
+                  onSelect={values => setSellModel(values)}
+                  multiSelections={false}
+                />
+              </div>
+              {selectedSellModel === 'RevShare' && (
+                <div className={`${styles.field} ${ownStyles.field}`}>
+                  <label className={styles.label}>
+                    {t('ReferralsAll.modalCreate.percent')}
+                  </label>
+                  <input
+                    className={`${styles.input} ${
+                      errors.sellPay ? styles.input_error : ''
+                    }`}
+                    type="number"
+                    placeholder="10%"
+                    {...register('sellPay', {
+                      required: t('DBSettings.form.errorMessage'),
+                      min: {
+                        value: 0,
+                        message: t('ReferralsAll.modalCreate.minValueError'),
+                      },
+                      max: {
+                        value: 100,
+                        message: t('ReferralsAll.modalCreate.maxPercentError'),
+                      },
+                    })}
+                  />
+                  {errors.sellPay && (
+                    <p className={styles.error}>{errors.sellPay.message}</p>
+                  )}
+                </div>
+              )}
+              {selectedSellModel === 'CPA' && (
+                <div className={`${styles.field} ${ownStyles.field}`}>
+                  <label className={styles.label}>
+                    {t('ReferralsAll.modalCreate.sum')}
+                  </label>
+                  <input
+                    className={`${styles.input} ${
+                      errors.sellSum ? styles.input_error : ''
+                    }`}
+                    type="number"
+                    placeholder="10$"
+                    {...register('sellSum', {
+                      required: t('DBSettings.form.errorMessage'),
+                      min: {
+                        value: 0,
+                        message: t('ReferralsAll.modalCreate.minValueError'),
+                      },
+                    })}
+                  />
+                  {errors.sellSum && (
+                    <p className={styles.error}>{errors.sellSum.message}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {selectedSellModel === 'CPA' && isSellChecked && (
             <div className={styles.field}>
               <label className={styles.label}>
-                {t('ReferralsAll.modalCreate.sellModel')}
+                {t('ReferralsAll.modalCreate.minSum')}
               </label>
-              <CustomSelect
-                options={['RevShare']}
-                selected={selectCategory}
-                onSelect={setSelectCategory}
+              <input
+                className={`${styles.input} ${
+                  errors.minPay ? styles.input_error : ''
+                }`}
+                type="number"
+                placeholder="100$"
+                {...register('minPay', {
+                  min: {
+                    value: 0,
+                    message: t('ReferralsAll.modalCreate.minValueError'),
+                  },
+                })}
               />
+              {errors.minPay && (
+                <p className={styles.error}>{errors.minPay.message}</p>
+              )}
             </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>
-                {t('ReferralsAll.modalCreate.percent')}
-              </label>
-              <CustomSelect
-                options={['10%']}
-                selected={selectCategory}
-                onSelect={setSelectCategory}
-              />
-            </div>
-          </div>
+          )}
           <div className={styles.field}>
             <CustomCheckbox
-              checked={checkedSettings['ReferralsAll.modalCreate.add'] || false}
+              checked={checkedSettings['ReferralsAll.modalCreate.add']}
               onChange={() => toggleCheckbox('ReferralsAll.modalCreate.add')}
               label={t('ReferralsAll.modalCreate.add')}
             />
           </div>
-          <div className={ownStyles.buttons_wrap}>
+          {isAddChecked && (
+            <div className={ownStyles.buttons_wrap}>
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  {t('ReferralsAll.modalCreate.sellModel')}
+                </label>
+                <CustomSelect
+                  options={[
+                    t('ReferralsAll.modalCreate.all'),
+                    'RevShare',
+                    'CPA',
+                  ]}
+                  width={180}
+                  selected={addModel}
+                  onSelect={values => setAddModel(values)}
+                  multiSelections={false}
+                />
+              </div>
+              {selectedAddModel === 'RevShare' && (
+                <div className={`${styles.field} ${ownStyles.field}`}>
+                  <label className={styles.label}>
+                    {t('ReferralsAll.modalCreate.percent')}
+                  </label>
+                  <input
+                    className={`${styles.input} ${
+                      errors.addPay ? styles.input_error : ''
+                    }`}
+                    type="number"
+                    placeholder="10%"
+                    {...register('addPay', {
+                      required: t('DBSettings.form.errorMessage'),
+                      min: {
+                        value: 0,
+                        message: t('ReferralsAll.modalCreate.minValueError'),
+                      },
+                      max: {
+                        value: 100,
+                        message: t('ReferralsAll.modalCreate.maxPercentError'),
+                      },
+                    })}
+                  />
+                  {errors.addPay && (
+                    <p className={styles.error}>{errors.addPay.message}</p>
+                  )}
+                </div>
+              )}
+              {selectedAddModel === 'CPA' && (
+                <div className={`${styles.field} ${ownStyles.field}`}>
+                  <label className={styles.label}>
+                    {t('ReferralsAll.modalCreate.sum')}
+                  </label>
+                  <input
+                    className={`${styles.input} ${
+                      errors.addSum ? styles.input_error : ''
+                    }`}
+                    type="number"
+                    placeholder="10$"
+                    {...register('addSum', {
+                      required: t('DBSettings.form.errorMessage'),
+                      min: {
+                        value: 0,
+                        message: t('ReferralsAll.modalCreate.minValueError'),
+                      },
+                    })}
+                  />
+                  {errors.addSum && (
+                    <p className={styles.error}>{errors.addSum.message}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {selectedAddModel === 'CPA' && isAddChecked && (
             <div className={styles.field}>
               <label className={styles.label}>
-                {t('ReferralsAll.modalCreate.sellModel')}
+                {t('ReferralsAll.modalCreate.minSumSell')}
               </label>
-              <CustomSelect
-                options={['CPA']}
-                selected={selectCategory}
-                onSelect={setSelectCategory}
+              <input
+                className={`${styles.input} ${
+                  errors.minPaySell ? styles.input_error : ''
+                }`}
+                type="number"
+                placeholder="100$"
+                {...register('minPaySell', {
+                  min: {
+                    value: 0,
+                    message: t('ReferralsAll.modalCreate.minValueError'),
+                  },
+                })}
               />
+              {errors.minPaySell && (
+                <p className={styles.error}>{errors.minPaySell.message}</p>
+              )}
             </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>
-                {t('ReferralsAll.modalCreate.sum')}
-              </label>
-              <CustomSelect
-                options={['20%']}
-                selected={selectCategory}
-                onSelect={setSelectCategory}
-              />
-            </div>
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t('ReferralsAll.modalCreate.minSum')}
-            </label>
-            <input
-              className={`${styles.input} ${
-                errors.columnName ? styles.input_error : ''
-              }`}
-              placeholder={t('DBSettings.form.placeholder')}
-              {...register('columnName', {
-                required: t('DBSettings.form.errorMessage'),
-              })}
-            />
-            {errors.columnName && (
-              <p className={styles.error}>{errors.columnName.message}</p>
-            )}
-          </div>
+          )}
         </div>
       </div>
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />
-        <SubmitBtn text="ReferralsAll.modalCreate.addBtn" />
+        <CancelBtn
+          text="DBSettings.form.cancelBtn"
+          onClick={() => {
+            reset();
+            onClose();
+          }}
+        />
+        <SubmitBtn
+          text={
+            userLoading || referralLoading
+              ? 'ReferralsAll.modalCreate.loading'
+              : 'ReferralsAll.modalCreate.addBtn'
+          }
+          disabled={userLoading || referralLoading}
+        />
       </div>
     </form>
   );

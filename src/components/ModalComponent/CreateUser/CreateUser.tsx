@@ -23,7 +23,7 @@ type FormData = {
   pass: string;
   name: string;
   secondName: string;
-  tgId: string;
+  tgId: number;
   tgNick: string;
   email?: string;
 };
@@ -91,7 +91,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       last_name: data.secondName,
       is_admin: false,
       is_referral: false,
-      telegram_id: Number(data.tgId),
+      telegram_id: data.tgId,
       telegram_username: data.tgNick,
       functions: userFunctions,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],

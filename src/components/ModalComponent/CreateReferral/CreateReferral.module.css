@@ -30,3 +30,7 @@
 .label {
   margin-bottom: 16px;
 }
+
+.field {
+  max-width: 190px;
+}

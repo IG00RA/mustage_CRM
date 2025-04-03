@@ -1,4 +1,3 @@
-// components/ModalComponent/UserRoles/UserRoles.tsx
 'use client';
 
 import styles from '../ModalComponent.module.css';
@@ -10,7 +9,7 @@ import { toast } from 'react-toastify';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import { useTranslations } from 'next-intl';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -55,10 +54,15 @@ export default function UserRoles({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hasFetchedFunctions = useRef(false); // Реф для одноразового запиту
+
   const { handleSubmit, reset } = useForm();
 
+  // Завантаження функцій один раз при монтуванні
   useEffect(() => {
     const fetchFunctions = async () => {
+      if (hasFetchedFunctions.current) return;
+
       try {
         setLoading(true);
         const data = await fetchWithErrorHandling<FunctionType[]>(
@@ -74,6 +78,7 @@ export default function UserRoles({
           }
         );
         setFunctions(data);
+        hasFetchedFunctions.current = true;
       } catch (error) {
         toast.error(
           t('UserSection.modalRoles.fetchFunctionsError') ||
@@ -83,10 +88,13 @@ export default function UserRoles({
         setLoading(false);
       }
     };
-    fetchFunctions();
 
-    // Set initial functions
-    if (initialFunctions.length > 0) {
+    fetchFunctions();
+  }, []); // Порожній масив залежностей — запит виконується лише при монтуванні
+
+  // Обробка initialFunctions після завантаження функцій
+  useEffect(() => {
+    if (functions.length > 0 && initialFunctions.length > 0) {
       const formattedFunctions = initialFunctions.map(func => {
         const funcData = functions.find(
           f => f.function_id === func.function_id
@@ -104,7 +112,7 @@ export default function UserRoles({
       });
       setAddedFunctions(formattedFunctions);
     }
-  }, [t, initialFunctions, subcategories]);
+  }, [functions, initialFunctions, subcategories]);
 
   const operationOptions = selectedFunction
     ? functions.find(f => f.name === selectedFunction)?.available_operations ||
@@ -254,9 +262,6 @@ export default function UserRoles({
   };
 
   const isNamesChecked = checkedOperations['UserSection.modalRoles.namesCheck'];
-  const hasSelectedOperations = operationOptions.some(
-    op => checkedOperations[op]
-  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>

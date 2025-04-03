@@ -454,7 +454,7 @@ export default function ReferralsAllSection() {
             />
             <SearchInput
               onSearch={query => setGlobalFilter(query)}
-              text={'Category.searchBtn'}
+              text={'ReferralsAll.searchBtn'}
               options={categoryNames}
             />
           </div>

@@ -23,7 +23,7 @@ interface FormData {
   pass?: string;
   name: string;
   secondName: string;
-  tgId: string;
+  tgId: number;
   tgNick: string;
   email?: string;
 }
@@ -75,7 +75,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       login: user.login,
       name: user.first_name,
       secondName: user.last_name,
-      tgId: String(user.telegram_id),
+      tgId: user.telegram_id,
       tgNick: user.telegram_username,
       email: user.email,
     },
