@@ -4,7 +4,6 @@ import styles from './ReplacementSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import SearchResultReplace from '../ModalComponent/SearchResultReplace/SearchResultReplace';
 import ResultReplace from '../ModalComponent/ResultReplace/ResultReplace';
 import { toast } from 'react-toastify';
@@ -12,7 +11,7 @@ import { useAccountsStore } from '@/store/accountsStore';
 import { Account } from '@/types/salesTypes';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 
-interface SearchResults {
+export interface SearchResults {
   inputAccounts: string[];
   foundAccounts: Account[];
   notFoundAccounts: (number | string)[];

@@ -5,15 +5,9 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './SearchResultReplace.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { toast } from 'react-toastify';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { Account } from '@/types/salesTypes';
-
-interface SearchResults {
-  inputAccounts: string[];
-  foundAccounts: Account[];
-  notFoundAccounts: (number | string)[];
-}
+import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
 
 interface SearchResultReplaceProps {
   onContinue: () => void;

@@ -10,72 +10,10 @@ import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect } from 'react';
-import { ReplaceRequest } from '@/types/salesTypes';
 import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
-
-interface Seller {
-  seller_id: number;
-  seller_name: string;
-  visible_in_bot: boolean;
-}
-
-interface Category {
-  account_category_id: number;
-  account_category_name: string;
-  description: string;
-  is_set_category: boolean;
-}
-
-interface Subcategory {
-  account_subcategory_id: number;
-  account_subcategory_name: string;
-  account_category_id: number;
-  price: number;
-  cost_price: number;
-  description: string;
-  output_format_field: string[];
-  output_separator: string;
-  category: Category;
-}
-
-interface Browser {
-  browser_id: number;
-  browser_name: string;
-}
-
-interface Destination {
-  destination_id: number;
-  browser_id: number;
-  username: string;
-  browser: Browser;
-}
-
-interface Account {
-  account_id: number;
-  upload_datetime: string;
-  sold_datetime: string;
-  worker_name: string;
-  teamlead_name: string;
-  client_name: string;
-  account_name: string;
-  price: number;
-  status: string;
-  frozen_at: string;
-  replace_reason: string;
-  profile_link: string;
-  archive_link: string;
-  account_data: string;
-  seller: Seller;
-  subcategory: Subcategory;
-  destination: Destination;
-}
-
-interface SearchResults {
-  inputAccounts: string[];
-  foundAccounts: Account[];
-  notFoundAccounts: Record<string | number, (number | string)[]>;
-}
+import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
+import { ReplaceRequest, Subcategory } from '@/types/salesTypes';
 
 interface ResultReplaceProps {
   searchResults: SearchResults | null;
@@ -112,7 +50,6 @@ export default function ResultReplace({
     reset,
     formState: { errors },
   } = useForm<FormData>();
-
   const getMajoritySubcategory = (): Subcategory | null => {
     if (!searchResults?.foundAccounts.length) return null;
 
@@ -226,7 +163,7 @@ export default function ResultReplace({
           </label>
           <input
             className={`${styles.input} ${ownStyles.input}`}
-            value={majoritySubcategory?.category.account_category_name || ''}
+            value={majoritySubcategory?.category?.account_category_name || ''}
             readOnly
             disabled
           />

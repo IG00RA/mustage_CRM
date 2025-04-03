@@ -20,6 +20,7 @@ export interface Subcategory {
   description?: string | null;
   output_format_field?: string[] | null;
   output_separator?: string | null;
+  category?: Category;
 }
 
 interface DestinationResponse {

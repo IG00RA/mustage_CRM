@@ -87,16 +87,22 @@ export default function UserRoles({
     : [];
 
   const categoryOptions = categories.map(cat => cat.account_category_name);
+
   const subcategoryOptions = subcategories
     .filter(sub => {
       const selectedCat = categories.find(
         cat => cat.account_category_name === selectedCategory
       );
       return selectedCat
-        ? sub.account_category_id === selectedCat.account_category_id
+        ? sub.account_category_id === selectedCat.account_category_id &&
+            !addedSubcategories.includes(sub.account_subcategory_name)
         : false;
     })
     .map(sub => sub.account_subcategory_name);
+
+  const availableFunctions = functions
+    .filter(f => !addedFunctions.some(af => af.startsWith(`${f.name} (`)))
+    .map(f => f.name);
 
   const toggleCheckbox = (id: string) => {
     setCheckedOperations(prev => ({
@@ -143,14 +149,21 @@ export default function UserRoles({
       return;
     }
 
-    const selectedOps = operationOptions
-      .filter(op => checkedOperations[op])
-      .join(', ');
+    const selectedOps = operationOptions.filter(op => checkedOperations[op]);
+    if (selectedOps.length === 0) {
+      toast.error(
+        t('UserSection.modalRoles.selectOperationError') ||
+          'Please select at least one operation'
+      );
+      return;
+    }
+
+    const opsString = selectedOps.join(', ');
     const subcatString =
       addedSubcategories.length > 0
         ? `, наименования - ${addedSubcategories.join(', ')}`
         : '';
-    const functionString = `${selectedFunction} (${selectedOps})${subcatString}`;
+    const functionString = `${selectedFunction} (${opsString})${subcatString}`;
 
     setAddedFunctions(prev => [...prev, functionString]);
     setSelectedFunction('');
@@ -169,6 +182,13 @@ export default function UserRoles({
   };
 
   const onSubmit = () => {
+    if (addedFunctions.length < 1) {
+      toast.error(
+        t('UserSection.modalRoles.selectAllFunctionError') ||
+          'Please select a function'
+      );
+      return;
+    }
     const formattedFunctions = addedFunctions.map(funcStr => {
       const [funcPart, subcatPart] = funcStr.split(', наименования - ');
       const funcName = funcPart.split(' (')[0];
@@ -212,6 +232,9 @@ export default function UserRoles({
   };
 
   const isNamesChecked = checkedOperations['UserSection.modalRoles.namesCheck'];
+  const hasSelectedOperations = operationOptions.some(
+    op => checkedOperations[op]
+  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
@@ -220,23 +243,44 @@ export default function UserRoles({
           {t('UserSection.modalRoles.function')}
         </label>
         <CustomSelect
-          options={functions.map(f => f.name)}
+          options={[
+            t('UserSection.modalRoles.functionAll'),
+            ...availableFunctions,
+          ]}
           selected={selectedFunction ? [selectedFunction] : []}
-          onSelect={values => setSelectedFunction(values[0] || '')}
+          onSelect={values => {
+            const selectedValue = values[0] || '';
+            setSelectedFunction(
+              selectedValue === t('UserSection.modalRoles.functionAll')
+                ? ''
+                : selectedValue
+            );
+          }}
           multiSelections={false}
         />
       </div>
 
       {selectedFunction && (
         <div className={`${styles.field} ${ownStyles.check_wrap}`}>
-          {operationOptions.map(op => (
-            <CustomCheckbox
-              key={op}
-              checked={checkedOperations[op] || false}
-              onChange={() => toggleCheckbox(op)}
-              label={op}
-            />
-          ))}
+          {operationOptions.map(op => {
+            const operationLabels = {
+              READ: t('UserSection.modalRoles.viewCheck'),
+              CREATE: t('UserSection.modalRoles.createCheck'),
+              UPDATE: t('UserSection.modalRoles.editCheck'),
+              DELETE: t('UserSection.modalRoles.deleteCheck'),
+            };
+
+            return (
+              <CustomCheckbox
+                key={op}
+                checked={checkedOperations[op] || false}
+                onChange={() => toggleCheckbox(op)}
+                label={
+                  operationLabels[op as keyof typeof operationLabels] || op
+                }
+              />
+            );
+          })}
           <CustomCheckbox
             checked={
               checkedOperations['UserSection.modalRoles.namesCheck'] || false
@@ -254,7 +298,10 @@ export default function UserRoles({
               {t('UserSection.modalCreate.category')}
             </label>
             <CustomSelect
-              options={categoryOptions}
+              options={[
+                t('UserSection.modalRoles.categoryAll'),
+                ...categoryOptions,
+              ]}
               selected={selectedCategory ? [selectedCategory] : []}
               onSelect={values => {
                 setSelectedCategory(values[0] || '');
@@ -278,7 +325,10 @@ export default function UserRoles({
                   {t('UserSection.modalCreate.names')}
                 </label>
                 <CustomSelect
-                  options={subcategoryOptions}
+                  options={[
+                    t('UserSection.modalRoles.subCategoryAll'),
+                    ...subcategoryOptions,
+                  ]}
                   selected={selectedSubcategories}
                   onSelect={setSelectedSubcategories}
                   multiSelections={true}
@@ -308,6 +358,7 @@ export default function UserRoles({
           onClick={handleAddFunction}
           text={'UserSection.modalRoles.addFunction'}
           icon="icon-add-color"
+          // disabled={!selectedFunction || !hasSelectedOperations}
         />
       </div>
 

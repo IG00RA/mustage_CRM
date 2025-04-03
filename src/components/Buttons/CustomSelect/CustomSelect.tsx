@@ -76,7 +76,9 @@ export default function CustomSelect({
       >
         <div
           className={`${styles.select_box} ${isOpen ? styles.open : ''} ${
-            selected.length === 0 || selected.includes('Выберите селлера')
+            selected.length === 0 ||
+            selected.includes('Выберите селлера') ||
+            selected.includes('Выберите функцию')
               ? ''
               : styles.text_selected
           }`}
