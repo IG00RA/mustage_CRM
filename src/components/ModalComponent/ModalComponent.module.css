@@ -68,7 +68,7 @@
 
 .fields_wrap {
   margin-top: 24px;
-  max-height: 80vh;
+  max-height: 90vh;
   overflow-y: auto;
 }
 
@@ -85,6 +85,8 @@
 
 .form {
   min-width: 455px;
+  height: 100%;
+  overflow-y: hidden;
 }
 
 .field {

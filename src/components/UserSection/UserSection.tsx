@@ -244,13 +244,6 @@ export default function UserSection() {
       >
         <CreateUser onClose={toggleCreateModal} />
       </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
-        title="UserSection.modalRoles.title"
-      >
-        <UserRoles />
-      </ModalComponent>
     </section>
   );
 }

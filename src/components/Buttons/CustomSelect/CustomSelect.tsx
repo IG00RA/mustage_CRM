@@ -76,7 +76,9 @@ export default function CustomSelect({
       >
         <div
           className={`${styles.select_box} ${isOpen ? styles.open : ''} ${
-            selected.length > 0 ? styles.text_selected : ''
+            selected.length === 0 || selected.includes('Выберите селлера')
+              ? ''
+              : styles.text_selected
           }`}
           onClick={() => setIsOpen(prev => !prev)}
         >

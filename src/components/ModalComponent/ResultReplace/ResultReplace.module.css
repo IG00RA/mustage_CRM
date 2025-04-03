@@ -19,12 +19,7 @@
 
 .label_wrap {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.input_numb {
-  width: 100px;
+  flex-direction: column;
 }
 
 .input:disabled {
@@ -47,4 +42,8 @@
 .textarea::placeholder {
   font-family: var(--font_sfPro);
   transition: all 0.3s ease;
+}
+
+.checkbox {
+  margin-bottom: 16px;
 }

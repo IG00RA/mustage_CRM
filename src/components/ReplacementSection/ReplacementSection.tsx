@@ -10,6 +10,7 @@ import ResultReplace from '../ModalComponent/ResultReplace/ResultReplace';
 import { toast } from 'react-toastify';
 import { useAccountsStore } from '@/store/accountsStore';
 import { Account } from '@/types/salesTypes';
+import AddBtn from '../Buttons/AddBtn/AddBtn';
 
 interface SearchResults {
   inputAccounts: string[];
@@ -72,21 +73,22 @@ export default function ReplacementSection() {
         <div className={styles.input_wrap}>
           <label className={styles.label}>{t('RemoveSaleSection.field')}</label>
           <textarea
-            className={`${styles.input} ${styles.textarea}`}
+            className={`${styles.textarea}`}
             placeholder={t('RemoveSaleSection.fieldName')}
             value={searchInput}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
               setSearchInput(e.target.value)
             }
           />
-          <WhiteBtn
+          <AddBtn
             onClick={handleSearch}
             text={
               isLoading
                 ? 'ReplacementSection.loading'
                 : 'RemoveSaleSection.searchBtn'
             }
-            icon="icon-search-btn-fill"
+            icon="icon-search-btn"
+            iconFill="icon-search-btn"
           />
         </div>
       </div>

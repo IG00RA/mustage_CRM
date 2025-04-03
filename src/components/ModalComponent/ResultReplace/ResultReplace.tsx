@@ -246,15 +246,17 @@ export default function ResultReplace({
         </div>
       </div>
       <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ReplacementSection.modalReplace.seller')}
+        </label>
         <CustomSelect
-          label={t('ReplacementSection.modalReplace.seller')}
           options={[
             t('ReplacementSection.modalReplace.sellerSelect'),
             ...sellers.map(seller => seller.seller_name || ''),
           ]}
           selected={selectSeller}
           onSelect={setSelectSeller}
-          width={300}
+          width={'100%'}
           multiSelections={false}
         />
       </div>
@@ -316,7 +318,7 @@ export default function ResultReplace({
           <p className={styles.error}>{errors.newPrice.message}</p>
         )}
       </div>
-      <div className={styles.checkbox}>
+      <div className={ownStyles.checkbox}>
         <CustomCheckbox
           checked={checkedSettings[settings[0]] || false}
           onChange={() => toggleCheckbox(settings[0])}
