@@ -1,3 +1,4 @@
+// components/ModalComponent/UserRoles/UserRoles.tsx
 'use client';
 
 import styles from '../ModalComponent.module.css';
@@ -16,28 +17,33 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 
-type FormData = {
-  settings: string[];
+interface UserFunction {
+  function_id: number;
   operations: string[];
-};
+  subcategories: number[];
+}
 
-type FunctionType = {
+interface FunctionType {
   function_id: number;
   name: string;
   available_operations: string[];
-};
+}
+
+interface UserRolesProps {
+  onRolesSubmit: (functions: UserFunction[]) => void;
+  initialFunctions?: UserFunction[];
+}
 
 export default function UserRoles({
   onRolesSubmit,
-}: {
-  onRolesSubmit: (functions: any[]) => void;
-}) {
+  initialFunctions = [],
+}: UserRolesProps) {
   const t = useTranslations('');
   const { categories, subcategories } = useCategoriesStore();
 
   const [functions, setFunctions] = useState<FunctionType[]>([]);
-  const [selectedFunction, setSelectedFunction] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedFunction, setSelectedFunction] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     []
   );
@@ -49,18 +55,12 @@ export default function UserRoles({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { handleSubmit, reset } = useForm<FormData>();
-
-  const setState = (
-    state: Partial<{ loading: boolean; error: string | null }>
-  ) => {
-    if (state.loading !== undefined) setLoading(state.loading);
-    if (state.error !== undefined) setError(state.error);
-  };
+  const { handleSubmit, reset } = useForm();
 
   useEffect(() => {
     const fetchFunctions = async () => {
       try {
+        setLoading(true);
         const data = await fetchWithErrorHandling<FunctionType[]>(
           ENDPOINTS.CRM_FUNCTIONS,
           {
@@ -68,7 +68,10 @@ export default function UserRoles({
             headers: getAuthHeaders(),
             credentials: 'include',
           },
-          setState
+          state => {
+            setLoading(state.loading ?? false);
+            setError(state.error);
+          }
         );
         setFunctions(data);
       } catch (error) {
@@ -76,10 +79,32 @@ export default function UserRoles({
           t('UserSection.modalRoles.fetchFunctionsError') ||
             'Failed to fetch functions'
         );
+      } finally {
+        setLoading(false);
       }
     };
     fetchFunctions();
-  }, [t]);
+
+    // Set initial functions
+    if (initialFunctions.length > 0) {
+      const formattedFunctions = initialFunctions.map(func => {
+        const funcData = functions.find(
+          f => f.function_id === func.function_id
+        );
+        const subcatNames = func.subcategories
+          .map(
+            id =>
+              subcategories.find(sub => sub.account_subcategory_id === id)
+                ?.account_subcategory_name
+          )
+          .filter((name): name is string => !!name);
+        return `${funcData?.name || ''} (${func.operations.join(', ')})${
+          subcatNames.length ? `, наименования - ${subcatNames.join(', ')}` : ''
+        }`;
+      });
+      setAddedFunctions(formattedFunctions);
+    }
+  }, [t, initialFunctions, subcategories]);
 
   const operationOptions = selectedFunction
     ? functions.find(f => f.name === selectedFunction)?.available_operations ||
@@ -105,17 +130,14 @@ export default function UserRoles({
     .map(f => f.name);
 
   const toggleCheckbox = (id: string) => {
-    setCheckedOperations(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setCheckedOperations(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleAddAllSubcategories = () => {
     if (!selectedCategory) {
       toast.error(
         t('UserSection.modalRoles.selectCategoryError') ||
-          'Please select a category first'
+          'Please select a category'
       );
       return;
     }
@@ -189,7 +211,7 @@ export default function UserRoles({
       );
       return;
     }
-    const formattedFunctions = addedFunctions.map(funcStr => {
+    const formattedFunctions: UserFunction[] = addedFunctions.map(funcStr => {
       const [funcPart, subcatPart] = funcStr.split(', наименования - ');
       const funcName = funcPart.split(' (')[0];
       const operations = funcPart.split(' (')[1].slice(0, -1).split(', ');
@@ -263,7 +285,7 @@ export default function UserRoles({
       {selectedFunction && (
         <div className={`${styles.field} ${ownStyles.check_wrap}`}>
           {operationOptions.map(op => {
-            const operationLabels = {
+            const operationLabels: Record<string, string> = {
               READ: t('UserSection.modalRoles.viewCheck'),
               CREATE: t('UserSection.modalRoles.createCheck'),
               UPDATE: t('UserSection.modalRoles.editCheck'),
@@ -275,9 +297,7 @@ export default function UserRoles({
                 key={op}
                 checked={checkedOperations[op] || false}
                 onChange={() => toggleCheckbox(op)}
-                label={
-                  operationLabels[op as keyof typeof operationLabels] || op
-                }
+                label={operationLabels[op] || op}
               />
             );
           })}
@@ -358,7 +378,6 @@ export default function UserRoles({
           onClick={handleAddFunction}
           text={'UserSection.modalRoles.addFunction'}
           icon="icon-add-color"
-          // disabled={!selectedFunction || !hasSelectedOperations}
         />
       </div>
 

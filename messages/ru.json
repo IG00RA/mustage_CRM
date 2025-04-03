@@ -88,7 +88,12 @@
       "submitBtn": "Добавить",
       "cancelBtn": "Отменить",
       "okMessage": "Операция успешна",
-      "errorMessage": "Вы не ввели значение по умолчанию"
+      "errorMessage": "Вы не ввели значение по умолчанию",
+      "minLengthError": "Минимальная длина ",
+      "minLengthErrorSec": " символов",
+      "minLengthPassError": "Минимальная длина ",
+      "minLengthPassErrorSec": " символов",
+      "passwordPatternError": "Пароль должен содержать цифры и буквы: прописные и строчные"
     }
   },
   "Category": {
@@ -531,11 +536,18 @@
       "name": "Имя и фамилия",
       "tgId": "ID в телеграм"
     },
+    "modalEdit": {
+      "successMessage": "Пользователь успешно обновлен",
+      "errorMessage": "Не удалось обновить пользователя.",
+      "load": "Сохранение...",
+      "updateBtn": "Изменить",
+      "title": "Редактирование пользователя"
+    },
     "modalCreate": {
       "title": "Создание пользователя",
       "name": "Имя: ",
       "login": "Логин: ",
-      "pass": "Пароль (должен содержать цифры и буквы: прописные и строчные): ",
+      "pass": "Пароль: ",
       "secondName": "Фамилия: ",
       "tgId": "ID в Telegram: ",
       "tgNick": "Ник в Telegram: ",

@@ -1,3 +1,4 @@
+// components/UserSection/UserSection.tsx
 'use client';
 
 import styles from './UserSection.module.css';
@@ -17,17 +18,10 @@ import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateUser from '../ModalComponent/CreateUser/CreateUser';
-import UserRoles from '../ModalComponent/UserRoles/UserRoles';
-import { useUsersStore } from '@/store/usersStore';
+import EditUser from '../ModalComponent/EditUser/EditUser';
+import { useUsersStore, User } from '@/store/usersStore';
 import { PaginationState } from '@/types/componentsTypes';
 import Loader from '../Loader/Loader';
-
-interface User {
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  telegram_id: number;
-}
 
 const PAGINATION_KEY = 'userSectionPaginationSettings';
 
@@ -36,28 +30,25 @@ export default function UserSection() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const { users, totalRows, error, fetchUsers } = useUsersStore();
+
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(PAGINATION_KEY);
       return saved
         ? (JSON.parse(saved) as PaginationState)
-        : {
-            pageIndex: 0,
-            pageSize: 5,
-          };
+        : { pageIndex: 0, pageSize: 5 };
     }
-    return {
-      pageIndex: 0,
-      pageSize: 5,
-    };
+    return { pageIndex: 0, pageSize: 5 };
   });
+
   useEffect(() => {
     fetchUsers({
       limit: pagination.pageSize,
       offset: pagination.pageIndex * pagination.pageSize,
-    });
+    }).catch(() => setShowLoader(false));
   }, [pagination.pageIndex, pagination.pageSize, fetchUsers]);
 
   useEffect(() => {
@@ -72,35 +63,27 @@ export default function UserSection() {
     }
   }, [users, showLoader]);
 
-  const toggleCreateModal = () => {
-    setIsOpenCreate(!isOpenCreate);
-  };
-
-  const toggleUpdateModal = () => {
-    setIsOpenUpdate(!isOpenUpdate);
-  };
+  const toggleCreateModal = () => setIsOpenCreate(!isOpenCreate);
+  const toggleUpdateModal = () => setIsOpenUpdate(!isOpenUpdate);
 
   const columns: ColumnDef<User>[] = [
-    {
-      accessorKey: 'user_id',
-      header: 'ID',
-    },
+    { accessorKey: 'user_id', header: 'ID' },
     {
       accessorKey: 'fullName',
       header: t('UserSection.table.name'),
       cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
     },
-    {
-      accessorKey: 'telegram_id',
-      header: t('UserSection.table.tgId'),
-    },
+    { accessorKey: 'telegram_id', header: t('UserSection.table.tgId') },
     {
       id: 'actions',
       header: t('Names.table.actions'),
-      cell: () => (
+      cell: ({ row }) => (
         <div className={styles.table_buttons}>
           <WhiteBtn
-            onClick={toggleUpdateModal}
+            onClick={() => {
+              setSelectedUser(row.original);
+              toggleUpdateModal();
+            }}
             text={'Names.table.editBtn'}
             icon="icon-edit-pencil"
           />
@@ -115,18 +98,8 @@ export default function UserSection() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-      pagination,
-    },
+    state: { globalFilter, pagination },
     onGlobalFilterChange: setGlobalFilter,
-    filterFns: {
-      global: (row, columnId, filterValue) => {
-        if (!filterValue) return true;
-        const cellValue = String(row.getValue(columnId) ?? '').toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
-      },
-    },
     onPaginationChange: setPagination,
     manualPagination: true,
     pageCount: Math.ceil(totalRows / pagination.pageSize),
@@ -242,7 +215,20 @@ export default function UserSection() {
         onClose={toggleCreateModal}
         title="UserSection.modalCreate.title"
       >
-        <CreateUser onClose={toggleCreateModal} />
+        <CreateUser pagination={pagination} onClose={toggleCreateModal} />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenUpdate}
+        onClose={toggleUpdateModal}
+        title="UserSection.modalEdit.title"
+      >
+        {selectedUser && (
+          <EditUser
+            onClose={toggleUpdateModal}
+            pagination={pagination}
+            user={selectedUser}
+          />
+        )}
       </ModalComponent>
     </section>
   );
