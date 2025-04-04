@@ -84,6 +84,11 @@ const getDateRangeParams = (
         end_date: shiftYear(customEnd!),
       },
     },
+    all: {
+      reportType: 'all',
+      current: {},
+      lastYear: {},
+    },
   };
   return ranges[range];
 };
@@ -108,177 +113,12 @@ const isValidDateFormat = (date: string): boolean => {
   );
 };
 
-export const useSalesStore = create<SalesState>(set => ({
-  sales: [],
-  chartSales: [],
-  loading: false,
-  error: null,
-  dateRange: 'today',
-  yearlyChange: null,
-  customPeriodLabel: '',
-  setDateRange: range => set({ dateRange: range }),
-  setYearlyChange: change => set({ yearlyChange: change }),
-  setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
-
-  fetchSalesSummary: async () => {
-    const data = await fetchWithErrorHandling<any>(
-      ENDPOINTS.SALES_SUMMARY,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      },
-      set
-    );
-    const sales: Sale[] = [
-      {
-        period: 'Today',
-        amount: data.today.total_amount,
-        quantity: data.today.sales_count,
-      },
-      {
-        period: 'Week',
-        amount: data.week.total_amount,
-        quantity: data.week.sales_count,
-      },
-      {
-        period: 'Month',
-        amount: data.month.total_amount,
-        quantity: data.month.sales_count,
-      },
-    ];
-    set({ sales });
-  },
-
-  fetchReport: async (reportType, params) => {
-    const queryParams = new URLSearchParams();
-
-    // Додаємо параметри дати
-    Object.entries(params).forEach(([key, value]) => {
-      if (
-        key !== 'category_id' &&
-        key !== 'subcategory_id' &&
-        value !== undefined
-      ) {
-        queryParams.append(key, String(value));
-      }
-    });
-
-    // Додаємо category_id як окремі параметри
-    if (params.category_id && Array.isArray(params.category_id)) {
-      params.category_id.forEach((id: number) => {
-        queryParams.append('category_id', String(id));
-      });
-    } else if (params.category_id) {
-      queryParams.append('category_id', String(params.category_id));
-    }
-
-    // Додаємо subcategory_id як окремі параметри
-    if (params.subcategory_id && Array.isArray(params.subcategory_id)) {
-      params.subcategory_id.forEach((id: number) => {
-        queryParams.append('subcategory_id', String(id));
-      });
-    } else if (params.subcategory_id) {
-      queryParams.append('subcategory_id', String(params.subcategory_id));
-    }
-
-    const query = queryParams.toString();
-    const endpoint =
-      reportType === 'hourly'
-        ? `${ENDPOINTS.SALES_HOURLY}${query ? `?${query}` : ''}`
-        : reportType === 'daily'
-        ? `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`
-        : reportType === 'monthly'
-        ? `${ENDPOINTS.SALES_MONTHLY}${query ? `?${query}` : ''}`
-        : reportType === 'yearly'
-        ? `${ENDPOINTS.SALES_YEARLY}${query ? `?${query}` : ''}`
-        : `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
-
-    const data = await fetchWithErrorHandling<any>(
-      endpoint,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      },
-      set
-    );
-    return Object.entries(data).map(([period, report]: [string, any]) => ({
-      period,
-      amount: report.total_amount,
-      quantity: report.sales_count,
-    }));
-  },
-
-  fetchSalesAndYearlyChange: async (
-    range,
-    customStart,
-    customEnd,
-    categoryId?,
-    subcategoryId?
-  ) => {
-    const { reportType, current, lastYear } = getDateRangeParams(
-      range,
-      customStart,
-      customEnd
-    );
-    const params: Record<string, string | string[]> = {};
-
-    // Обробка categoryId
-    if (categoryId !== undefined) {
-      if (Array.isArray(categoryId)) {
-        if (categoryId.length > 0) {
-          params.category_id = categoryId.map(String);
-        }
-      } else {
-        params.category_id = String(categoryId);
-      }
-    }
-
-    // Обробка subcategoryId
-    if (subcategoryId !== undefined) {
-      if (Array.isArray(subcategoryId)) {
-        if (subcategoryId.length > 0) {
-          params.subcategory_id = subcategoryId.map(String);
-        }
-      } else {
-        params.subcategory_id = String(subcategoryId);
-      }
-    }
-
-    const currentSales = await useSalesStore
-      .getState()
-      .fetchReport(reportType, { ...current, ...params });
-    const lastYearSales = await useSalesStore
-      .getState()
-      .fetchReport(reportType, { ...lastYear, ...params });
-
-    const chartSales =
-      range === 'quarter' ? aggregateToWeekly(currentSales) : currentSales;
-    const currentTotal = currentSales.reduce(
-      (sum, sale) => sum + sale.amount,
-      0
-    );
-    const lastYearTotal = lastYearSales.reduce(
-      (sum, sale) => sum + sale.amount,
-      0
-    );
-    const yearlyChange =
-      lastYearTotal === 0
-        ? currentTotal > 0
-          ? 100
-          : 0
-        : ((currentTotal - lastYearTotal) / lastYearTotal) * 100;
-
-    set({ chartSales, yearlyChange: Number(yearlyChange.toFixed(1)) });
-  },
-}));
+const getDaysDifference = (start: string, end: string): number => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const diffInMs = endDate.getTime() - startDate.getTime();
+  return Math.ceil(diffInMs / (1000 * 60 * 60 * 24)); // Переводимо мілісекунди в дні
+};
 
 const aggregateToWeekly = (sales: Sale[]): Sale[] => {
   const weeklyData: { [week: string]: { amount: number; quantity: number } } =
@@ -299,3 +139,341 @@ const aggregateToWeekly = (sales: Sale[]): Sale[] => {
     quantity: data.quantity,
   }));
 };
+
+const aggregateToMonthly = (sales: Sale[]): Sale[] => {
+  const monthlyData: { [month: string]: { amount: number; quantity: number } } =
+    {};
+  sales.forEach(sale => {
+    const date = new Date(sale.period);
+    const monthKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, '0')}`;
+    monthlyData[monthKey] = monthlyData[monthKey] || { amount: 0, quantity: 0 };
+    monthlyData[monthKey].amount += sale.amount;
+    monthlyData[monthKey].quantity += sale.quantity;
+  });
+  return Object.entries(monthlyData).map(([period, data]) => ({
+    period,
+    amount: data.amount,
+    quantity: data.quantity,
+  }));
+};
+
+const aggregateToYearly = (sales: Sale[]): Sale[] => {
+  const yearlyData: { [year: string]: { amount: number; quantity: number } } =
+    {};
+  sales.forEach(sale => {
+    const date = new Date(sale.period);
+    const yearKey = `${date.getFullYear()}`;
+    yearlyData[yearKey] = yearlyData[yearKey] || { amount: 0, quantity: 0 };
+    yearlyData[yearKey].amount += sale.amount;
+    yearlyData[yearKey].quantity += sale.quantity;
+  });
+  return Object.entries(yearlyData).map(([period, data]) => ({
+    period,
+    amount: data.amount,
+    quantity: data.quantity,
+  }));
+};
+
+export const useSalesStore = create<SalesState>(set => ({
+  sales: [],
+  chartSales: [],
+  loading: false,
+  error: null,
+  dateRange: 'today',
+  minDate: '2023-03-01',
+  yearlyChange: null,
+  customPeriodLabel: '',
+  setDateRange: range => set({ dateRange: range }),
+  setYearlyChange: change => set({ yearlyChange: change }),
+  setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
+
+  fetchSalesSummary: async () => {
+    const summaryData = await fetchWithErrorHandling<any>(
+      ENDPOINTS.SALES_SUMMARY,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    const allTimeData = await fetchWithErrorHandling<any>(
+      ENDPOINTS.SALES_ALL_TIME,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    let allTimeQuantity = 0;
+    let allTimeAmount = 0;
+    Object.values(allTimeData).forEach((yearData: any) => {
+      if (yearData.total) {
+        allTimeQuantity += yearData.total.sales_count || 0;
+        allTimeAmount += yearData.total.total_amount || 0;
+      }
+    });
+
+    const sales: Sale[] = [
+      {
+        period: 'Today',
+        amount: summaryData.today.total_amount,
+        quantity: summaryData.today.sales_count,
+      },
+      {
+        period: 'Week',
+        amount: summaryData.week.total_amount,
+        quantity: summaryData.week.sales_count,
+      },
+      {
+        period: 'Month',
+        amount: summaryData.month.total_amount,
+        quantity: summaryData.month.sales_count,
+      },
+      {
+        period: 'AllTime',
+        amount: allTimeAmount,
+        quantity: allTimeQuantity,
+      },
+    ];
+
+    set({ sales });
+  },
+
+  fetchReport: async (reportType, params) => {
+    const queryParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (
+        key !== 'category_id' &&
+        key !== 'subcategory_id' &&
+        value !== undefined
+      ) {
+        queryParams.append(key, String(value));
+      }
+    });
+
+    if (params.category_id && Array.isArray(params.category_id)) {
+      params.category_id.forEach((id: number) => {
+        queryParams.append('category_id', String(id));
+      });
+    } else if (params.category_id) {
+      queryParams.append('category_id', String(params.category_id));
+    }
+
+    if (params.subcategory_id && Array.isArray(params.subcategory_id)) {
+      params.subcategory_id.forEach((id: number) => {
+        queryParams.append('subcategory_id', String(id));
+      });
+    } else if (params.subcategory_id) {
+      queryParams.append('subcategory_id', String(params.subcategory_id));
+    }
+
+    const query = queryParams.toString();
+    let endpoint: string;
+
+    switch (reportType) {
+      case 'hourly':
+        endpoint = `${ENDPOINTS.SALES_HOURLY}${query ? `?${query}` : ''}`;
+        break;
+      case 'daily':
+        endpoint = `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
+        break;
+      case 'monthly':
+        endpoint = `${ENDPOINTS.SALES_MONTHLY}${query ? `?${query}` : ''}`;
+        break;
+      case 'yearly':
+        endpoint = `${ENDPOINTS.SALES_YEARLY}${query ? `?${query}` : ''}`;
+        break;
+      case 'all':
+        endpoint = `${ENDPOINTS.SALES_ALL_TIME}${query ? `?${query}` : ''}`;
+        break;
+      default:
+        endpoint = `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
+    }
+
+    const data = await fetchWithErrorHandling<any>(
+      endpoint,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    if (reportType === 'all') {
+      const sales: Sale[] = [];
+      Object.entries(data).forEach(([year, months]: [string, any]) => {
+        Object.entries(months).forEach(([month, report]: [string, any]) => {
+          if (month !== 'total') {
+            sales.push({
+              period: `${year}-${month}`,
+              amount: report.total_amount || 0,
+              quantity: report.sales_count || 0,
+            });
+          }
+        });
+      });
+      return sales;
+    }
+
+    return Object.entries(data).map(([period, report]: [string, any]) => ({
+      period,
+      amount: report.total_amount || 0,
+      quantity: report.sales_count || 0,
+    }));
+  },
+
+  fetchSalesAndYearlyChange: async (
+    range,
+    customStart,
+    customEnd,
+    categoryId?,
+    subcategoryId?
+  ) => {
+    let reportType: ReportType;
+    let currentParams: Record<string, string | string[]> = {};
+    let lastYearParams: Record<string, string | string[]> = {};
+
+    // Визначаємо параметри для поточного та минулого року
+    if (range === 'custom' && customStart && customEnd) {
+      const daysDiff = getDaysDifference(customStart, customEnd);
+      if (daysDiff <= 1) {
+        reportType = 'hourly'; // 1 день - погодинно
+        currentParams = { date: customStart }; // Для одного дня використовуємо "date"
+        lastYearParams = { date: shiftYear(customStart) }; // Зміщуємо на рік назад
+      } else if (daysDiff <= 31) {
+        reportType = 'daily'; // До місяця - по днях
+        currentParams = { start_date: customStart, end_date: customEnd };
+        lastYearParams = {
+          start_date: shiftYear(customStart),
+          end_date: shiftYear(customEnd),
+        };
+      } else if (daysDiff <= 180) {
+        reportType = 'daily'; // До 6 місяців - по тижнях (агрегація)
+        currentParams = { start_date: customStart, end_date: customEnd };
+        lastYearParams = {
+          start_date: shiftYear(customStart),
+          end_date: shiftYear(customEnd),
+        };
+      } else if (daysDiff <= 6 * 365) {
+        reportType = 'daily'; // До 6 років - по місяцях (агрегація)
+        currentParams = { start_date: customStart, end_date: customEnd };
+        lastYearParams = {
+          start_date: shiftYear(customStart),
+          end_date: shiftYear(customEnd),
+        };
+      } else {
+        reportType = 'daily'; // Більше 6 років - по роках (агрегація)
+        currentParams = { start_date: customStart, end_date: customEnd };
+        lastYearParams = {
+          start_date: shiftYear(customStart),
+          end_date: shiftYear(customEnd),
+        };
+      }
+    } else {
+      const {
+        reportType: predefinedReportType,
+        current,
+        lastYear,
+      } = getDateRangeParams(range, customStart, customEnd);
+      reportType = predefinedReportType;
+      currentParams = { ...current };
+      lastYearParams = { ...lastYear };
+    }
+
+    // Додаємо categoryId до обох наборів параметрів
+    if (categoryId !== undefined) {
+      if (Array.isArray(categoryId) && categoryId.length > 0) {
+        currentParams.category_id = categoryId.map(String);
+        lastYearParams.category_id = categoryId.map(String);
+      } else if (!Array.isArray(categoryId)) {
+        currentParams.category_id = String(categoryId);
+        lastYearParams.category_id = String(categoryId);
+      }
+    }
+
+    // Додаємо subcategoryId до обох наборів параметрів
+    if (subcategoryId !== undefined) {
+      if (Array.isArray(subcategoryId) && subcategoryId.length > 0) {
+        currentParams.subcategory_id = subcategoryId.map(String);
+        lastYearParams.subcategory_id = subcategoryId.map(String);
+      } else if (!Array.isArray(subcategoryId)) {
+        currentParams.subcategory_id = String(subcategoryId);
+        lastYearParams.subcategory_id = String(subcategoryId);
+      }
+    }
+
+    // Отримуємо дані для поточного періоду
+    const currentSales = await useSalesStore
+      .getState()
+      .fetchReport(reportType, currentParams);
+
+    let yearlyChange: number | null = null;
+    let chartSales = currentSales;
+
+    // Розрахунок для порівняння з минулим роком (крім 'all')
+    if (range !== 'all') {
+      const lastYearSales = await useSalesStore
+        .getState()
+        .fetchReport(reportType, lastYearParams);
+
+      // Агрегація для кастомних періодів
+      if (range === 'custom' && customStart && customEnd) {
+        const daysDiff = getDaysDifference(customStart, customEnd);
+        if (daysDiff <= 1) {
+          chartSales = currentSales; // Погодинно
+        } else if (daysDiff <= 31) {
+          chartSales = currentSales; // По днях
+        } else if (daysDiff <= 180) {
+          chartSales = aggregateToWeekly(currentSales); // По тижнях
+        } else if (daysDiff <= 6 * 365) {
+          chartSales = aggregateToMonthly(currentSales); // По місяцях
+        } else {
+          chartSales = aggregateToYearly(currentSales); // По роках
+        }
+      } else {
+        // Агрегація для стандартних періодів
+        chartSales =
+          range === 'quarter' ? aggregateToWeekly(currentSales) : currentSales;
+      }
+
+      // Розрахунок yearlyChange
+      const currentTotal = currentSales.reduce(
+        (sum, sale) => sum + sale.amount,
+        0
+      );
+      const lastYearTotal = lastYearSales.reduce(
+        (sum, sale) => sum + sale.amount,
+        0
+      );
+      yearlyChange =
+        lastYearTotal === 0
+          ? currentTotal > 0
+            ? 100
+            : 0
+          : ((currentTotal - lastYearTotal) / lastYearTotal) * 100;
+    }
+
+    set({
+      chartSales,
+      yearlyChange:
+        yearlyChange !== null ? Number(yearlyChange.toFixed(1)) : null,
+    });
+  },
+}));

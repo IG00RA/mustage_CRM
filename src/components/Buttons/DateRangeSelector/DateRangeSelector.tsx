@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './DateRangeSelector.module.css';
 import { DateRangeSelectorProps } from '@/types/componentsTypes';
+import { useSalesStore } from '@/store/salesStore';
 
 const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   dateRange,
@@ -16,10 +17,14 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   label = 'Statistics.chart.toggler.togglerData',
 }) => {
   const t = useTranslations();
+  const { minDate } = useSalesStore();
   const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
   const [customStartDate, setCustomStartDate] =
     useState<string>(initialStartDate);
   const [customEndDate, setCustomEndDate] = useState<string>(initialEndDate);
+
+  const today = new Date().toISOString().split('T')[0]; // Максимальна дата - сьогодні
+  const defaultMinDate = '2023-03-01'; // Значення за замовчуванням, якщо minDate === null
 
   const dateRangeOptions = [
     { value: 'all' as const, label: 'togglerDataAll' },
@@ -62,9 +67,10 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
         let [year, month, day] = formattedValue.split('-');
         if (year && year.length === 4) {
           const yearNum = parseInt(year);
+          const minYear = minDate ? parseInt(minDate.split('-')[0]) : 2000;
           const currentYear = new Date().getFullYear();
-          if (yearNum < 2000) year = '2000';
-          else if (yearNum > currentYear) year = String(currentYear);
+          if (yearNum < minYear) year = minYear.toString();
+          else if (yearNum > currentYear) year = currentYear.toString();
         }
         if (month && month.length === 2) {
           const monthNum = parseInt(month);
@@ -80,43 +86,65 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
       }
 
       if (type === 'start') {
+        const startDate =
+          formattedValue.length === 10 ? new Date(formattedValue) : null;
+        const effectiveMinDate = minDate || defaultMinDate;
+        if (startDate && startDate < new Date(effectiveMinDate)) {
+          formattedValue = effectiveMinDate;
+        }
         setCustomStartDate(formattedValue);
         if (
           formattedValue.length === 10 &&
           customEndDate.length === 10 &&
-          isValidDate(formattedValue)
+          isValidDate(formattedValue) &&
+          isValidDate(customEndDate)
         ) {
           updateCustomDates(formattedValue, customEndDate);
         }
       } else {
+        const endDate =
+          formattedValue.length === 10 ? new Date(formattedValue) : null;
+        if (endDate && endDate > new Date(today)) {
+          formattedValue = today;
+        }
         setCustomEndDate(formattedValue);
         if (
           formattedValue.length === 10 &&
           customStartDate.length === 10 &&
-          isValidDate(formattedValue)
+          isValidDate(formattedValue) &&
+          isValidDate(customStartDate)
         ) {
           updateCustomDates(customStartDate, formattedValue);
         }
       }
     },
-    [customStartDate, customEndDate]
+    [customStartDate, customEndDate, minDate, today]
   );
 
   const updateCustomDates = (start: string, end: string) => {
     if (isValidDate(start) && isValidDate(end)) {
       const startDateObj = new Date(start);
       const endDateObj = new Date(end);
-      if (startDateObj <= endDateObj) {
-        onCustomDatesChange(start, end);
+      const effectiveMinDate = minDate || defaultMinDate; // Використовуємо значення за замовчуванням
+      const minDateObj = new Date(effectiveMinDate);
+      const todayObj = new Date(today);
+
+      // Перевірка меж
+      const adjustedStart =
+        startDateObj < minDateObj ? effectiveMinDate : start;
+      const adjustedEnd = endDateObj > todayObj ? today : end;
+
+      if (new Date(adjustedStart) <= new Date(adjustedEnd)) {
+        onCustomDatesChange(adjustedStart, adjustedEnd);
         setIsCustomDateOpen(false);
       } else {
-        const nextDay = new Date(startDateObj);
+        const nextDay = new Date(adjustedStart);
         nextDay.setDate(nextDay.getDate() + 1);
         const nextDayStr = `${nextDay.getFullYear()}-${String(
           nextDay.getMonth() + 1
         ).padStart(2, '0')}-${String(nextDay.getDate()).padStart(2, '0')}`;
-        if (isValidDate(nextDayStr)) {
-          onCustomDatesChange(start, nextDayStr);
+        if (isValidDate(nextDayStr) && new Date(nextDayStr) <= todayObj) {
+          onCustomDatesChange(adjustedStart, nextDayStr);
           setIsCustomDateOpen(false);
         }
       }
@@ -168,6 +196,8 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 onChange={e => handleCustomDateInput('start', e.target.value)}
                 placeholder="yyyy-mm-dd"
                 maxLength={10}
+                min={minDate || defaultMinDate} // Використовуємо значення за замовчуванням
+                max={today}
               />
               -
               <input
@@ -177,6 +207,8 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 onChange={e => handleCustomDateInput('end', e.target.value)}
                 placeholder="yyyy-mm-dd"
                 maxLength={10}
+                min={minDate || defaultMinDate} // Використовуємо значення за замовчуванням
+                max={today}
               />
             </div>
           )}

@@ -77,9 +77,16 @@ export type RangeType =
   | 'month'
   | 'quarter'
   | 'year'
-  | 'custom';
+  | 'custom'
+  | 'all';
 
-export type ReportType = 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom';
+export type ReportType =
+  | 'hourly'
+  | 'daily'
+  | 'monthly'
+  | 'yearly'
+  | 'custom'
+  | 'all';
 
 export interface SalesState {
   sales: Sale[];
@@ -88,6 +95,7 @@ export interface SalesState {
   error: string | null;
   dateRange: RangeType;
   yearlyChange: number | null;
+  minDate: string | null;
   customPeriodLabel: string;
   setDateRange: (range: RangeType) => void;
   setYearlyChange: (change: number) => void;

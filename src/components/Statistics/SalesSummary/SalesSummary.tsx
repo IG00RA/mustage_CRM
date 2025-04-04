@@ -21,7 +21,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
 
   return (
     <div className={styles.stat_wrap}>
-      <h2 className={styles.header}>{t('Sidebar.mainParMenu.review')}</h2>
+      <h2 className={styles.stat_header}>{t('Sidebar.mainParMenu.review')}</h2>
       <ul className={styles.stat_list}>
         <li className={styles.stat_item}>
           <h3 className={styles.stat_header}>
@@ -123,6 +123,40 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
           </span>
           <span className={styles.stat_quantity}>
             {formatAmount(getByPeriod('Month', 'amount'))}
+          </span>
+        </li>
+        <li className={styles.stat_item}>
+          <h3 className={styles.stat_header}>
+            {t('Statistics.stat.headerQuantity')}
+          </h3>
+          <span className={styles.stat_period}>
+            <Icon
+              className={styles.logo}
+              name="icon-stat_calendar"
+              width={14}
+              height={14}
+            />
+            {t('Statistics.stat.periodAllTime')}
+          </span>
+          <span className={styles.stat_quantity}>
+            {getByPeriod('AllTime', 'quantity')}
+          </span>
+        </li>
+        <li className={styles.stat_item}>
+          <h3 className={styles.stat_header}>
+            {t('Statistics.stat.headerSum')}
+          </h3>
+          <span className={styles.stat_period}>
+            <Icon
+              className={styles.logo}
+              name="icon-stat_calendar"
+              width={14}
+              height={14}
+            />
+            {t('Statistics.stat.periodAllTime')}
+          </span>
+          <span className={styles.stat_quantity}>
+            {formatAmount(getByPeriod('AllTime', 'amount'))}
           </span>
         </li>
       </ul>

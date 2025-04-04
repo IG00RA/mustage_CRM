@@ -6,6 +6,7 @@ export const ENDPOINTS = {
   SALES_DAILY: `${BASE_URL}/sales/daily-report`,
   SALES_MONTHLY: `${BASE_URL}/sales/monthly-report`,
   SALES_YEARLY: `${BASE_URL}/sales/yearly-report`,
+  SALES_ALL_TIME: `${BASE_URL}/sales/all-time-report`,
   CATEGORIES: `${BASE_URL}/categories`,
   SUBCATEGORIES: `${BASE_URL}/subcategories`,
   SELLERS: `${BASE_URL}/sellers`,

@@ -44,7 +44,8 @@
       "headerSum": "Продажи (сумма)",
       "periodDay": "за сегодня",
       "periodWeek": "за эту неделю",
-      "periodMonth": "за этот месяц"
+      "periodMonth": "за этот месяц",
+      "periodAllTime": "за все время"
     },
     "chart": {
       "header": "График",
