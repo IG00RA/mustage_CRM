@@ -340,50 +340,55 @@ export const useSalesStore = create<SalesState>(set => ({
   },
 
   fetchSalesAndYearlyChange: async (
-    range,
-    customStart,
-    customEnd,
-    categoryId?,
-    subcategoryId?
+    range: RangeType,
+    customStart?: string,
+    customEnd?: string,
+    categoryId?: number | number[],
+    subcategoryId?: number | number[]
   ) => {
     let reportType: ReportType;
     let currentParams: Record<string, string | string[]> = {};
     let lastYearParams: Record<string, string | string[]> = {};
 
-    // Визначаємо параметри для поточного та минулого року
-    if (range === 'custom' && customStart && customEnd) {
-      const daysDiff = getDaysDifference(customStart, customEnd);
+    if (range === 'custom') {
+      // Отримуємо дати з параметрів або з customPeriodLabel
+      let effectiveStart = customStart;
+      let effectiveEnd = customEnd;
+
+      if (
+        !effectiveStart ||
+        !effectiveEnd ||
+        !isValidDateFormat(effectiveStart) ||
+        !isValidDateFormat(effectiveEnd)
+      ) {
+        const label = useSalesStore.getState().customPeriodLabel;
+        const dates = label.split(' - ');
+        if (
+          dates.length === 2 &&
+          isValidDateFormat(dates[0]) &&
+          isValidDateFormat(dates[1])
+        ) {
+          effectiveStart = dates[0];
+          effectiveEnd = dates[1];
+        } else {
+          // Якщо дати невалідні або відсутні, очищаємо графік і виходимо
+          set({ chartSales: [], yearlyChange: null });
+          return;
+        }
+      }
+
+      // На цьому етапі effectiveStart і effectiveEnd точно є валідними рядками
+      const daysDiff = getDaysDifference(effectiveStart, effectiveEnd);
       if (daysDiff <= 1) {
-        reportType = 'hourly'; // 1 день - погодинно
-        currentParams = { date: customStart }; // Для одного дня використовуємо "date"
-        lastYearParams = { date: shiftYear(customStart) }; // Зміщуємо на рік назад
-      } else if (daysDiff <= 31) {
-        reportType = 'daily'; // До місяця - по днях
-        currentParams = { start_date: customStart, end_date: customEnd };
-        lastYearParams = {
-          start_date: shiftYear(customStart),
-          end_date: shiftYear(customEnd),
-        };
-      } else if (daysDiff <= 180) {
-        reportType = 'daily'; // До 6 місяців - по тижнях (агрегація)
-        currentParams = { start_date: customStart, end_date: customEnd };
-        lastYearParams = {
-          start_date: shiftYear(customStart),
-          end_date: shiftYear(customEnd),
-        };
-      } else if (daysDiff <= 6 * 365) {
-        reportType = 'daily'; // До 6 років - по місяцях (агрегація)
-        currentParams = { start_date: customStart, end_date: customEnd };
-        lastYearParams = {
-          start_date: shiftYear(customStart),
-          end_date: shiftYear(customEnd),
-        };
+        reportType = 'hourly';
+        currentParams = { date: effectiveStart };
+        lastYearParams = { date: shiftYear(effectiveStart) };
       } else {
-        reportType = 'daily'; // Більше 6 років - по роках (агрегація)
-        currentParams = { start_date: customStart, end_date: customEnd };
+        reportType = 'daily';
+        currentParams = { start_date: effectiveStart, end_date: effectiveEnd };
         lastYearParams = {
-          start_date: shiftYear(customStart),
-          end_date: shiftYear(customEnd),
+          start_date: shiftYear(effectiveStart),
+          end_date: shiftYear(effectiveEnd),
         };
       }
     } else {
@@ -397,7 +402,7 @@ export const useSalesStore = create<SalesState>(set => ({
       lastYearParams = { ...lastYear };
     }
 
-    // Додаємо categoryId до обох наборів параметрів
+    // Додаємо categoryId і subcategoryId, якщо вони є
     if (categoryId !== undefined) {
       if (Array.isArray(categoryId) && categoryId.length > 0) {
         currentParams.category_id = categoryId.map(String);
@@ -408,7 +413,6 @@ export const useSalesStore = create<SalesState>(set => ({
       }
     }
 
-    // Додаємо subcategoryId до обох наборів параметрів
     if (subcategoryId !== undefined) {
       if (Array.isArray(subcategoryId) && subcategoryId.length > 0) {
         currentParams.subcategory_id = subcategoryId.map(String);
@@ -419,7 +423,7 @@ export const useSalesStore = create<SalesState>(set => ({
       }
     }
 
-    // Отримуємо дані для поточного періоду
+    // Виконуємо запити до сервера
     const currentSales = await useSalesStore
       .getState()
       .fetchReport(reportType, currentParams);
@@ -427,33 +431,33 @@ export const useSalesStore = create<SalesState>(set => ({
     let yearlyChange: number | null = null;
     let chartSales = currentSales;
 
-    // Розрахунок для порівняння з минулим роком (крім 'all')
     if (range !== 'all') {
       const lastYearSales = await useSalesStore
         .getState()
         .fetchReport(reportType, lastYearParams);
 
-      // Агрегація для кастомних періодів
-      if (range === 'custom' && customStart && customEnd) {
-        const daysDiff = getDaysDifference(customStart, customEnd);
+      if (range === 'custom') {
+        const daysDiff = getDaysDifference(
+          (currentParams.start_date as string) ||
+            (currentParams.date as string),
+          (currentParams.end_date as string) || (currentParams.date as string)
+        );
         if (daysDiff <= 1) {
-          chartSales = currentSales; // Погодинно
+          chartSales = currentSales;
         } else if (daysDiff <= 31) {
-          chartSales = currentSales; // По днях
+          chartSales = currentSales;
         } else if (daysDiff <= 180) {
-          chartSales = aggregateToWeekly(currentSales); // По тижнях
+          chartSales = aggregateToWeekly(currentSales);
         } else if (daysDiff <= 6 * 365) {
-          chartSales = aggregateToMonthly(currentSales); // По місяцях
+          chartSales = aggregateToMonthly(currentSales);
         } else {
-          chartSales = aggregateToYearly(currentSales); // По роках
+          chartSales = aggregateToYearly(currentSales);
         }
       } else {
-        // Агрегація для стандартних періодів
         chartSales =
           range === 'quarter' ? aggregateToWeekly(currentSales) : currentSales;
       }
 
-      // Розрахунок yearlyChange
       const currentTotal = currentSales.reduce(
         (sum, sale) => sum + sale.amount,
         0
