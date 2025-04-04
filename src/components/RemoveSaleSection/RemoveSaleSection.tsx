@@ -85,7 +85,7 @@ export default function RemoveSaleSection() {
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [totalRows, setTotalRows] = useState<number>(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [sortByUpload, setSortByUpload] = useState<'desc' | 'asc'>('desc');
+  const [sortByUpload, setSortByUpload] = useState<'DESC' | 'ASC'>('DESC');
   const [searchInput, setSearchInput] = useState<string>('');
   const [searchResult, setSearchResult] = useState<SearchResponse | null>(null);
 
@@ -329,7 +329,7 @@ export default function RemoveSaleSection() {
 
   const handleSortChange = (selected: string[]) => {
     setSortByUpload(
-      selected[0] === t('RemoveSaleSection.descending') ? 'desc' : 'asc'
+      selected[0] === t('RemoveSaleSection.descending') ? 'DESC' : 'ASC'
     );
   };
 
@@ -369,7 +369,7 @@ export default function RemoveSaleSection() {
               t('RemoveSaleSection.ascending'),
             ]}
             selected={[
-              sortByUpload === 'desc'
+              sortByUpload === 'DESC'
                 ? t('RemoveSaleSection.descending')
                 : t('RemoveSaleSection.ascending'),
             ]}

@@ -6,12 +6,12 @@ export const mainParMenu = [
     logo_hov: 'icon-fill_chart-column',
   },
 
-  {
-    header: 'Sidebar.mainParMenu.settings',
-    link: 'db_settings',
-    logo: 'icon-gear-2',
-    logo_hov: 'icon-fill_gear-2',
-  },
+  // {
+  //   header: 'Sidebar.mainParMenu.settings',
+  //   link: 'db_settings',
+  //   logo: 'icon-gear-2',
+  //   logo_hov: 'icon-fill_gear-2',
+  // },
 ];
 
 export const accParMenu = [
@@ -64,12 +64,12 @@ export const accParMenuBottom = [
     logo: 'icon-trash',
     logo_hov: 'icon-fill_trash',
   },
-  {
-    header: 'Sidebar.accParMenu.autoFarmControl',
-    link: 'auto_farm',
-    logo: 'icon-send-2',
-    logo_hov: 'icon-fill_send-2',
-  },
+  // {
+  //   header: 'Sidebar.accParMenu.autoFarmControl',
+  //   link: 'auto_farm',
+  //   logo: 'icon-send-2',
+  //   logo_hov: 'icon-fill_send-2',
+  // },
 ];
 
 export const otherParMenu = [

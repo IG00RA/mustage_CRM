@@ -6,7 +6,7 @@ import {
   CategoriesState,
 } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
-import { fetchWithErrorHandling } from '../utils/apiUtils';
+import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 
 export const useCategoriesStore = create<CategoriesState>(set => ({
   categories: [],
@@ -17,7 +17,14 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
   fetchCategories: async () => {
     const data = await fetchWithErrorHandling<Response<Category>>(
       `${ENDPOINTS.CATEGORIES}?limit=100`,
-      { method: 'GET' },
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
       set
     );
     set({ categories: data.items });
@@ -29,7 +36,14 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
       : `${ENDPOINTS.SUBCATEGORIES}?limit=100`;
     const data = await fetchWithErrorHandling<Response<Subcategory>>(
       url,
-      { method: 'GET' },
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
       set
     );
     set({ subcategories: data.items });

@@ -11,7 +11,7 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useUsersStore } from '@/store/usersStore';
-import { useReferralsStore } from '@/store/referralsStore';
+import { PaymentModel, useReferralsStore } from '@/store/referralsStore';
 
 interface FormData {
   login: string;
@@ -21,20 +21,12 @@ interface FormData {
   tgId: number;
   tgNick: string;
   email: string;
-  sellPay?: number; // Percentage for RevShare
-  sellSum?: number; // Fixed sum for CPA
-  addPay?: number; // Percentage for RevShare
-  addSum?: number; // Fixed sum for CPA
-  minPay?: number; // Minimum payment amount
-  minPaySell?: number; // Minimum payment amount for sell
-}
-
-interface PaymentModel {
-  payment_model: 'RevShare' | 'CPA';
-  payment_reason: 'BalanceTopUp';
-  percentage?: number;
-  fixed?: number;
-  min_amount: number;
+  sellPay?: number;
+  sellSum?: number;
+  addPay?: number;
+  addSum?: number;
+  minPay?: number;
+  minPaySell?: number;
 }
 
 export default function CreateReferral({ onClose }: { onClose: () => void }) {
@@ -87,7 +79,7 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
       };
 
       const userResponse = await createUser(userData);
-      const referrerId = userResponse.referrer_id || Number(userResponse.login);
+      const referrerId = userResponse.id || Number(userResponse.login);
 
       const paymentModels: PaymentModel[] = [];
 
@@ -98,10 +90,12 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
         const selectedSellModel = sellModel[0];
         paymentModels.push({
           payment_model: selectedSellModel as 'RevShare' | 'CPA',
-          payment_reason: 'BalanceTopUp',
+          payment_reason: 'AccountsSold',
           ...(selectedSellModel === 'RevShare' && { percentage: data.sellPay }),
           ...(selectedSellModel === 'CPA' && { fixed: data.sellSum }),
-          min_amount: data.minPay || 0,
+          ...(selectedSellModel === 'CPA' && {
+            min_amount: data.minPaySell || 0,
+          }),
         });
       }
 
@@ -115,7 +109,7 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
           payment_reason: 'BalanceTopUp',
           ...(selectedAddModel === 'RevShare' && { percentage: data.addPay }),
           ...(selectedAddModel === 'CPA' && { fixed: data.addSum }),
-          min_amount: data.minPay || 0,
+          ...(selectedAddModel === 'CPA' && { min_amount: data.minPay || 0 }),
         });
       }
 
@@ -131,8 +125,8 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
           'Referral created successfully'
       );
       reset();
-      onClose();
     } catch (error) {
+      console.log('error', error);
       toast.error(
         t('ReferralsAll.modalCreate.errorMessage') ||
           'Failed to create referral'

@@ -4,10 +4,10 @@ import { ENDPOINTS } from '@/constants/api';
 
 export interface PaymentModel {
   payment_model: 'RevShare' | 'CPA';
-  payment_reason: 'BalanceTopUp';
+  payment_reason: 'BalanceTopUp' | 'AccountsSold';
   percentage?: number;
   fixed?: number;
-  min_amount: number;
+  min_amount?: number;
 }
 
 interface ReferralPaymentSettings {

@@ -22,7 +22,6 @@ export default function Sidebar() {
   const t = useTranslations();
   const pathname = usePathname();
 
-  // Оновлений стан для підменю
   const [openMenus, setOpenMenus] = useState({
     distribution: false,
     referrals: false,
@@ -156,7 +155,7 @@ export default function Sidebar() {
               </Link>
             </li>
           ))}
-          <li
+          {/* <li
             className={`${styles.nav_item} ${
               openMenus.distribution ? styles.active : ''
             }`}
@@ -266,7 +265,7 @@ export default function Sidebar() {
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> */}
           {accParMenuBottom.map((item, index) => (
             <li
               className={`${styles.nav_item} ${
@@ -293,7 +292,7 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-      <h3 className={styles.parTitle}>{t('Sidebar.otherPar')}</h3>
+      {/* <h3 className={styles.parTitle}>{t('Sidebar.otherPar')}</h3>
       <nav className={styles.nav}>
         <ul role="menu">
           {otherParMenu.map((item, index) => (
@@ -406,7 +405,7 @@ export default function Sidebar() {
             </ul>
           </li>
         </ul>
-      </nav>
+      </nav> */}
     </aside>
   );
 }

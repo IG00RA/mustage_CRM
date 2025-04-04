@@ -61,7 +61,7 @@ interface UpdateUserRequest {
 interface CreateUserResponse {
   login: string;
   is_admin: boolean;
-  referrer_id?: number;
+  id?: number;
 }
 
 interface UsersState {

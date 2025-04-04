@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Sale, RangeType, ReportType, SalesState } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
-import { fetchWithErrorHandling } from '../utils/apiUtils';
+import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 
 const getDateRangeParams = (
   range: RangeType,
@@ -123,7 +123,14 @@ export const useSalesStore = create<SalesState>(set => ({
   fetchSalesSummary: async () => {
     const data = await fetchWithErrorHandling<any>(
       ENDPOINTS.SALES_SUMMARY,
-      { method: 'GET' },
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
       set
     );
     const sales: Sale[] = [
@@ -192,7 +199,14 @@ export const useSalesStore = create<SalesState>(set => ({
 
     const data = await fetchWithErrorHandling<any>(
       endpoint,
-      { method: 'GET' },
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
       set
     );
     return Object.entries(data).map(([period, report]: [string, any]) => ({

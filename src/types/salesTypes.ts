@@ -77,8 +77,7 @@ export type RangeType =
   | 'month'
   | 'quarter'
   | 'year'
-  | 'custom'
-  | 'all';
+  | 'custom';
 
 export type ReportType = 'hourly' | 'daily' | 'monthly' | 'yearly' | 'custom';
 
@@ -121,7 +120,7 @@ interface FetchAccountsParams {
   limit?: number;
   offset?: number;
   like_query?: string;
-  sort_by_upload?: string;
+  sort_by_upload?: 'ASC' | 'DESC';
   with_destination?: boolean;
   sold_start_date?: string;
   sold_end_date?: string;
