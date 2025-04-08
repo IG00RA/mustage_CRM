@@ -34,13 +34,15 @@
 
 .field {
   width: 602px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
 }
 
-.field {
+.label_wrap {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .label {

@@ -6,6 +6,8 @@ import {
   ReplaceRequest,
   ReplaceResponse,
   StopSellingResponse,
+  SellAccountsRequest,
+  SellAccountsResponse,
 } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -170,6 +172,35 @@ export const useAccountsStore = create<AccountsState>(set => ({
 
       set({ loading: false });
       return response;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+  sellAccounts: async (request: SellAccountsRequest) => {
+    set({ loading: true, error: null });
+
+    try {
+      const url = ENDPOINTS.ACCOUNTS_SELL || '/accounts/sell';
+      const data = await fetchWithErrorHandling<SellAccountsResponse>(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(request),
+        },
+        set
+      );
+
+      set({ loading: false });
+      return data;
     } catch (error) {
       set({
         loading: false,

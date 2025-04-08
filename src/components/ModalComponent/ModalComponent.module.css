@@ -68,7 +68,7 @@
 
 .fields_wrap {
   margin-top: 24px;
-  max-height: 85vh;
+  max-height: 75vh;
   overflow-y: auto;
 }
 
@@ -161,4 +161,10 @@
 .textarea::placeholder {
   font-family: var(--font_sfPro);
   transition: all 0.3s ease;
+}
+
+@media (min-width: 1600px) {
+  .fields_wrap {
+    max-height: 85vh;
+  }
 }

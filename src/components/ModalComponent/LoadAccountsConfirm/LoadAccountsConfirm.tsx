@@ -2,17 +2,6 @@ import { useTranslations } from 'next-intl';
 import styles from './LoadAccountsConfirm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
-
-type FormData = {
-  nameField: string;
-  nameCategoryField: string;
-  price: string;
-  cost: string;
-  nameDescription: string;
-  settings: string[];
-};
 
 interface ConfirmLoad {
   category: string;
@@ -21,6 +10,9 @@ interface ConfirmLoad {
   seller: string;
   sellSum: string;
   tgNick: string;
+  onConfirm: () => void;
+  onClose: () => void;
+  isLoading: boolean;
 }
 
 export default function LoadAccountsConfirm({
@@ -30,22 +22,20 @@ export default function LoadAccountsConfirm({
   seller,
   sellSum,
   tgNick,
+  onConfirm,
+  onClose,
+  isLoading,
 }: ConfirmLoad) {
-  const t = useTranslations('');
-
-  const {
-    handleSubmit,
-    reset,
-  } = useForm<FormData>();
-
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-    toast.success(t('DBSettings.form.okMessage'));
-    reset();
-  };
+  const t = useTranslations();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        onConfirm();
+      }}
+      className={styles.form}
+    >
       <div className={styles.field}>
         <label className={styles.label}>{t('Load.selectCategory')}</label>
         <p className={styles.text}>{category}</p>
@@ -71,8 +61,13 @@ export default function LoadAccountsConfirm({
         <p className={styles.text}>{tgNick}</p>
       </div>
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />
-        <SubmitBtn text="Load.modalConfirm.btn" />
+        <CancelBtn text="DBSettings.form.cancelBtn" onClick={onClose} />
+        <SubmitBtn
+          text={
+            isLoading ? 'Load.modalConfirm.loading' : 'Load.modalConfirm.btn'
+          }
+          disabled={isLoading}
+        />
       </div>
     </form>
   );

@@ -173,6 +173,33 @@ export interface StopSellingResponse {
   success: boolean;
 }
 
+export interface SellAccountsRequest {
+  subcategory_id: number;
+  seller_id: number;
+  quantity: number;
+  price: number;
+  client_name: string;
+  client_dolphin_email?: string;
+}
+
+export interface SellAccountsResponse {
+  success: boolean;
+  subcategory_id: number;
+  seller_id: number;
+  quantity: number;
+  price: number;
+  client_name: string;
+  client_dolphin_email?: string;
+  account_data: AccountDataWrapper[];
+}
+
+export interface AccountDataWrapper {
+  transfer_requested: boolean;
+  transfer_success: boolean;
+  transfer_message: string;
+  account: Account;
+}
+
 export interface AccountsState {
   accounts: Account[];
   loading: boolean;
@@ -184,6 +211,7 @@ export interface AccountsState {
   searchAccounts: (accountNames: string[]) => Promise<SearchResponse>;
   replaceAccounts: (data: ReplaceRequest) => Promise<ReplaceResponse>;
   stopSellingAccounts: (accountIds: number[]) => Promise<StopSellingResponse>;
+  sellAccounts: (request: SellAccountsRequest) => Promise<SellAccountsResponse>;
 }
 export interface SellersState {
   sellers: Seller[];
