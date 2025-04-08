@@ -30,7 +30,11 @@ export default function ReplacementSection() {
   const { searchAccounts } = useAccountsStore();
 
   const handleSearch = async () => {
-    const accountNames = searchInput.split('\n').filter(name => name.trim());
+    const accountNames = searchInput
+      .split('\n')
+      .map(name => name.trim())
+      .filter(name => name);
+
     if (!accountNames.length) {
       toast.error(t('ReplacementSection.emptyInputError'));
       return;
@@ -47,6 +51,7 @@ export default function ReplacementSection() {
       setIsOpenSearch(true);
       toast.success(t('ReplacementSection.searchSuccess'));
     } catch (error) {
+      console.error(error);
       toast.error(t('ReplacementSection.searchError'));
     } finally {
       setIsLoading(false);

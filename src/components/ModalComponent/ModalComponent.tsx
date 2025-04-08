@@ -19,6 +19,7 @@ interface ModalProps {
   editedTitle?: string;
   editedTitleSecond?: string;
   children: ReactNode;
+  icon?: string;
 }
 
 export default function ModalComponent({
@@ -30,6 +31,7 @@ export default function ModalComponent({
   editedTitleSecond,
   editedTitle = '',
   children,
+  icon,
 }: ModalProps) {
   const t = useTranslations('');
 
@@ -56,6 +58,14 @@ export default function ModalComponent({
       overlayClassName={styles.overlay}
     >
       <div className={styles.header_wrap}>
+        {icon && (
+          <Icon
+            className={styles.close_icon}
+            name={icon}
+            width={64}
+            height={64}
+          />
+        )}
         <h2 className={styles.title}>
           <span>{t(title)}</span>
           {editedTitle && (

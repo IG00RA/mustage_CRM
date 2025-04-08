@@ -38,6 +38,7 @@ export default function LoadSection() {
 
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
+  const [isLoadComplete, setIsLoadComplete] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string[]>([]);
   const [totalAvailableAccounts, setTotalAvailableAccounts] = useState(0);
@@ -158,7 +159,7 @@ export default function LoadSection() {
       if (data.success) {
         generateFiles(data);
         toast.success(t('Load.successMessage'));
-        toggleConfirmModal();
+        setIsLoadComplete(true);
         // Очищення форми після успішного вивантаження
         reset({
           nameField: totalAvailableAccounts.toString(), // Залишаємо кількість доступних акаунтів
@@ -555,7 +556,12 @@ export default function LoadSection() {
       <ModalComponent
         isOpen={isOpenConfirm}
         onClose={toggleConfirmModal}
-        title="Load.modalConfirm.title"
+        title={
+          isLoadComplete
+            ? 'Load.modalConfirm.titleOk'
+            : 'Load.modalConfirm.title'
+        }
+        icon={isLoadComplete ? 'icon-ok-load' : ''}
       >
         <LoadAccountsConfirm
           category={selectedCategory[0] || ''}
@@ -567,6 +573,7 @@ export default function LoadSection() {
           onConfirm={handleConfirmSubmit}
           isLoading={isLoading}
           onClose={toggleConfirmModal}
+          isLoadComplete={isLoadComplete}
         />
       </ModalComponent>
     </section>

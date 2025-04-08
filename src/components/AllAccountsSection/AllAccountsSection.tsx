@@ -54,7 +54,6 @@ export default function AllAccountsSection() {
     null;
 
   const [globalFilter, setGlobalFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpenDownload, setIsOpenDownload] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
@@ -528,19 +527,13 @@ export default function AllAccountsSection() {
     [sellers, t]
   );
 
-  const columnFilters = useMemo(() => {
-    const filters = [];
-    if (categoryFilter) filters.push({ id: 'category', value: categoryFilter });
-    return filters;
-  }, [categoryFilter]);
-
   const table = useReactTable({
     data: accounts,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: { globalFilter, pagination, columnFilters, sorting },
+    state: { globalFilter, pagination, sorting },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,

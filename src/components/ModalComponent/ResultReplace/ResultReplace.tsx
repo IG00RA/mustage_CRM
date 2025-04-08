@@ -13,7 +13,13 @@ import { useState, useEffect } from 'react';
 import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
 import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
-import { ReplaceRequest, Subcategory } from '@/types/salesTypes';
+import {
+  ReplaceRequest,
+  Subcategory,
+  AccountDataWrapper,
+  SellAccountsResponse,
+} from '@/types/salesTypes';
+import ExcelJS from 'exceljs';
 
 interface ResultReplaceProps {
   searchResults: SearchResults | null;
@@ -50,6 +56,7 @@ export default function ResultReplace({
     reset,
     formState: { errors },
   } = useForm<FormData>();
+
   const getMajoritySubcategory = (): Subcategory | null => {
     if (!searchResults?.foundAccounts.length) return null;
 
@@ -94,6 +101,149 @@ export default function ResultReplace({
     }));
   };
 
+  const generateFiles = async (data: SellAccountsResponse) => {
+    const accounts: AccountDataWrapper[] = data.account_data;
+    const date = new Date();
+    const fileName = `replace_${accounts.length}_${
+      majoritySubcategory?.account_subcategory_name || 'unknown'
+    }_${date.getDate()}_${
+      date.getMonth() + 1
+    }_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
+
+    // Generate XLSX file with ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('ReplacedAccounts');
+
+    worksheet.columns = [
+      { header: 'transfer_requested', key: 'transfer_requested', width: 15 },
+      { header: 'transfer_success', key: 'transfer_success', width: 15 },
+      { header: 'transfer_message', key: 'transfer_message', width: 20 },
+      { header: 'account_id', key: 'account_id', width: 10 },
+      { header: 'upload_datetime', key: 'upload_datetime', width: 25 },
+      { header: 'sold_datetime', key: 'sold_datetime', width: 25 },
+      { header: 'worker_name', key: 'worker_name', width: 15 },
+      { header: 'teamlead_name', key: 'teamlead_name', width: 15 },
+      { header: 'client_name', key: 'client_name', width: 15 },
+      { header: 'account_name', key: 'account_name', width: 20 },
+      { header: 'price', key: 'price', width: 10 },
+      { header: 'status', key: 'status', width: 10 },
+      { header: 'frozen_at', key: 'frozen_at', width: 25 },
+      { header: 'replace_reason', key: 'replace_reason', width: 20 },
+      { header: 'profile_link', key: 'profile_link', width: 30 },
+      { header: 'archive_link', key: 'archive_link', width: 30 },
+      { header: 'account_data', key: 'account_data', width: 20 },
+      { header: 'seller_id', key: 'seller_id', width: 10 },
+      { header: 'seller_name', key: 'seller_name', width: 15 },
+      { header: 'visible_in_bot', key: 'visible_in_bot', width: 15 },
+      {
+        header: 'account_subcategory_id',
+        key: 'account_subcategory_id',
+        width: 20,
+      },
+      {
+        header: 'account_subcategory_name',
+        key: 'account_subcategory_name',
+        width: 20,
+      },
+      { header: 'account_category_id', key: 'account_category_id', width: 20 },
+      { header: 'price_subcategory', key: 'price_subcategory', width: 15 },
+      { header: 'cost_price', key: 'cost_price', width: 15 },
+      { header: 'description', key: 'description', width: 20 },
+      { header: 'output_format_field', key: 'output_format_field', width: 20 },
+      { header: 'output_separator', key: 'output_separator', width: 15 },
+      {
+        header: 'account_category_name',
+        key: 'account_category_name',
+        width: 20,
+      },
+      { header: 'destination_id', key: 'destination_id', width: 15 },
+      { header: 'browser_id', key: 'browser_id', width: 15 },
+      { header: 'username', key: 'username', width: 15 },
+      { header: 'browser_name', key: 'browser_name', width: 15 },
+    ];
+
+    accounts.forEach((acc: AccountDataWrapper) => {
+      worksheet.addRow({
+        transfer_requested: acc.transfer_requested,
+        transfer_success: acc.transfer_success,
+        transfer_message: acc.transfer_message,
+        account_id: acc.account.account_id,
+        upload_datetime: acc.account.upload_datetime,
+        sold_datetime: acc.account.sold_datetime,
+        worker_name: acc.account.worker_name,
+        teamlead_name: acc.account.teamlead_name,
+        client_name: acc.account.client_name,
+        account_name: acc.account.account_name,
+        price: acc.account.price,
+        status: acc.account.status,
+        frozen_at: acc.account.frozen_at,
+        replace_reason: acc.account.replace_reason,
+        profile_link: acc.account.profile_link,
+        archive_link: acc.account.archive_link,
+        account_data: acc.account.account_data || '',
+        seller_id: acc.account.seller?.seller_id || 0,
+        seller_name: acc.account.seller?.seller_name || '',
+        visible_in_bot: acc.account.seller?.visible_in_bot ?? false,
+        account_subcategory_id: acc.account.subcategory.account_subcategory_id,
+        account_subcategory_name:
+          acc.account.subcategory.account_subcategory_name,
+        account_category_id: acc.account.subcategory.account_category_id,
+        price_subcategory: acc.account.subcategory.price,
+        cost_price: acc.account.subcategory.cost_price,
+        description: acc.account.subcategory.description,
+        output_format_field:
+          acc.account.subcategory.output_format_field?.join(',') || '',
+        output_separator: acc.account.subcategory.output_separator || '|',
+        account_category_name:
+          acc.account.subcategory.category?.account_category_name || '',
+        destination_id: acc.account.destination?.destination_id,
+        browser_id: acc.account.destination?.browser_id,
+        username: acc.account.destination?.username,
+        browser_name: acc.account.destination?.browser?.browser_name || '',
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}.xlsx`;
+    link.click();
+
+    // Generate TXT file based on server response
+    const txtContent = accounts
+      .map((acc: AccountDataWrapper) => {
+        const formatFields = acc.account.subcategory.output_format_field || [
+          'account_name',
+        ];
+        const separator = acc.account.subcategory.output_separator || '|';
+        return formatFields
+          .map((field: string) => {
+            if (field === 'account_subcategory_id') {
+              return acc.account.subcategory.account_subcategory_id;
+            } else if (field === 'account_data') {
+              return acc.account.account_data === null
+                ? 'null'
+                : acc.account.account_data || '';
+            } else if (field === 'archive_link') {
+              return acc.account.archive_link || '';
+            } else {
+              const value = acc.account[field as keyof typeof acc.account];
+              return value === null ? 'null' : value || '';
+            }
+          })
+          .join(separator);
+      })
+      .join('\n');
+    const txtBlob = new Blob([txtContent], { type: 'text/plain' });
+    const txtLink = document.createElement('a');
+    txtLink.href = URL.createObjectURL(txtBlob);
+    txtLink.download = `${fileName}.txt`;
+    txtLink.click();
+  };
+
   const onSubmit = async (data: FormData) => {
     if (!filteredAccounts.length || !selectSeller[0]) {
       toast.error(t('ReplacementSection.modalReplace.validationError'));
@@ -127,7 +277,9 @@ export default function ResultReplace({
       }
 
       toast.success(t('ReplacementSection.modalReplace.success'));
+      generateFiles(response); // Генерація та завантаження файлів
       reset();
+      setCheckedSettings({}); // Очищення чекбоксу
       onClose();
     } catch (error) {
       toast.error(String(error) || t('ReplacementSection.modalReplace.error'));

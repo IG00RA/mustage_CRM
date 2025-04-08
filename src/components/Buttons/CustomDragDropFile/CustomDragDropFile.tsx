@@ -1,24 +1,35 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import styles from './CustomDragDropFile.module.css';
 import Icon from '@/helpers/Icon';
 import { useTranslations } from 'next-intl';
 
 interface CustomDragDropFileProps {
   acceptedExtensions: string[];
+  file: File | null;
+  setFile: (file: File | null) => void;
   onFileUpload?: (file: File) => void;
 }
 
 export default function CustomDragDropFile({
   acceptedExtensions,
   onFileUpload,
+  file,
+  setFile,
 }: CustomDragDropFileProps) {
-  const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = useTranslations('');
+
+  useEffect(() => {
+    if (!file) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  }, [file]);
 
   const handleDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -37,7 +48,7 @@ export default function CustomDragDropFile({
       setFile(droppedFile);
       onFileUpload?.(droppedFile);
     },
-    [acceptedExtensions, onFileUpload]
+    [acceptedExtensions, onFileUpload, setFile]
   );
 
   const handleRemove = (event: React.MouseEvent) => {

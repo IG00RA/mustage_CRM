@@ -16,6 +16,7 @@ export const ENDPOINTS = {
   ACCOUNTS_REPLACE: `${BASE_URL}/accounts/replace`,
   ACCOUNTS_STOP_SELLING: `${BASE_URL}/accounts/stop-selling`,
   ACCOUNTS_SELL: `${BASE_URL}/accounts/sell`,
+  ACCOUNTS_UPLOAD: `${BASE_URL}/accounts/upload`,
   PROMOCODES: `${BASE_URL}/promocodes`,
   USERS: `${BASE_URL}/users`,
   REGISTER_USER: `${BASE_URL}/register-user`,

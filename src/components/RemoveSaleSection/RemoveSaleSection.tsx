@@ -127,10 +127,7 @@ export default function RemoveSaleSection() {
         sort_by_upload: sortByUpload,
       };
 
-      const { total_rows, items } = await fetchAccounts(
-        fetchParams,
-        updateState
-      );
+      const { total_rows } = await fetchAccounts(fetchParams, updateState);
       setTotalRows(total_rows);
     },
     [globalFilter, fetchAccounts, sortByUpload]
@@ -319,7 +316,11 @@ export default function RemoveSaleSection() {
   };
 
   const handleSearchAccounts = async () => {
-    const accountNames = searchInput.split('\n').filter(name => name.trim());
+    const accountNames = searchInput
+      .split('\n')
+      .map(name => name.trim())
+      .filter(name => name);
+
     if (accountNames.length === 0) return;
 
     const result = await searchAccounts(accountNames);

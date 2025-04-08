@@ -13,6 +13,7 @@ interface ConfirmLoad {
   onConfirm: () => void;
   onClose: () => void;
   isLoading: boolean;
+  isLoadComplete: boolean;
 }
 
 export default function LoadAccountsConfirm({
@@ -25,6 +26,7 @@ export default function LoadAccountsConfirm({
   onConfirm,
   onClose,
   isLoading,
+  isLoadComplete,
 }: ConfirmLoad) {
   const t = useTranslations();
 
@@ -61,13 +63,23 @@ export default function LoadAccountsConfirm({
         <p className={styles.text}>{tgNick}</p>
       </div>
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={onClose} />
-        <SubmitBtn
+        <CancelBtn
           text={
-            isLoading ? 'Load.modalConfirm.loading' : 'Load.modalConfirm.btn'
+            isLoadComplete
+              ? 'Load.modalConfirm.btnClose'
+              : 'DBSettings.form.cancelBtn'
           }
-          disabled={isLoading}
+          onClick={onClose}
         />
+
+        {!isLoadComplete && (
+          <SubmitBtn
+            text={
+              isLoading ? 'Load.modalConfirm.loading' : 'Load.modalConfirm.btn'
+            }
+            disabled={isLoading}
+          />
+        )}
       </div>
     </form>
   );

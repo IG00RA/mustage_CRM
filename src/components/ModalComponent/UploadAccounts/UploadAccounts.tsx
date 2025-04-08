@@ -1,49 +1,68 @@
-import { useTranslations } from 'next-intl';
+'use client';
+
 import styles from '../ModalComponent.module.css';
 import ownStyles from './UploadAccounts.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
-
-type FormData = {
-  nameField: string;
-  nameCategoryField: string;
-  price: string;
-  cost: string;
-  nameDescription: string;
-  settings: string[];
-};
+import { useTranslations } from 'next-intl';
+import ExcelJS from 'exceljs';
+import { getAuthHeaders } from '@/utils/apiUtils';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { ENDPOINTS } from '@/constants/api';
+import { UploadResponse } from '@/components/UploadSection/UploadSection';
 
 const settingsOptions = ['Upload.modalUpload.check'];
 
-export default function UploadAccounts() {
+interface UploadAccountsProps {
+  setResponseData: (data: UploadResponse) => void;
+  toggleErrorModal: () => void;
+  onClose: () => void;
+}
+
+export default function UploadAccounts({
+  setResponseData,
+  toggleErrorModal,
+  onClose,
+}: UploadAccountsProps) {
   const t = useTranslations('');
 
-  const [selectCategory, setSelectCategory] = useState('');
+  const { categories, subcategories, fetchCategories, fetchSubcategories } =
+    useCategoriesStore();
 
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string[]>([]);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [accountCount, setAccountCount] = useState<number>(0);
   const [settings, setSettings] = useState(settingsOptions);
-  console.log(setSettings);
-
-  const {
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>();
-
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-    toast.success(t('DBSettings.form.okMessage'));
-    reset();
-  };
-
+  const [file, setFile] = useState<File | null>(null);
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >({});
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (
+      selectedCategory.length > 0 &&
+      selectedCategory[0] !== t('Load.category')
+    ) {
+      const categoryId = categories.find(
+        cat => cat.account_category_name === selectedCategory[0]
+      )?.account_category_id;
+      if (categoryId) {
+        fetchSubcategories(categoryId);
+      }
+    } else {
+      setSelectedSubcategory([]);
+    }
+  }, [selectedCategory, categories, fetchSubcategories, t]);
 
   const toggleCheckbox = (id: string) => {
     setCheckedSettings(prev => ({
@@ -52,68 +71,222 @@ export default function UploadAccounts() {
     }));
   };
 
-  const handleFileUpload = (file: File) => {
-    console.log('Завантажений файл:', file);
+  const handleFileUpload = async (file: File) => {
+    setUploadedFile(file);
+
+    const workbook = new ExcelJS.Workbook();
+    const reader = new FileReader();
+
+    reader.onload = async e => {
+      const buffer = e.target?.result as ArrayBuffer;
+      await workbook.xlsx.load(buffer);
+
+      const worksheet = workbook.getWorksheet(1);
+      if (!worksheet) {
+        toast.error(t('Upload.modalUpload.invalidFile'));
+        setAccountCount(0);
+        setUploadedFile(null);
+        return;
+      }
+
+      const expectedHeaders = [
+        'worker_name',
+        'teamlead_name',
+        'account_name',
+        'archive_link',
+        'profile_link',
+        'account_data',
+        'cookies',
+      ];
+      const firstRow = worksheet.getRow(1);
+      const headers = firstRow.values as string[];
+      const headersMatch = expectedHeaders.every(
+        (header, index) => headers[index + 1] === header
+      );
+
+      if (!headersMatch) {
+        toast.error(t('Upload.modalUpload.invalidTemplate'));
+        setAccountCount(0);
+        setUploadedFile(null);
+        return;
+      }
+
+      const rowCount = worksheet.rowCount;
+      const accountCount = rowCount - 1;
+      setAccountCount(accountCount > 0 ? accountCount : 0);
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!uploadedFile) {
+      toast.error(t('Upload.modalUpload.noFile'));
+      return;
+    }
+
+    if (
+      selectedSubcategory.length === 0 ||
+      selectedSubcategory[0] === t('Load.names')
+    ) {
+      toast.error(t('Upload.modalUpload.noSubcategory'));
+      return;
+    }
+
+    const selectedSubcategoryObj = subcategories.find(
+      sub => sub.account_subcategory_name === selectedSubcategory[0]
+    );
+
+    if (!selectedSubcategoryObj) {
+      toast.error(t('Upload.modalUpload.noSubcategory'));
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('accounts_file', uploadedFile);
+    const subcategoryId =
+      selectedSubcategoryObj.account_subcategory_id.toString();
+    formData.append('subcategory_id', subcategoryId);
+
+    console.log('FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    try {
+      const headers = {
+        // ...getAuthHeaders(),
+        accept: 'application/json',
+      };
+      console.log('Request headers:', headers);
+
+      const response = await fetch(ENDPOINTS.ACCOUNTS_UPLOAD, {
+        method: 'POST',
+        body: formData,
+        headers,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Server error response:', errorData);
+        throw new Error(
+          errorData.message ||
+            errorData.detail ||
+            'Не вдалося завантажити акаунти'
+        );
+      }
+
+      const data: UploadResponse = await response.json();
+      console.log('Server success response:', data);
+
+      // Передаємо відповідь у батьківський компонент
+      setResponseData(data);
+
+      // Якщо статус "failed", відкриваємо модалку з помилками
+      if (data.status === 'failed') {
+        toggleErrorModal();
+      } else {
+        toast.success(data.message);
+        setUploadedFile(null);
+        setFile(null);
+        setAccountCount(0);
+        setSelectedCategory([]);
+        setSelectedSubcategory([]);
+      }
+    } catch (error: any) {
+      toast.error(error.message || t('Upload.modalUpload.uploadError'));
+      console.error('Upload error:', error);
+    }
+  };
+
+  const handleCategorySelect = (values: string[]) => {
+    const value = values[0] || '';
+    setSelectedCategory([value]);
+    if (value === t('Load.category')) {
+      setSelectedSubcategory([]);
+    }
+  };
+
+  const handleSubcategorySelect = (values: string[]) => {
+    const value = values[0] || '';
+    setSelectedSubcategory([value]);
+  };
+
+  const handleReset = () => {
+    setFile(null);
+    setUploadedFile(null);
+    setAccountCount(0);
+    setSelectedCategory([]);
+    setSelectedSubcategory([]);
+    setCheckedSettings({});
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+    <form onSubmit={onSubmit} className={styles.form}>
       <div className={styles.field}>
         <label className={styles.label}>
           {t('Upload.modalUpload.category')}
         </label>
         <CustomSelect
-          label={'Facebook UA-фарм 7-дней'}
-          options={['Facebook UA-фарм 7-дней', 'Facebook UA-фарм 10-дней']}
-          selected={selectCategory}
-          onSelect={setSelectCategory}
+          label={t('Load.selectCategory')}
+          options={[
+            t('Load.category'),
+            ...categories.map(cat => cat.account_category_name),
+          ]}
+          selected={selectedCategory}
+          onSelect={handleCategorySelect}
+          multiSelections={false}
           width={508}
           selectWidth={383}
         />
-        {errors.nameField && (
-          <p className={styles.error}>{errors.nameField.message}</p>
-        )}
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t('Upload.modalUpload.names')}</label>
         <CustomSelect
-          label={'Facebook UA-фарм 7-дней'}
-          options={['Facebook UA-фарм 7-дней', 'Facebook UA-фарм 10-дней']}
-          selected={selectCategory}
-          onSelect={setSelectCategory}
+          label={t('Load.selectNames')}
+          options={[
+            t('Load.names'),
+            ...subcategories.map(sub => sub.account_subcategory_name),
+          ]}
+          selected={selectedSubcategory}
+          onSelect={handleSubcategorySelect}
+          multiSelections={false}
           width={508}
           selectWidth={383}
         />
-        {errors.nameCategoryField && (
-          <p className={styles.error}>{errors.nameCategoryField.message}</p>
-        )}
       </div>
+
       <div className={styles.field}>
         <CustomCheckbox
           checked={checkedSettings[settings[0]] || false}
           onChange={() => toggleCheckbox(settings[0])}
           label={t(settings[0])}
         />
-        {errors.nameCategoryField && (
-          <p className={styles.error}>{errors.nameCategoryField.message}</p>
-        )}
       </div>
+
       <div className={styles.field}>
         <CustomDragDropFile
+          setFile={setFile}
+          file={file}
           acceptedExtensions={['xlsx', 'csv']}
           onFileUpload={handleFileUpload}
         />
-        {errors.nameCategoryField && (
-          <p className={styles.error}>{errors.nameCategoryField.message}</p>
-        )}
       </div>
-      <p className={ownStyles.locate_accounts}>
-        {t('Upload.modalUpload.accounts')} <span>500</span>
-      </p>
+
+      {uploadedFile && accountCount > 0 && (
+        <p className={ownStyles.locate_accounts}>
+          {t('Upload.modalUpload.accounts')} <span>{accountCount}</span>
+        </p>
+      )}
+
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />
-        <SubmitBtn text="Names.modalCreate.createBtn" />
+        <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleReset} />
+        <SubmitBtn text="Upload.modalUpload.btn" />
       </div>
     </form>
   );
