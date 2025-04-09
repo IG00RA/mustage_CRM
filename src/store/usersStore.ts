@@ -78,6 +78,7 @@ interface UsersState {
   createUser: (userData: CreateUserRequest) => Promise<CreateUserResponse>;
   editUser: (userData: UpdateUserRequest) => Promise<void>;
   fetchCurrentUser: () => Promise<UserFullResponse>;
+  resetCurrentUser: () => void;
 }
 
 export const useUsersStore = create<UsersState>(set => ({
@@ -304,5 +305,8 @@ export const useUsersStore = create<UsersState>(set => ({
       set({ loading: false, error: errorMessage });
       throw new Error(errorMessage);
     }
+  },
+  resetCurrentUser: () => {
+    set({ currentUser: null });
   },
 }));

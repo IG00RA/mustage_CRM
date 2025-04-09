@@ -76,11 +76,10 @@ export async function login(formData: FormData) {
     maxAge: 30 * 24 * 60 * 60,
   });
 
-  redirect('/ru/dashboard');
+  redirect('/ru/');
 }
 
 export async function logout() {
-  console.log(1);
   // Отримуємо токен з куків для авторизації запиту на бекенд
   const cookieStore = await cookies();
   const authToken = cookieStore.get('access_token');
@@ -89,7 +88,6 @@ export async function logout() {
     redirect('/ru/login');
     return;
   }
-  console.log(2);
 
   try {
     // Викликаємо API логауту на бекенді
@@ -124,7 +122,6 @@ export async function logout() {
     console.error('Error during API logout call:', error);
     return { error: 'Error during logout process' };
   }
-  console.log(4);
 
   // Редирект виконується поза блоком try/catch
   redirect('/ru/login');

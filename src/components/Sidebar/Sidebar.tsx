@@ -17,6 +17,7 @@ import {
   otherParMenu,
 } from '@/data/sidebar';
 import { useEffect, useState } from 'react';
+import { useUsersStore } from '@/store/usersStore';
 
 export default function Sidebar() {
   const t = useTranslations();
@@ -27,7 +28,15 @@ export default function Sidebar() {
     referrals: false,
   });
 
-  // Оновлений useEffect для автоматичного відкриття підменю
+  const { currentUser, fetchCurrentUser, resetCurrentUser } = useUsersStore();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    if (isInitialLoad && !currentUser) {
+      fetchCurrentUser().finally(() => setIsInitialLoad(false));
+    }
+  }, [currentUser, fetchCurrentUser, isInitialLoad]);
+
   useEffect(() => {
     const distributionLinks = [
       'distribution_settings',
@@ -55,6 +64,11 @@ export default function Sidebar() {
 
   const isActiveSub = (link: string): boolean => pathname === `/ru/${link}`;
 
+  const handleLogout = async () => {
+    resetCurrentUser();
+    await logout();
+  };
+
   return (
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.logo_wrap}>
@@ -79,15 +93,15 @@ export default function Sidebar() {
             sizes="100vw"
           />
           <div className={styles.nick_wrap}>
-            <h2 className={styles.nick}>Hudson Alvarez</h2>
-            <p className={styles.role}>Admin</p>
+            <h2 className={styles.nick}>
+              {currentUser?.first_name} {currentUser?.last_name}
+            </h2>
+            <p className={styles.role}>
+              {currentUser?.is_admin ? 'Admin' : 'User'}
+            </p>
           </div>
         </div>
-        <form
-          action={async () => {
-            await logout();
-          }}
-        >
+        <form action={handleLogout}>
           <button className={styles.log_out_btn} type="submit">
             <Icon
               className={styles.log_out_icon}
