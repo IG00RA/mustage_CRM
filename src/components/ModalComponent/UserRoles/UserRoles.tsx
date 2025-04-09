@@ -16,7 +16,7 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 
-interface UserFunction {
+export interface UserFunction {
   function_id: number;
   operations: string[];
   subcategories: number[];
@@ -52,9 +52,8 @@ export default function UserRoles({
   >({});
   const [addedFunctions, setAddedFunctions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const hasFetchedFunctions = useRef(false); // Реф для одноразового запиту
+  const hasFetchedFunctions = useRef(false);
 
   const { handleSubmit, reset } = useForm();
 
@@ -74,12 +73,11 @@ export default function UserRoles({
           },
           state => {
             setLoading(state.loading ?? false);
-            setError(state.error);
           }
         );
         setFunctions(data);
         hasFetchedFunctions.current = true;
-      } catch (error) {
+      } catch {
         toast.error(
           t('UserSection.modalRoles.fetchFunctionsError') ||
             'Failed to fetch functions'

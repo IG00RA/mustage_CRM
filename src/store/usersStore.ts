@@ -58,6 +58,7 @@ interface UpdateUserRequest {
   notifications_for_subcategories?: number[];
 }
 
+interface UserFullResponse extends User {}
 interface CreateUserResponse {
   login: string;
   is_admin: boolean;
@@ -67,6 +68,7 @@ interface CreateUserResponse {
 interface UsersState {
   users: User[];
   totalRows: number;
+  currentUser: UserFullResponse | null;
   loading: boolean;
   error: string | null;
   fetchUsers: (params: { limit?: number; offset?: number }) => Promise<{
@@ -75,11 +77,13 @@ interface UsersState {
   }>;
   createUser: (userData: CreateUserRequest) => Promise<CreateUserResponse>;
   editUser: (userData: UpdateUserRequest) => Promise<void>;
+  fetchCurrentUser: () => Promise<UserFullResponse>;
 }
 
 export const useUsersStore = create<UsersState>(set => ({
   users: [],
   totalRows: 0,
+  currentUser: null,
   loading: false,
   error: null,
 
@@ -113,6 +117,33 @@ export const useUsersStore = create<UsersState>(set => ({
       });
 
       return { items: data.items, total_rows: data.total_rows };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      set({ loading: false, error: errorMessage });
+      throw new Error(errorMessage);
+    }
+  },
+
+  fetchCurrentUser: async () => {
+    set({ loading: true, error: null });
+    try {
+      const data = await fetchWithErrorHandling<UserFullResponse>(
+        `${ENDPOINTS.USERS_ME}`,
+        {
+          method: 'GET',
+          headers: getAuthHeaders(),
+          credentials: 'include',
+        },
+        set
+      );
+
+      set({
+        currentUser: data,
+        loading: false,
+      });
+
+      return data;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -165,12 +196,59 @@ export const useUsersStore = create<UsersState>(set => ({
         set
       );
 
-      set(state => ({
-        loading: false,
-        users: state.users.map(user =>
-          user.user_id === userData.user_id
+      set(state => {
+        const updatedUsers = state.users.map(user => {
+          if (user.user_id === userData.user_id) {
+            return {
+              ...user,
+              ...(userData.login !== undefined && { login: userData.login }),
+              ...(userData.first_name !== undefined && {
+                first_name: userData.first_name,
+              }),
+              ...(userData.last_name !== undefined && {
+                last_name: userData.last_name,
+              }),
+              ...(userData.email !== undefined && { email: userData.email }),
+              ...(userData.is_admin !== undefined && {
+                is_admin: userData.is_admin,
+              }),
+              ...(userData.is_referral !== undefined && {
+                is_referral: userData.is_referral,
+              }),
+              ...(userData.telegram_id !== undefined && {
+                telegram_id: userData.telegram_id,
+              }),
+              ...(userData.telegram_username !== undefined && {
+                telegram_username: userData.telegram_username,
+              }),
+              ...(userData.functions !== undefined && {
+                functions: userData.functions.map(func => ({
+                  function_id: func.function_id,
+                  function_name:
+                    user.functions.find(f => f.function_id === func.function_id)
+                      ?.function_name || '',
+                  operations: func.operations as (
+                    | 'READ'
+                    | 'CREATE'
+                    | 'UPDATE'
+                    | 'DELETE'
+                  )[],
+                  subcategories: func.subcategories || null,
+                })),
+              }),
+              ...(userData.notifications_for_subcategories !== undefined && {
+                notifications_for_subcategories:
+                  userData.notifications_for_subcategories,
+              }),
+            };
+          }
+          return user;
+        });
+
+        const updatedCurrentUser =
+          state.currentUser && state.currentUser.user_id === userData.user_id
             ? {
-                ...user,
+                ...state.currentUser,
                 ...(userData.login !== undefined && { login: userData.login }),
                 ...(userData.first_name !== undefined && {
                   first_name: userData.first_name,
@@ -195,16 +273,16 @@ export const useUsersStore = create<UsersState>(set => ({
                   functions: userData.functions.map(func => ({
                     function_id: func.function_id,
                     function_name:
-                      user.functions.find(
+                      state.currentUser!.functions.find(
                         f => f.function_id === func.function_id
-                      )?.function_name || 'Unknown Function',
+                      )?.function_name || '',
                     operations: func.operations as (
                       | 'READ'
                       | 'CREATE'
                       | 'UPDATE'
                       | 'DELETE'
                     )[],
-                    subcategories: func.subcategories,
+                    subcategories: func.subcategories || null,
                   })),
                 }),
                 ...(userData.notifications_for_subcategories !== undefined && {
@@ -212,9 +290,14 @@ export const useUsersStore = create<UsersState>(set => ({
                     userData.notifications_for_subcategories,
                 }),
               }
-            : user
-        ),
-      }));
+            : state.currentUser;
+
+        return {
+          loading: false,
+          users: updatedUsers,
+          currentUser: updatedCurrentUser,
+        };
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

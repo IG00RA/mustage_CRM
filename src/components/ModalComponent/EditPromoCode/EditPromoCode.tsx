@@ -275,7 +275,7 @@ export default function EditPromoCode({
 
     try {
       await fetchWithErrorHandling(
-        `${ENDPOINTS.PROMOCODES}/${promoCode.promocode_id}`,
+        `${ENDPOINTS.PROMO_CODES}/${promoCode.promocode_id}`,
         {
           method: 'PATCH',
           headers: getAuthHeaders(),

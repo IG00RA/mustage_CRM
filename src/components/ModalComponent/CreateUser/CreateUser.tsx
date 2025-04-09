@@ -4,7 +4,7 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './CreateUser.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import { useTranslations } from 'next-intl';
@@ -12,21 +12,24 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect, useRef } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import UserRoles from '../UserRoles/UserRoles';
+import UserRoles, { UserFunction } from '../UserRoles/UserRoles';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
+import Icon from '@/helpers/Icon';
 
-type FormData = {
+// Define interfaces
+interface FormData {
   login: string;
   pass: string;
+  confirmPass: string;
   name: string;
   secondName: string;
   tgId: number;
   tgNick: string;
   email?: string;
-};
+}
 
 interface CreateUserProps {
   onClose: () => void;
@@ -46,40 +49,48 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
-  const [userFunctions, setUserFunctions] = useState<any[]>([]);
+  const [userFunctions, setUserFunctions] = useState<UserFunction[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const hasLoadedRef = useRef(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    mode: 'onChange',
+  });
+
+  const password = watch('pass');
 
   useEffect(() => {
     const loadInitialData = async () => {
       if (!hasLoadedRef.current) {
         try {
-          if (categories.length === 0) {
-            await fetchCategories();
-          }
-          if (subcategories.length === 0) {
-            await fetchSubcategories();
-          }
-        } catch (error) {
+          if (categories.length === 0) await fetchCategories();
+          if (subcategories.length === 0) await fetchSubcategories();
+          hasLoadedRef.current = true;
+        } catch {
           toast.error(
             t('UserSection.modalCreate.dataLoadError') ||
               'Failed to load categories/subcategories'
           );
-        } finally {
-          hasLoadedRef.current = true;
         }
       }
     };
     loadInitialData();
-  }, []);
+  }, [
+    categories.length,
+    fetchCategories,
+    fetchSubcategories,
+    subcategories.length,
+    t,
+  ]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async data => {
     const subcatIds = subcategories
       .filter(sub => addedSubcategories.includes(sub.account_subcategory_name))
       .map(sub => sub.account_subcategory_id);
@@ -113,14 +124,14 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       });
       reset();
       onClose();
-    } catch (error) {
+    } catch {
       toast.error(
         t('UserSection.modalCreate.errorMessage') || 'Failed to create user'
       );
     }
   };
 
-  const handleRolesSubmit = (functions: any[]) => {
+  const handleRolesSubmit = (functions: UserFunction[]) => {
     setUserFunctions(functions);
     setIsRolesModalOpen(false);
   };
@@ -262,27 +273,75 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
           <label className={styles.label}>
             {t('UserSection.modalCreate.pass')}
           </label>
-          <input
-            className={`${styles.input} ${
-              errors.pass ? styles.input_error : ''
-            }`}
-            placeholder={t('DBSettings.form.placeholder')}
-            type="password"
-            {...register('pass', {
-              required: t('DBSettings.form.errorMessage'),
-              minLength: {
-                value: 8,
-                message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
-                  'DBSettings.form.minLengthPassErrorSec'
-                )}`,
-              },
-              pattern: {
-                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
-                message: t('DBSettings.form.passwordPatternError'),
-              },
-            })}
-          />
+          <div className={ownStyles.inputWrapper}>
+            <input
+              className={`${styles.input} ${
+                errors.pass ? styles.input_error : ''
+              }`}
+              placeholder={t('DBSettings.form.placeholder')}
+              type={showPassword ? 'text' : 'password'}
+              {...register('pass', {
+                required: t('DBSettings.form.errorMessage'),
+                minLength: {
+                  value: 8,
+                  message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
+                    'DBSettings.form.minLengthPassErrorSec'
+                  )}`,
+                },
+                pattern: {
+                  value:
+                    /^(?=.*[a-zа-яґєіїё])(?=.*[A-ZА-ЯҐЄІЇЁ])(?=.*\d).{8,}$/,
+                  message: t('DBSettings.form.passwordPatternError'),
+                },
+              })}
+            />
+            <button
+              type="button"
+              className={ownStyles.togglePassword}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {!showPassword ? (
+                <Icon name="icon-view-hide" width={19} height={19} />
+              ) : (
+                <Icon name="icon-view-show" width={19} height={19} />
+              )}
+            </button>
+          </div>
           {errors.pass && <p className={styles.error}>{errors.pass.message}</p>}
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>
+            {t('UserSection.modalCreate.confirmPass')}
+          </label>
+          <div className={ownStyles.inputWrapper}>
+            <input
+              className={`${styles.input} ${
+                errors.confirmPass ? styles.input_error : ''
+              }`}
+              placeholder={t('DBSettings.form.placeholder')}
+              type={showConfirmPassword ? 'text' : 'password'}
+              {...register('confirmPass', {
+                required: t('DBSettings.form.errorMessage'),
+                validate: value =>
+                  value === password ||
+                  t('UserSection.modalCreate.passwordMismatch'),
+              })}
+            />
+            <button
+              type="button"
+              className={ownStyles.togglePassword}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {!showConfirmPassword ? (
+                <Icon name="icon-view-hide" width={19} height={19} />
+              ) : (
+                <Icon name="icon-view-show" width={19} height={19} />
+              )}
+            </button>
+          </div>
+          {errors.confirmPass && (
+            <p className={styles.error}>{errors.confirmPass.message}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>
@@ -338,14 +397,24 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             <p className={styles.error}>{errors.email.message}</p>
           )}
         </div>
-
         <div className={styles.field}>
+          <label className={styles.label}>
+            {t('UserSection.modalCreate.job')}
+          </label>
+          <CustomSelect
+            options={[t('UserSection.modalCreate.jobSelect')]}
+            selected={[]}
+            onSelect={values => {}}
+            multiSelections={false}
+          />
+        </div>
+        {/* <div className={styles.field}>
           <CustomCheckbox
             checked={isNotificationsEnabled}
             onChange={() => setIsNotificationsEnabled(!isNotificationsEnabled)}
             label={t('UserSection.modalCreate.notifSettings')}
           />
-        </div>
+        </div> */}
 
         {isNotificationsEnabled && (
           <>

@@ -73,12 +73,12 @@ export const accParMenuBottom = [
 ];
 
 export const otherParMenu = [
-  {
-    header: 'Sidebar.otherParMenu.promo',
-    link: 'promo_code',
-    logo: 'icon-ticket',
-    logo_hov: 'icon-fill_ticket',
-  },
+  // {
+  //   header: 'Sidebar.otherParMenu.promo',
+  //   link: 'promo_code',
+  //   logo: 'icon-ticket',
+  //   logo_hov: 'icon-fill_ticket',
+  // },
 
   {
     header: 'Sidebar.otherParMenu.users',

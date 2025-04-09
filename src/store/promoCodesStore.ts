@@ -36,7 +36,7 @@ export const usePromoCodesStore = create<PromoCodesState>(set => ({
       queryParams.append('offset', String(params.offset));
     }
 
-    const url = `${ENDPOINTS.PROMOCODES}?${queryParams.toString()}`;
+    const url = `${ENDPOINTS.PROMO_CODES}?${queryParams.toString()}`;
     const data = await fetchWithErrorHandling<{
       items: PromoCode[];
       total_rows: number;

@@ -17,10 +17,12 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore, User } from '@/store/usersStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
+import Icon from '@/helpers/Icon';
 
 interface FormData {
   login: string;
   pass?: string;
+  confirmPass?: string;
   name: string;
   secondName: string;
   tgId: number;
@@ -50,6 +52,8 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     !!user.notifications_for_subcategories?.length
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     []
   );
@@ -68,7 +72,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     register,
     handleSubmit,
     reset,
-    setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -80,6 +84,8 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       email: user.email,
     },
   });
+
+  const password = watch('pass');
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -251,25 +257,75 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
           <label className={styles.label}>
             {t('UserSection.modalCreate.pass')}
           </label>
-          <input
-            className={`${styles.input} ${
-              errors.pass ? styles.input_error : ''
-            }`}
-            type="password"
-            {...register('pass', {
-              minLength: {
-                value: 8,
-                message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
-                  'DBSettings.form.minLengthPassErrorSec'
-                )}`,
-              },
-              pattern: {
-                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
-                message: t('DBSettings.form.passwordPatternError'),
-              },
-            })}
-          />
+          <div className={ownStyles.inputWrapper}>
+            <input
+              className={`${styles.input} ${
+                errors.pass ? styles.input_error : ''
+              }`}
+              placeholder={t('DBSettings.form.placeholder')}
+              type={showPassword ? 'text' : 'password'}
+              {...register('pass', {
+                required: t('DBSettings.form.errorMessage'),
+                minLength: {
+                  value: 8,
+                  message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
+                    'DBSettings.form.minLengthPassErrorSec'
+                  )}`,
+                },
+                pattern: {
+                  value:
+                    /^(?=.*[a-zа-яґєіїё])(?=.*[A-ZА-ЯҐЄІЇЁ])(?=.*\d).{8,}$/,
+                  message: t('DBSettings.form.passwordPatternError'),
+                },
+              })}
+            />
+            <button
+              type="button"
+              className={ownStyles.togglePassword}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {!showPassword ? (
+                <Icon name="icon-view-hide" width={19} height={19} />
+              ) : (
+                <Icon name="icon-view-show" width={19} height={19} />
+              )}
+            </button>
+          </div>
           {errors.pass && <p className={styles.error}>{errors.pass.message}</p>}
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>
+            {t('UserSection.modalCreate.confirmPass')}
+          </label>
+          <div className={ownStyles.inputWrapper}>
+            <input
+              className={`${styles.input} ${
+                errors.confirmPass ? styles.input_error : ''
+              }`}
+              placeholder={t('DBSettings.form.placeholder')}
+              type={showConfirmPassword ? 'text' : 'password'}
+              {...register('confirmPass', {
+                required: t('DBSettings.form.errorMessage'),
+                validate: value =>
+                  value === password ||
+                  t('UserSection.modalCreate.passwordMismatch'),
+              })}
+            />
+            <button
+              type="button"
+              className={ownStyles.togglePassword}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {!showConfirmPassword ? (
+                <Icon name="icon-view-hide" width={19} height={19} />
+              ) : (
+                <Icon name="icon-view-show" width={19} height={19} />
+              )}
+            </button>
+          </div>
+          {errors.confirmPass && (
+            <p className={styles.error}>{errors.confirmPass.message}</p>
+          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>

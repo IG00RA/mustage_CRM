@@ -153,7 +153,7 @@ export default function PromoCodeSection() {
     async (promoCode: PromoCode) => {
       try {
         await fetchWithErrorHandling(
-          `${ENDPOINTS.PROMOCODES}/${promoCode.promocode_id}`,
+          `${ENDPOINTS.PROMO_CODES}/${promoCode.promocode_id}`,
           {
             method: 'PATCH',
             headers: getAuthHeaders(),

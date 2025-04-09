@@ -201,7 +201,7 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
 
     try {
       await fetchWithErrorHandling(
-        ENDPOINTS.PROMOCODES,
+        ENDPOINTS.PROMO_CODES,
         {
           method: 'POST',
           headers: getAuthHeaders(),
