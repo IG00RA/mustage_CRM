@@ -58,12 +58,6 @@ export default function UploadSection() {
         accept: 'application/octet-stream',
       };
 
-      if (!headers.Authorization) {
-        toast.error('Токен відсутній. Увійдіть у систему.');
-        window.location.href = '/login';
-        return;
-      }
-
       const response = await fetch(responseData.file, {
         method: 'GET',
         headers,

@@ -121,6 +121,10 @@ export default function LoadSection() {
 
   const toggleConfirmModal = () => {
     setIsOpenConfirm(!isOpenConfirm);
+    if (isLoadComplete) {
+      setSelectedCategory([]);
+    }
+    setIsLoadComplete(false);
   };
 
   const onSubmit = (data: FormData) => {
@@ -130,6 +134,10 @@ export default function LoadSection() {
           'Load.errorQuantityExceedsSec'
         )}`
       );
+      return;
+    }
+    if (!data.price || data.price === t('Load.sellers')) {
+      toast.error(t('Load.errorSellerNotSelected'));
       return;
     }
     setFormData(data);
@@ -162,19 +170,14 @@ export default function LoadSection() {
         setIsLoadComplete(true);
         // Очищення форми після успішного вивантаження
         reset({
-          nameField: totalAvailableAccounts.toString(), // Залишаємо кількість доступних акаунтів
+          nameField: '',
           accQuantity: '',
-          cost:
-            subcategories
-              .find(
-                sub => sub.account_subcategory_name === selectedSubcategory[0]
-              )
-              ?.cost_price.toString() || '',
+          cost: '',
           nameDescription: '',
           tgNick: '',
           dolphinMail: '',
         });
-        setCheckedSettings({}); // Очищаємо чекбокс
+        setCheckedSettings({});
       } else {
         toast.error(t('Load.errorMessage'));
       }
@@ -330,6 +333,7 @@ export default function LoadSection() {
   };
 
   const handleCategorySelect = (values: string[]) => {
+    setSelectedSubcategory([]);
     const value = values[0] || '';
     setSelectedCategory([value]);
     if (value === t('Load.category')) {
@@ -464,10 +468,10 @@ export default function LoadSection() {
                   <label className={styles.label}>{t('Load.namesCost')}</label>
                   <input
                     type="number"
+                    step="any"
                     className={`${styles.input} ${
                       errors.cost ? styles.input_error : ''
                     }`}
-                    readOnly
                     {...register('cost', {
                       required: t('DBSettings.form.errorMessage'),
                     })}
@@ -481,7 +485,8 @@ export default function LoadSection() {
                 <div className={styles.label_wrap}>
                   <label className={styles.label}>{t('Load.sellSum')}</label>
                   <input
-                    type="number" // Виправлено з "５number" на "number"
+                    type="number"
+                    step="any"
                     className={`${styles.input} ${
                       errors.nameDescription ? styles.input_error : ''
                     }`}
