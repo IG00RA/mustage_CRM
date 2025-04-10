@@ -104,6 +104,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       is_referral: false,
       telegram_id: data.tgId,
       telegram_username: data.tgNick,
+      // role_id,
       functions: userFunctions,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
@@ -408,13 +409,13 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             multiSelections={false}
           />
         </div>
-        {/* <div className={styles.field}>
+        <div className={styles.field}>
           <CustomCheckbox
             checked={isNotificationsEnabled}
             onChange={() => setIsNotificationsEnabled(!isNotificationsEnabled)}
             label={t('UserSection.modalCreate.notifSettings')}
           />
-        </div> */}
+        </div>
 
         {isNotificationsEnabled && (
           <>
@@ -461,14 +462,6 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             </div>
           </>
         )}
-
-        <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
-          <WhiteBtn
-            onClick={toggleRolesModal}
-            text={'UserSection.modalCreate.rolesBtn'}
-            icon="icon-settings-btn"
-          />
-        </div>
 
         <div className={styles.buttons_wrap}>
           <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleClose} />

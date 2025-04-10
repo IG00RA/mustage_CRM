@@ -22,6 +22,7 @@ import {
 type OpenMenusState = {
   distribution: boolean;
   referrals: boolean;
+  users: boolean; // Додано для користувачів
 };
 
 // Тип для зіставлення пунктів меню з функціями
@@ -41,6 +42,7 @@ type MenuFunctionMap = {
   auto_farm: string;
   promo_code: string;
   users: string;
+  roles: string; // Додано для "Должности"
   referrals_all: string;
   referrals_stat: string;
 };
@@ -49,7 +51,7 @@ type MenuFunctionMap = {
 const availableFunctions = [
   { function_id: 1, name: 'Обзор' },
   { function_id: 2, name: 'Категории' },
-  { function_id: 3, name: 'Подкатегории' }, // Наименования
+  { function_id: 3, name: 'Подкатегории' },
   { function_id: 4, name: 'Все аккаунты' },
   { function_id: 5, name: 'Загрузка аккаунтов' },
   { function_id: 6, name: 'Выгрузка аккаунтов' },
@@ -60,13 +62,15 @@ const availableFunctions = [
   { function_id: 11, name: 'Промокоды' },
   { function_id: 12, name: 'Все рефералы' },
   { function_id: 13, name: 'Статистика реферальной системы' },
+  { function_id: 14, name: 'Пользователи' }, // Додано для "Пользователи"
+  { function_id: 15, name: 'Должности' }, // Додано для "Должности"
 ];
 
 // Відповідність між пунктами меню та іменами функцій
 const menuFunctionMap: MenuFunctionMap = {
   dashboard: 'Обзор',
   category: 'Категории',
-  names: 'Подкатегории', // Наименования
+  names: 'Подкатегории',
   all_accounts: 'Все аккаунты',
   upload: 'Загрузка аккаунтов',
   load: 'Выгрузка аккаунтов',
@@ -77,7 +81,8 @@ const menuFunctionMap: MenuFunctionMap = {
   remove_sale: 'Убрать аккаунты с продажи',
   auto_farm: 'Управление автофармом',
   promo_code: 'Промокоды',
-  users: 'Пользователи', // Припускаємо, що це системна функція для адмінів
+  users: 'Пользователи',
+  roles: 'Должности', // Додано для "Должности"
   referrals_all: 'Все рефералы',
   referrals_stat: 'Статистика реферальной системы',
 };
@@ -89,6 +94,7 @@ export default function Sidebar() {
   const [openMenus, setOpenMenus] = useState<OpenMenusState>({
     distribution: false,
     referrals: false,
+    users: false, // Додано для користувачів
   });
 
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
@@ -108,15 +114,18 @@ export default function Sidebar() {
       'distribution_all',
     ];
     const referralsLinks = ['referrals_all', 'referrals_stat'];
+    const usersLinks = ['users', 'roles']; // Додано для користувачів
 
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
     );
     const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
+    const isAnyUsersActive = usersLinks.some(link => isActiveSub(link)); // Додано для користувачів
 
     setOpenMenus({
       distribution: isAnyDistributionActive,
       referrals: isAnyReferralsActive,
+      users: isAnyUsersActive, // Додано для користувачів
     });
   }, [pathname]);
 
@@ -162,16 +171,17 @@ export default function Sidebar() {
     isMenuAllowed('distribution_all');
   const hasReferralsAccess =
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
+  const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles'); // Додано для користувачів
 
   // Показуємо лоадер, якщо дані користувача завантажуються або ще не визначені
-  if (loading ||(isInitialLoad && !currentUser) ) {
+  if (loading || (isInitialLoad && !currentUser)) {
     return (
       <aside className={styles.sidebar}>
         <div className={styles.loader}>Loading...</div>
       </aside>
     );
   }
-  
+
   // Якщо користувач скинутий (null), не показуємо меню
   if (!currentUser) {
     return (
@@ -473,40 +483,138 @@ export default function Sidebar() {
         </>
       )}
 
-      {(filteredOtherParMenu.length > 0 || hasReferralsAccess) && (
+      {(filteredOtherParMenu.length > 0 ||
+        hasReferralsAccess ||
+        hasUsersAccess) && (
         <>
           <h3 className={styles.parTitle}>{t('Sidebar.otherPar')}</h3>
           <nav className={styles.nav}>
             <ul role="menu">
-              {filteredOtherParMenu.map((item, index) => (
+              {filteredOtherParMenu.map((item, index) => {
+                if (item.link === 'users') {
+                  return null; // Пропускаємо "users", бо воно тепер у розкривному меню
+                }
+                return (
+                  <li
+                    className={`${styles.nav_item} ${
+                      isActive(item.link) ? styles.active : ''
+                    }`}
+                    key={index}
+                  >
+                    <Link
+                      className={styles.nav_item_link}
+                      href={`/ru/${item.link}`}
+                    >
+                      <Icon
+                        className={styles.logo}
+                        name={item.logo}
+                        width={22}
+                        height={22}
+                      />
+                      <Icon
+                        className={styles.logo_hov}
+                        name={item.logo_hov}
+                        width={22}
+                        height={22}
+                      />
+                      <span className={styles.nav_item_text}>
+                        {t(item.header)}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+              {hasUsersAccess && (
                 <li
                   className={`${styles.nav_item} ${
-                    isActive(item.link) ? styles.active : ''
+                    openMenus.users ? styles.active : ''
                   }`}
-                  key={index}
+                  key={'users'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({
+                      ...prev,
+                      users: !prev.users,
+                    }))
+                  }
                 >
-                  <Link
-                    className={styles.nav_item_link}
-                    href={`/ru/${item.link}`}
-                  >
+                  <div className={styles.nav_item_link}>
                     <Icon
                       className={styles.logo}
-                      name={item.logo}
+                      name={'icon-users'} // Іконка для "Пользователи"
                       width={22}
                       height={22}
                     />
                     <Icon
                       className={styles.logo_hov}
-                      name={item.logo_hov}
+                      name={'icon-fill_users'} // Іконка для активного стану
                       width={22}
                       height={22}
                     />
                     <span className={styles.nav_item_text}>
-                      {t(item.header)}
+                      {t('Sidebar.otherParMenu.users')}
                     </span>
-                  </Link>
+                    <Icon
+                      className={`${styles.arrow_down} ${
+                        openMenus.users ? styles.active : ''
+                      }`}
+                      name="icon-angle-down"
+                      width={16}
+                      height={16}
+                      color="#A9A9C1"
+                    />
+                  </div>
+                  <ul
+                    className={`${styles.select_options} ${
+                      openMenus.users ? styles.select_open : ''
+                    }`}
+                  >
+                    {isMenuAllowed('users') && (
+                      <li
+                        key={'users'}
+                        onClick={() =>
+                          setOpenMenus(prev => ({ ...prev, users: false }))
+                        }
+                      >
+                        <Link
+                          className={`${styles.option_item} ${
+                            isActiveSub('users') ? styles.active_sub_link : ''
+                          }`}
+                          href={`/ru/users`}
+                        >
+                          <div className={styles.list_sub_mark_wrap}>
+                            <span className={styles.list_sub_mark}></span>
+                          </div>
+                          <p className={styles.list_sub_text}>
+                            {t('Sidebar.otherParMenu.users')}
+                          </p>
+                        </Link>
+                      </li>
+                    )}
+                    {isMenuAllowed('roles') && (
+                      <li
+                        key={'roles'}
+                        onClick={() =>
+                          setOpenMenus(prev => ({ ...prev, users: false }))
+                        }
+                      >
+                        <Link
+                          className={`${styles.option_item} ${
+                            isActiveSub('roles') ? styles.active_sub_link : ''
+                          }`}
+                          href={`/ru/roles`}
+                        >
+                          <div className={styles.list_sub_mark_wrap}>
+                            <span className={styles.list_sub_mark}></span>
+                          </div>
+                          <p className={styles.list_sub_text}>
+                            {t('Sidebar.otherParMenu.roles')}
+                          </p>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
                 </li>
-              ))}
+              )}
               {/* {hasReferralsAccess && (
                 <li
                   className={`${styles.nav_item} ${

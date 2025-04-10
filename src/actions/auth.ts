@@ -3,38 +3,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// export async function login(formData: FormData) {
-//   const username = formData.get('username');
-//   const password = formData.get('password');
-
-//   if (!username || !password) {
-//     return { error: 'Username and password are required' };
-//   }
-
-//   const response = await fetch(`${process.env.NEXT_PUBLIC_HOST_BACK}/login`, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({ login: username, password }),
-//     credentials: 'include',
-//   });
-//   console.log(response);
-
-//   if (!response.ok) {
-//     if (response.status === 401) {
-//       return { error: 'Invalid credentials' };
-//     } else if (response.status === 422) {
-//       const errorData = await response.json();
-//       return { error: errorData.detail[0].msg || 'Validation error' };
-//     } else {
-//       return { error: 'Login failed' };
-//     }
-//   }
-
-//   redirect('/ru/dashboard');
-// }
-
 export async function login(formData: FormData) {
   const username = formData.get('username');
   const password = formData.get('password');

@@ -23,4 +23,5 @@ export const ENDPOINTS = {
   REGISTER_USER: `${BASE_URL}/register-user`,
   CRM_FUNCTIONS: `${BASE_URL}/crm-functions`,
   REFERRAL_PAYMENT_SETTINGS: `${BASE_URL}/referral-system/payment-settings`,
+  ROLES: `${BASE_URL}/roles`,
 };

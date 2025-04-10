@@ -12,6 +12,11 @@ export interface User {
   email?: string;
   telegram_id: number;
   telegram_username: string;
+  role?: {
+    role_id: number;
+    name: string;
+    description: string;
+  };
   functions: {
     function_id: number;
     function_name: string;
@@ -31,6 +36,7 @@ interface CreateUserRequest {
   is_referral: boolean;
   telegram_id: number;
   telegram_username: string;
+  role_id: number;
   functions: {
     function_id: number;
     operations: string[];

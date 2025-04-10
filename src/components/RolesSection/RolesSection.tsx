@@ -1,7 +1,6 @@
-// components/UserSection/UserSection.tsx
 'use client';
 
-import styles from './UserSection.module.css';
+import styles from './RolesSection.module.css';
 import { useTranslations } from 'next-intl';
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,22 +16,22 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CreateUser from '../ModalComponent/CreateUser/CreateUser';
-import EditUser from '../ModalComponent/EditUser/EditUser';
-import { useUsersStore, User } from '@/store/usersStore';
+import { useRolesStore, Role } from '@/store/rolesStore';
 import { PaginationState } from '@/types/componentsTypes';
 import Loader from '../Loader/Loader';
+import CreateRole from '../ModalComponent/CreateRole/CreateRole';
+import EditRole from '../ModalComponent/EditRole/EditRole';
 
-const PAGINATION_KEY = 'userSectionPaginationSettings';
+const PAGINATION_KEY = 'roleSectionPaginationSettings';
 
-export default function UserSection() {
+export default function RoleSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
-  const { users, totalRows, error, fetchUsers } = useUsersStore();
+  const { roles, totalRows, error, fetchRoles } = useRolesStore();
 
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
@@ -45,11 +44,12 @@ export default function UserSection() {
   });
 
   useEffect(() => {
-    fetchUsers({
+    fetchRoles({
       limit: pagination.pageSize,
       offset: pagination.pageIndex * pagination.pageSize,
+      like_query: globalFilter || undefined,
     }).catch(() => setShowLoader(false));
-  }, [pagination.pageIndex, pagination.pageSize, fetchUsers]);
+  }, [pagination.pageIndex, pagination.pageSize, globalFilter, fetchRoles]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -58,33 +58,21 @@ export default function UserSection() {
   }, [pagination]);
 
   useEffect(() => {
-    if (users.length > 0 && showLoader) {
-      setShowLoader(false);
-    }
-  }, [users, showLoader]);
+    // if (roles.length > 0 && showLoader) {
+    setShowLoader(false);
+    // }
+  }, [roles, showLoader]);
 
   const toggleCreateModal = () => setIsOpenCreate(!isOpenCreate);
   const toggleUpdateModal = () => setIsOpenUpdate(!isOpenUpdate);
 
-  const columns: ColumnDef<User>[] = [
-    { accessorKey: 'user_id', header: 'ID' },
+  const columns: ColumnDef<Role>[] = [
+    { accessorKey: 'role_id', header: 'ID' },
+    { accessorKey: 'name', header: t('RoleSection.table.name') },
     {
-      accessorKey: 'fullName',
-      header: t('UserSection.table.name'),
-      cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
-    },
-    { accessorKey: 'telegram_id', header: t('UserSection.table.tgId') },
-    // Додаємо нову колонку "Должность" (role.name)
-    {
-      accessorKey: 'role.name',
-      header: 'Должность', // Можна використати t('UserSection.table.roleName') для локалізації
-      cell: ({ row }) => row.original.role?.name || '—', // Якщо role відсутнє, показуємо "—"
-    },
-    // Додаємо нову колонку "Описание должности" (role.description)
-    {
-      accessorKey: 'role.description',
-      header: 'Описание должности', // Можна використати t('UserSection.table.roleDescription') для локалізації
-      cell: ({ row }) => row.original.role?.description || '—', // Якщо role відсутнє, показуємо "—"
+      accessorKey: 'description',
+      header: t('RoleSection.table.description'),
+      cell: ({ row }) => row.original.description || '—',
     },
     {
       id: 'actions',
@@ -93,7 +81,7 @@ export default function UserSection() {
         <div className={styles.table_buttons}>
           <WhiteBtn
             onClick={() => {
-              setSelectedUser(row.original);
+              setSelectedRole(row.original);
               toggleUpdateModal();
             }}
             text={'Names.table.editBtn'}
@@ -105,7 +93,7 @@ export default function UserSection() {
   ];
 
   const table = useReactTable({
-    data: users,
+    data: roles,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -117,21 +105,19 @@ export default function UserSection() {
     pageCount: Math.ceil(totalRows / pagination.pageSize),
   });
 
-  const userNames = [
-    ...new Set(users.map(user => `${user.first_name} ${user.last_name}`)),
-  ];
+  const roleNames = [...new Set(roles.map(role => role.name))];
 
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.otherParMenu.users')}</h2>
-        <p className={styles.header_text}>{t('UserSection.headerText')}</p>
+        <h2 className={styles.header}>{t('Sidebar.otherParMenu.roles')}</h2>
+        <p className={styles.header_text}>{t('RoleSection.headerText')}</p>
         <div className={styles.buttons_wrap}>
-          <AddBtn onClick={toggleCreateModal} text={'UserSection.addBtn'} />
+          <AddBtn onClick={toggleCreateModal} text={'RoleSection.addBtn'} />
           <SearchInput
             onSearch={query => setGlobalFilter(query)}
-            text={'UserSection.searchBtn'}
-            options={userNames}
+            text={'RoleSection.searchBtn'}
+            options={roleNames}
           />
         </div>
       </div>
@@ -225,20 +211,20 @@ export default function UserSection() {
       <ModalComponent
         isOpen={isOpenCreate}
         onClose={toggleCreateModal}
-        title="UserSection.modalCreate.title"
+        title="RoleSection.modalCreate.title"
       >
-        <CreateUser pagination={pagination} onClose={toggleCreateModal} />
+        <CreateRole pagination={pagination} onClose={toggleCreateModal} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
         onClose={toggleUpdateModal}
-        title="UserSection.modalEdit.title"
+        title="RoleSection.modalEdit.title"
       >
-        {selectedUser && (
-          <EditUser
+        {selectedRole && (
+          <EditRole
             onClose={toggleUpdateModal}
             pagination={pagination}
-            user={selectedUser}
+            role={selectedRole}
           />
         )}
       </ModalComponent>

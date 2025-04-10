@@ -1,0 +1,184 @@
+.text {
+  color: var(--text_dark);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  padding-top: 24px;
+  border-top: 1px solid var(--grey);
+  margin-bottom: 16px;
+  margin-top: 24px;
+}
+
+.field {
+  & button {
+    align-self: self-start;
+  }
+}
+
+.fieldBottom {
+  & button {
+    align-self: self-start;
+    font-size: var(--fs_small);
+  }
+}
+
+.form {
+  min-width: 580px;
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+
+  & input {
+    flex: 1;
+  }
+}
+
+.togglePassword {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  font-size: 12px;
+}
+
+.accessSection {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.accessSection p {
+  margin-right: 15px;
+  font-weight: 500;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.switchLabel:before {
+  position: absolute;
+  content: '';
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.switch input:checked + .switchLabel {
+  background-color: #2196f3;
+}
+
+.switch input:checked + .switchLabel:before {
+  transform: translateX(26px);
+}
+
+.functionsTable {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  font-weight: 500;
+  border-bottom: 1px solid #ddd;
+}
+
+.tableHeader span:first-child {
+  flex: 1;
+}
+
+.headerCheckboxes {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  margin-left: auto;
+  & span {
+    color: #919eab;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 0px;
+  }
+}
+
+.functionRow {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.functionRow:last-child {
+  border-bottom: none;
+}
+
+.functionName {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.checkboxes {
+  display: flex;
+  gap: 32px; /* Відстань між чекбоксами, щоб відповідати заголовкам */
+  width: 200px; /* Фіксована ширина для вирівнювання */
+  margin-left: auto;
+}
+
+.subcategoriesSection {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.fieldBottom {
+  margin-bottom: 15px;
+}

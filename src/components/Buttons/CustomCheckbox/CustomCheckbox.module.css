@@ -2,6 +2,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.label {
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .checkbox {
@@ -12,16 +19,16 @@
   align-items: center;
   border-radius: 6px;
   border: 1px solid var(--disabled_grey);
-  cursor: pointer;
   position: relative;
   transition: border 0.3s ease;
 }
 
 .checkbox_check {
   border: 1px solid transparent;
-  & .check_icon {
-    opacity: 1;
-  }
+}
+
+.checkbox_check .check_icon {
+  opacity: 1;
 }
 
 .check_icon {
@@ -30,4 +37,17 @@
   top: 0;
   left: 0;
   transition: opacity 0.3s ease;
+}
+
+.checkbox_disabled {
+  background-color: #dfdfdf;
+  border-color: var(--disabled_grey);
+}
+
+.disabled {
+  cursor: not-allowed;
+}
+
+.disabled .label {
+  color: var(--disabled_grey);
 }

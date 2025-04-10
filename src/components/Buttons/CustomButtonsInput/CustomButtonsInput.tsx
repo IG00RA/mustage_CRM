@@ -5,7 +5,7 @@ import Icon from '@/helpers/Icon';
 
 interface CustomButtonsInputProps {
   buttons: string[];
-  onRemove: (label: string) => void; // Новий пропс для зняття чекбокса
+  onRemove: (label: string, index: number) => void; // Оновлена сигнатура
 }
 
 export default function CustomButtonsInput({
@@ -14,13 +14,13 @@ export default function CustomButtonsInput({
 }: CustomButtonsInputProps) {
   return (
     <div className={styles.container}>
-      {buttons.map(btn => (
+      {buttons?.map((btn, index) => (
         <div key={btn} className={styles.button}>
           {btn}
           <button
             type="button"
             className={styles.close}
-            onClick={() => onRemove(btn)} // Викликаємо onRemove для зняття чекбокса
+            onClick={() => onRemove(btn, index)} // Передаємо label і index
           >
             <Icon
               name="icon-close-small"

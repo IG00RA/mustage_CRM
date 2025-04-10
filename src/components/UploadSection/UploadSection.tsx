@@ -114,11 +114,11 @@ export default function UploadSection() {
             text={'Upload.buttons.load'}
             icon="icon-upload"
           />
-          <WhiteBtn
+          {/* <WhiteBtn
             onClick={toggleFormingModal}
             text={'Upload.buttons.createSet'}
             icon="icon-create-set"
-          />
+          /> */}
         </div>
       </div>
       <ModalComponent

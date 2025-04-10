@@ -4,18 +4,33 @@ import styles from './CustomCheckbox.module.css';
 interface CustomCheckboxProps {
   checked: boolean;
   onChange: () => void;
-  label: string;
+  label?: string;
+  disabled?: boolean;
 }
 
 export default function CustomCheckbox({
   checked,
   onChange,
   label,
+  disabled = false,
 }: CustomCheckboxProps) {
+  const handleClick = () => {
+    if (!disabled) {
+      onChange();
+    }
+  };
+
   return (
-    <div className={styles.checkbox_container} onClick={onChange}>
+    <div
+      className={`${styles.checkbox_container} ${
+        disabled ? styles.disabled : ''
+      }`}
+      onClick={handleClick}
+    >
       <span
-        className={`${styles.checkbox} ${checked ? styles.checkbox_check : ''}`}
+        className={`${styles.checkbox} ${
+          checked ? styles.checkbox_check : ''
+        } ${disabled ? styles.checkbox_disabled : ''}`}
       >
         <Icon
           name="icon-check-box_checked"
@@ -24,7 +39,7 @@ export default function CustomCheckbox({
           height={18}
         />
       </span>
-      {label}
+      {label && <span className={styles.label}>{label}</span>}
     </div>
   );
 }
