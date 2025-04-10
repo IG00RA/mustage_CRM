@@ -265,7 +265,6 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
               placeholder={t('DBSettings.form.placeholder')}
               type={showPassword ? 'text' : 'password'}
               {...register('pass', {
-                required: t('DBSettings.form.errorMessage'),
                 minLength: {
                   value: 8,
                   message: `${t('DBSettings.form.minLengthPassError')} 8 ${t(
@@ -305,7 +304,6 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
               placeholder={t('DBSettings.form.placeholder')}
               type={showConfirmPassword ? 'text' : 'password'}
               {...register('confirmPass', {
-                required: t('DBSettings.form.errorMessage'),
                 validate: value =>
                   value === password ||
                   t('UserSection.modalCreate.passwordMismatch'),

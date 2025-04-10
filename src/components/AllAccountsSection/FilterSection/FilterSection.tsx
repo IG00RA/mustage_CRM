@@ -36,6 +36,8 @@ interface FilterSectionProps {
   subcategoryMap: Map<number, string>;
   sellerMap: Map<number, string | null | undefined>;
   t: (key: string) => string;
+  hasReadCategories: boolean;
+  hasReadSubcategories: boolean;
 }
 
 export const FilterSection = ({
@@ -67,9 +69,11 @@ export const FilterSection = ({
   onSearch,
   accounts,
   categoryMap,
-  subcategoryMap, // Додаємо в пропси
-  sellerMap, // Додаємо в пропси
+  subcategoryMap,
+  sellerMap,
   t,
+  hasReadCategories,
+  hasReadSubcategories,
 }: FilterSectionProps) => (
   <div className={styles.select_wrap}>
     <CustomSelect
@@ -104,39 +108,43 @@ export const FilterSection = ({
       options={sellerOptions}
       selected={
         selectedSellerIds.length > 0
-          ? selectedSellerIds.map(id => sellerMap.get(parseInt(id)) || '') // Використовуємо sellerMap
+          ? selectedSellerIds.map(id => sellerMap.get(parseInt(id)) || '')
           : [t('AllAccounts.selects.sellerAll')]
       }
       onSelect={onSellerSelect}
       width={508}
       selectWidth={383}
     />
-    <CustomSelect
-      label={t('AllAccounts.selects.categories')}
-      options={categoryOptions}
-      selected={
-        selectedCategoryIds.length > 0
-          ? selectedCategoryIds.map(id => categoryMap.get(parseInt(id)) || '')
-          : [t('AllAccounts.selects.allCategories')]
-      }
-      onSelect={onCategorySelect}
-      width={508}
-      selectWidth={383}
-    />
-    <CustomSelect
-      label={t('AllAccounts.selects.names')}
-      options={subcategoryOptions}
-      selected={
-        selectedSubcategoryIds.length > 0
-          ? selectedSubcategoryIds.map(
-              id => subcategoryMap.get(parseInt(id)) || ''
-            )
-          : [t('AllAccounts.selects.allNames')]
-      }
-      onSelect={onSubcategorySelect}
-      width={508}
-      selectWidth={383}
-    />
+    {hasReadCategories && (
+      <CustomSelect
+        label={t('AllAccounts.selects.categories')}
+        options={categoryOptions}
+        selected={
+          selectedCategoryIds.length > 0
+            ? selectedCategoryIds.map(id => categoryMap.get(parseInt(id)) || '')
+            : [t('AllAccounts.selects.allCategories')]
+        }
+        onSelect={onCategorySelect}
+        width={508}
+        selectWidth={383}
+      />
+    )}
+    {hasReadSubcategories && (
+      <CustomSelect
+        label={t('AllAccounts.selects.names')}
+        options={subcategoryOptions}
+        selected={
+          selectedSubcategoryIds.length > 0
+            ? selectedSubcategoryIds.map(
+                id => subcategoryMap.get(parseInt(id)) || ''
+              )
+            : [t('AllAccounts.selects.allNames')]
+        }
+        onSelect={onSubcategorySelect}
+        width={508}
+        selectWidth={383}
+      />
+    )}
     <div className={styles.sell_wrap}>
       <DateRangeSelector
         label="AllAccounts.sellDate"

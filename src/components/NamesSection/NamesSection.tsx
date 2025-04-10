@@ -30,15 +30,27 @@ import CreateNamesSet from '../ModalComponent/CreateNamesSet/CreateNamesSet';
 import ShowNamesDescription from '../ModalComponent/ShowNamesDescription/ShowNamesDescription';
 import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
+import { useUsersStore } from '@/store/usersStore';
 import { PaginationState } from '@/types/componentsTypes';
 import { Subcategory } from '@/types/salesTypes';
 import { toast } from 'react-toastify';
 
 const NAMES_PAGINATION_KEY = 'namesPaginationSettings';
 
+interface TableSubcategory {
+  account_subcategory_id: number;
+  account_subcategory_name: string;
+  account_category_id: number;
+  price: number;
+  cost_price: number;
+  description: string | null | undefined;
+  output_separator: string | null | undefined;
+  output_format_field: string[] | null | undefined;
+}
+
 export default function NamesSection() {
   const t = useTranslations();
-
+  const { currentUser } = useUsersStore();
   const {
     subcategories,
     categories,
@@ -59,23 +71,41 @@ export default function NamesSection() {
   const [updateTitle, setUpdateTitle] = useState('');
   const [selectedDescription, setSelectedDescription] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] =
-    useState<Subcategory | null>(null); // Додаємо стан для обраної підкатегорії
+    useState<Subcategory | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(NAMES_PAGINATION_KEY);
       return saved
         ? (JSON.parse(saved) as PaginationState)
-        : {
-            pageIndex: 0,
-            pageSize: 5,
-          };
+        : { pageIndex: 0, pageSize: 5 };
     }
-    return {
-      pageIndex: 0,
-      pageSize: 5,
-    };
+    return { pageIndex: 0, pageSize: 5 };
   });
+
+  // Логіка прав доступу для "Подкатегории" (function_id: 3)
+  const isFunctionsEmpty = currentUser?.functions.length === 0; // Перевіряємо, чи порожній масив functions
+  const subcategoryPermissions =
+    currentUser?.functions.find(
+      func => func.function_id === 3 && func.function_name === 'Подкатегории'
+    )?.operations || [];
+  const hasCreateSubcategories =
+    isFunctionsEmpty || subcategoryPermissions.includes('CREATE');
+  const hasUpdateSubcategories =
+    isFunctionsEmpty || subcategoryPermissions.includes('UPDATE');
+  const hasReadSubcategories =
+    isFunctionsEmpty ||
+    subcategoryPermissions.includes('READ') ||
+    hasCreateSubcategories ||
+    hasUpdateSubcategories;
+
+  // Логіка прав доступу для "Категории" (function_id: 2)
+  const categoryPermissions =
+    currentUser?.functions.find(
+      func => func.function_id === 2 && func.function_name === 'Категории'
+    )?.operations || [];
+  const hasReadCategories =
+    isFunctionsEmpty || categoryPermissions.includes('READ');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,14 +121,24 @@ export default function NamesSection() {
           didFetchRef.current = false;
         });
       }
-      if (categories.length === 0 && !loading && !error) {
+      // Запит за категоріями робимо лише якщо є READ для "Категории"
+      if (hasReadCategories && categories.length === 0 && !loading && !error) {
         fetchCategories().catch(err => {
           toast.error(t('Category.errorMessage'), err || '');
         });
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [fetchSubcategories, fetchCategories]);
+  }, [
+    fetchSubcategories,
+    fetchCategories,
+    subcategories,
+    categories,
+    loading,
+    error,
+    t,
+    hasReadCategories,
+  ]);
 
   useEffect(() => {
     if (subcategories.length > 0 && showLoader) {
@@ -112,25 +152,23 @@ export default function NamesSection() {
     }
   }, [pagination]);
 
-  const toggleCreateModal = useCallback(() => {
-    setIsOpenCreate(prev => !prev);
-  }, []);
-
-  const toggleCreateNamesSet = useCallback(() => {
-    setIsOpenCreateNamesSet(prev => !prev);
-  }, []);
-
+  const toggleCreateModal = useCallback(
+    () => setIsOpenCreate(prev => !prev),
+    []
+  );
+  const toggleCreateNamesSet = useCallback(
+    () => setIsOpenCreateNamesSet(prev => !prev),
+    []
+  );
   const openUpdateModal = useCallback((subcategory: Subcategory) => {
     setUpdateTitle(subcategory.account_subcategory_name);
-    setSelectedSubcategory(subcategory); // Зберігаємо повний об'єкт підкатегорії
+    setSelectedSubcategory(subcategory);
     setIsOpenUpdate(true);
   }, []);
-
   const closeUpdateModal = useCallback(() => {
     setIsOpenUpdate(false);
-    setSelectedSubcategory(null); // Очищаємо при закритті
+    setSelectedSubcategory(null);
   }, []);
-
   const openShowNamesDescription = useCallback(
     (title = '', description = '') => {
       setUpdateTitle(title);
@@ -139,13 +177,12 @@ export default function NamesSection() {
     },
     []
   );
-
   const closeShowNamesDescription = useCallback(() => {
     setIsOpenShowNamesDescription(false);
     setSelectedDescription('');
   }, []);
 
-  const data = useMemo(
+  const data = useMemo<TableSubcategory[]>(
     () =>
       subcategories.map(subcategory => ({
         account_subcategory_id: subcategory.account_subcategory_id,
@@ -201,8 +238,8 @@ export default function NamesSection() {
     [categories, t]
   );
 
-  const columns = useMemo<ColumnDef<Subcategory>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<TableSubcategory>[]>(() => {
+    const baseColumns: ColumnDef<TableSubcategory>[] = [
       { accessorKey: 'account_subcategory_id', header: 'ID' },
       {
         accessorKey: 'account_subcategory_name',
@@ -226,7 +263,11 @@ export default function NamesSection() {
       },
       { accessorKey: 'cost_price', header: t('Names.table.cost') },
       { accessorKey: 'price', header: t('Names.table.price') },
-      {
+    ];
+
+    // Додаємо колонку "Actions" лише якщо є UPDATE
+    if (hasUpdateSubcategories) {
+      baseColumns.push({
         id: 'actions',
         header: t('Names.table.actions'),
         cell: ({ row }) => (
@@ -241,16 +282,23 @@ export default function NamesSection() {
               }
             />
             <WhiteBtn
-              onClick={() => openUpdateModal(row.original)} // Передаємо повний об'єкт
+              onClick={() => openUpdateModal(row.original as Subcategory)}
               text={'Names.table.editBtn'}
               icon="icon-edit-pencil"
             />
           </div>
         ),
-      },
-    ],
-    [t, categoryMap, openShowNamesDescription, openUpdateModal]
-  );
+      });
+    }
+
+    return baseColumns;
+  }, [
+    t,
+    categoryMap,
+    openShowNamesDescription,
+    openUpdateModal,
+    hasUpdateSubcategories,
+  ]);
 
   const columnFilters = useMemo(
     () =>
@@ -266,11 +314,7 @@ export default function NamesSection() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-      pagination,
-      columnFilters,
-    },
+    state: { globalFilter, pagination, columnFilters },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
@@ -295,33 +339,65 @@ export default function NamesSection() {
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('Sidebar.accParMenu.names')}</h2>
         <p className={styles.header_text}>{t('Category.headerText')}</p>
-        <div className={styles.buttons_wrap}>
-          <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
-          <WhiteBtn
-            onClick={toggleCreateNamesSet}
-            text={'Names.addSetBtn'}
-            icon="icon-add-color"
-            iconFill="icon-add-color"
-          />
-          <CustomSelect
-            label={t('Names.selectText')}
-            options={categoryOptions}
-            selected={
-              selectedCategoryIds.length > 0
-                ? selectedCategoryIds.map(
-                    id => categoryMap.get(parseInt(id)) || ''
-                  )
-                : [t('Names.selectAllBtn')]
-            }
-            onSelect={handleCategorySelect}
-            width={298}
-          />
-          <SearchInput
-            onSearch={query => setGlobalFilter(query)}
-            text={'Names.searchBtn'}
-            options={subcategoryNames}
-          />
-        </div>
+        {(hasCreateSubcategories || hasReadSubcategories) && (
+          <div className={styles.buttons_wrap}>
+            {hasCreateSubcategories && (
+              <>
+                <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
+                <WhiteBtn
+                  onClick={toggleCreateNamesSet}
+                  text={'Names.addSetBtn'}
+                  icon="icon-add-color"
+                  iconFill="icon-add-color"
+                />
+              </>
+            )}
+            {hasReadCategories && (
+              <CustomSelect
+                label={t('Names.selectText')}
+                options={categoryOptions}
+                selected={
+                  selectedCategoryIds.length > 0
+                    ? selectedCategoryIds.map(
+                        id => categoryMap.get(parseInt(id)) || ''
+                      )
+                    : [t('Names.selectAllBtn')]
+                }
+                onSelect={handleCategorySelect}
+                width={298}
+              />
+            )}
+            <SearchInput
+              onSearch={query => setGlobalFilter(query)}
+              text={'Names.searchBtn'}
+              options={subcategoryNames}
+            />
+          </div>
+        )}
+        {!hasReadSubcategories && hasUpdateSubcategories && (
+          <div className={styles.buttons_wrap}>
+            {hasReadCategories && (
+              <CustomSelect
+                label={t('Names.selectText')}
+                options={categoryOptions}
+                selected={
+                  selectedCategoryIds.length > 0
+                    ? selectedCategoryIds.map(
+                        id => categoryMap.get(parseInt(id)) || ''
+                      )
+                    : [t('Names.selectAllBtn')]
+                }
+                onSelect={handleCategorySelect}
+                width={298}
+              />
+            )}
+            <SearchInput
+              onSearch={query => setGlobalFilter(query)}
+              text={'Names.searchBtn'}
+              options={subcategoryNames}
+            />
+          </div>
+        )}
       </div>
       <div className={styles.table_container}>
         {showLoader && <Loader error={error} />}

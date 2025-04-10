@@ -26,6 +26,7 @@ import CreateCategory from '../ModalComponent/CreateCategory/CreateCategory';
 import UpdateCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
 import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
+import { useUsersStore } from '@/store/usersStore';
 import { PaginationState } from '@/types/componentsTypes';
 import { Category } from '@/types/salesTypes';
 import { toast } from 'react-toastify';
@@ -34,9 +35,21 @@ const CATEGORY_PAGINATION_KEY = 'categoryPaginationSettings';
 
 export default function CategorySection() {
   const t = useTranslations();
+  const { currentUser } = useUsersStore();
   const { categories, fetchCategories, loading, error } = useCategoriesStore();
   const didFetchRef = useRef(false);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+
+  // Логіка прав доступу для "Категории" (function_id: 2)
+  const isFunctionsEmpty = currentUser?.functions.length === 0; // Перевіряємо, чи порожній масив functions
+  const categoryPermissions =
+    currentUser?.functions.find(
+      func => func.function_id === 2 && func.function_name === 'Категории'
+    )?.operations || [];
+  const hasCreate = isFunctionsEmpty || categoryPermissions.includes('CREATE'); // CREATE доступний, якщо functions порожній або є CREATE
+  const hasRead =
+    isFunctionsEmpty || categoryPermissions.includes('READ') || hasCreate; // READ доступний, якщо functions порожній або є READ чи CREATE
+  const hasUpdate = currentUser?.is_admin || false; // UPDATE доступний лише для адмінів, незалежно від functions
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,7 +68,7 @@ export default function CategorySection() {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [fetchCategories, categories, loading, error]);
+  }, [fetchCategories, categories, loading, error, t]);
 
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [isOpenCreate, setIsOpenCreate] = React.useState(false);
@@ -121,30 +134,41 @@ export default function CategorySection() {
     }
   }, [categories]);
 
-  const columns: ColumnDef<Category>[] = [
-    { accessorKey: 'account_category_id', header: 'ID' },
-    { accessorKey: 'account_category_name', header: t('Category.table.name') },
-    { accessorKey: 'description', header: t('Category.table.description') },
-    {
-      id: 'actions',
-      header: t('Category.table.actions'),
-      cell: ({ row }) => (
-        <WhiteBtn
-          onClick={() =>
-            openUpdateModal(
-              row.original.account_category_id,
-              row.original.account_category_name,
-              row.original.description || '',
-              row.original.is_set_category || false
-            )
-          }
-          text={'Category.table.editBtn'}
-          icon="icon-edit-pencil"
-          iconFill="icon-edit-pencil"
-        />
-      ),
-    },
-  ];
+  const columns: ColumnDef<Category>[] = useMemo(() => {
+    const baseColumns: ColumnDef<Category>[] = [
+      { accessorKey: 'account_category_id', header: 'ID' },
+      {
+        accessorKey: 'account_category_name',
+        header: t('Category.table.name'),
+      },
+      { accessorKey: 'description', header: t('Category.table.description') },
+    ];
+
+    // Додаємо колонку "Actions" лише якщо користувач є адміном (hasUpdate)
+    if (hasUpdate) {
+      baseColumns.push({
+        id: 'actions',
+        header: t('Category.table.actions'),
+        cell: ({ row }) => (
+          <WhiteBtn
+            onClick={() =>
+              openUpdateModal(
+                row.original.account_category_id,
+                row.original.account_category_name,
+                row.original.description || '',
+                row.original.is_set_category || false
+              )
+            }
+            text={'Category.table.editBtn'}
+            icon="icon-edit-pencil"
+            iconFill="icon-edit-pencil"
+          />
+        ),
+      });
+    }
+
+    return baseColumns;
+  }, [t, hasUpdate]);
 
   const table = useReactTable({
     data,
@@ -174,14 +198,28 @@ export default function CategorySection() {
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('Sidebar.accParMenu.category')}</h2>
         <p className={styles.header_text}>{t('Category.headerText')}</p>
-        <div className={styles.buttons_wrap}>
-          <AddBtn onClick={toggleCreateModal} text={'Category.addBtn'} />
-          <SearchInput
-            onSearch={query => setGlobalFilter(query)}
-            text={'Category.searchBtn'}
-            options={categoryNames}
-          />
-        </div>
+        {(hasCreate || hasRead) && ( // Показуємо контейнер, якщо є CREATE або READ
+          <div className={styles.buttons_wrap}>
+            {hasCreate && ( // Показуємо кнопку створення лише якщо є CREATE
+              <AddBtn onClick={toggleCreateModal} text={'Category.addBtn'} />
+            )}
+            <SearchInput
+              onSearch={query => setGlobalFilter(query)}
+              text={'Category.searchBtn'}
+              options={categoryNames}
+            />
+          </div>
+        )}
+        {!hasRead &&
+          hasUpdate && ( // Якщо немає READ, але є UPDATE (адмін)
+            <div className={styles.buttons_wrap}>
+              <SearchInput
+                onSearch={query => setGlobalFilter(query)}
+                text={'Category.searchBtn'}
+                options={categoryNames}
+              />
+            </div>
+          )}
       </div>
       <div className={styles.table_container}>
         {showLoader && <Loader error={error} />}

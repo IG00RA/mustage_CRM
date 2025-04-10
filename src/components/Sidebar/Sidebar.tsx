@@ -164,18 +164,14 @@ export default function Sidebar() {
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
 
   // Показуємо лоадер, якщо дані користувача завантажуються або ще не визначені
-  if (loading) {
+  if (loading ||(isInitialLoad && !currentUser) ) {
     return (
       <aside className={styles.sidebar}>
         <div className={styles.loader}>Loading...</div>
       </aside>
     );
   }
-
-  if (isInitialLoad && !currentUser) {
-    return;
-  }
-
+  
   // Якщо користувач скинутий (null), не показуємо меню
   if (!currentUser) {
     return (

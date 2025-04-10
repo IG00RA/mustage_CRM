@@ -18,6 +18,7 @@ import { Account, RangeType } from '@/types/salesTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
+import { useUsersStore } from '@/store/usersStore';
 import { PaginationState } from '@/types/componentsTypes';
 import { FilterSection } from './FilterSection/FilterSection';
 import { TableSection } from './TableSection/TableSection';
@@ -38,6 +39,7 @@ const settingsOptions = [
 
 export default function AllAccountsSection() {
   const t = useTranslations();
+  const { currentUser } = useUsersStore();
 
   const { accounts, fetchAccounts, error: accountsError } = useAccountsStore();
   const {
@@ -48,6 +50,21 @@ export default function AllAccountsSection() {
     error: categoriesError,
   } = useCategoriesStore();
   const { sellers, fetchSellers, error: sellersError } = useSellersStore();
+
+  // Логіка прав доступу
+  const isFunctionsEmpty = currentUser?.functions.length === 0;
+  const categoryPermissions =
+    currentUser?.functions.find(
+      func => func.function_id === 2 && func.function_name === 'Категории'
+    )?.operations || [];
+  const subcategoryPermissions =
+    currentUser?.functions.find(
+      func => func.function_id === 3 && func.function_name === 'Подкатегории'
+    )?.operations || [];
+  const hasReadCategories =
+    isFunctionsEmpty || categoryPermissions.includes('READ');
+  const hasReadSubcategories =
+    isFunctionsEmpty || subcategoryPermissions.includes('READ');
 
   const error =
     [accountsError, categoriesError, sellersError].filter(Boolean).join('; ') ||
@@ -106,11 +123,13 @@ export default function AllAccountsSection() {
     async (updatedPagination: PaginationState, updateState = true) => {
       const fetchParams: any = {
         subcategory_ids:
-          selectedSubcategoryIds.length > 0
+          hasReadSubcategories && selectedSubcategoryIds.length > 0
             ? selectedSubcategoryIds.map(Number)
             : undefined,
         category_ids:
-          selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
+          hasReadCategories &&
+          selectedSubcategoryIds.length === 0 &&
+          selectedCategoryIds.length > 0
             ? selectedCategoryIds.map(Number)
             : undefined,
         status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
@@ -120,7 +139,7 @@ export default function AllAccountsSection() {
             : undefined,
         limit: updatedPagination.pageSize,
         offset: updatedPagination.pageIndex * updatedPagination.pageSize,
-        like_query: globalFilter.length >= 2 ? globalFilter : undefined, // Додаємо like_query
+        like_query: globalFilter.length >= 2 ? globalFilter : undefined,
       };
 
       if (
@@ -175,6 +194,8 @@ export default function AllAccountsSection() {
       globalFilter,
       fetchAccounts,
       t,
+      hasReadCategories,
+      hasReadSubcategories,
     ]
   );
 
@@ -184,16 +205,14 @@ export default function AllAccountsSection() {
         loadAccounts(pagination);
         return;
       }
-      loadAccounts(pagination); // Використовуємо loadAccounts із like_query
+      loadAccounts(pagination);
     }, 300),
     [loadAccounts, pagination]
   );
 
   const handleSearch = useCallback(
     (query: string) => {
-      if (query === globalFilter) {
-        return; // Уникаємо повторних викликів із тим самим запитом
-      }
+      if (query === globalFilter) return;
       setGlobalFilter(query);
       debouncedLoadAccounts(query);
     },
@@ -207,16 +226,15 @@ export default function AllAccountsSection() {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      if (!isInitialLoad) {
-        return;
-      }
-      await Promise.all([
-        fetchCategories(),
-        fetchSubcategories(),
+      if (!isInitialLoad) return;
+      const promises = [
         fetchSellers(),
         fetchTotalAllRows(),
         loadAccounts(pagination),
-      ]);
+      ];
+      if (hasReadCategories) promises.unshift(fetchCategories());
+      if (hasReadSubcategories) promises.unshift(fetchSubcategories());
+      await Promise.all(promises);
       setIsInitialLoad(false);
     };
     loadInitialData();
@@ -228,6 +246,8 @@ export default function AllAccountsSection() {
     loadAccounts,
     pagination,
     isInitialLoad,
+    hasReadCategories,
+    hasReadSubcategories,
   ]);
 
   useEffect(() => {
@@ -411,11 +431,13 @@ export default function AllAccountsSection() {
 
     const fetchParams: any = {
       subcategory_ids:
-        selectedSubcategoryIds.length > 0
+        hasReadSubcategories && selectedSubcategoryIds.length > 0
           ? selectedSubcategoryIds.map(Number)
           : undefined,
       category_ids:
-        selectedSubcategoryIds.length === 0 && selectedCategoryIds.length > 0
+        hasReadCategories &&
+        selectedSubcategoryIds.length === 0 &&
+        selectedCategoryIds.length > 0
           ? selectedCategoryIds.map(Number)
           : undefined,
       status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
@@ -424,7 +446,7 @@ export default function AllAccountsSection() {
           ? selectedSellerIds.map(Number)
           : undefined,
       limit: totalRows,
-      like_query: globalFilter.length >= 2 ? globalFilter : undefined, // Додаємо like_query
+      like_query: globalFilter.length >= 2 ? globalFilter : undefined,
     };
 
     if (
@@ -490,16 +512,20 @@ export default function AllAccountsSection() {
   const categoryOptions = useMemo(
     () => [
       t('AllAccounts.selects.allCategories'),
-      ...categories.map(cat => cat.account_category_name),
+      ...(hasReadCategories
+        ? categories.map(cat => cat.account_category_name)
+        : []),
     ],
-    [categories, t]
+    [categories, t, hasReadCategories]
   );
   const subcategoryOptions = useMemo(
     () => [
       t('AllAccounts.selects.allNames'),
-      ...subcategories.map(sub => sub.account_subcategory_name),
+      ...(hasReadSubcategories
+        ? subcategories.map(sub => sub.account_subcategory_name)
+        : []),
     ],
-    [subcategories, t]
+    [subcategories, t, hasReadSubcategories]
   );
   const statusOptionsRaw = ['SOLD', 'NOT SOLD', 'REPLACED', 'EXCLUDED'];
   const statusOptions = useMemo(
@@ -742,6 +768,8 @@ export default function AllAccountsSection() {
           subcategoryMap={subcategoryMap}
           sellerMap={sellerMap}
           t={t}
+          hasReadCategories={hasReadCategories}
+          hasReadSubcategories={hasReadSubcategories}
         />
       </div>
       <TableSection
