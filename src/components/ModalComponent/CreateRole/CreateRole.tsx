@@ -51,13 +51,11 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         subcategories: number[];
         isExpanded: boolean;
         isNamesChecked: boolean;
+        selectedCategory: string;
+        selectedSubcategories: string[];
       }
     >
   >({});
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
-    []
-  );
 
   const {
     register,
@@ -75,7 +73,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         const funcs = await fetchWithErrorHandling<FunctionType[]>(
           ENDPOINTS.CRM_FUNCTIONS,
           { method: 'GET', headers: getAuthHeaders(), credentials: 'include' },
-          state => {}
+          () => {}
         );
         setFunctions(funcs);
 
@@ -153,6 +151,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           subcategories: [],
           isExpanded: false,
           isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
         }),
         isExpanded: !prev[functionId]?.isExpanded,
       },
@@ -166,6 +166,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         subcategories: [],
         isExpanded: false,
         isNamesChecked: false,
+        selectedCategory: '',
+        selectedSubcategories: [],
       };
       const operations = current.operations.includes(operation)
         ? current.operations.filter(op => op !== operation)
@@ -206,14 +208,55 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           subcategories: [],
           isExpanded: false,
           isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
         }),
         isNamesChecked: !prev[functionId]?.isNamesChecked,
       },
     }));
   };
 
+  const handleCategoryChange = (functionId: number, category: string) => {
+    setRoleFunctions(prev => ({
+      ...prev,
+      [functionId]: {
+        ...(prev[functionId] || {
+          operations: [],
+          subcategories: [],
+          isExpanded: false,
+          isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
+        }),
+        selectedCategory: category,
+        selectedSubcategories: [],
+      },
+    }));
+  };
+
+  const handleSubcategoriesChange = (
+    functionId: number,
+    subcategories: string[]
+  ) => {
+    setRoleFunctions(prev => ({
+      ...prev,
+      [functionId]: {
+        ...(prev[functionId] || {
+          operations: [],
+          subcategories: [],
+          isExpanded: false,
+          isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
+        }),
+        selectedSubcategories: subcategories,
+      },
+    }));
+  };
+
   const handleAddSubcategories = (functionId: number) => {
-    if (selectedSubcategories.length === 0) {
+    const config = roleFunctions[functionId];
+    if (!config || config.selectedSubcategories.length === 0) {
       toast.error(
         t('RoleSection.modalCreate.noSubcategoriesError') ||
           'Please select subcategories'
@@ -223,28 +266,23 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
 
     const subcatIds = subcategories
       .filter(sub =>
-        selectedSubcategories.includes(sub.account_subcategory_name)
+        config.selectedSubcategories.includes(sub.account_subcategory_name)
       )
       .map(sub => sub.account_subcategory_id);
 
     setRoleFunctions(prev => ({
       ...prev,
       [functionId]: {
-        ...(prev[functionId] || {
-          operations: [],
-          subcategories: [],
-          isExpanded: false,
-          isNamesChecked: false,
-        }),
+        ...prev[functionId],
         subcategories: [
           ...(prev[functionId]?.subcategories || []),
           ...subcatIds.filter(
             id => !(prev[functionId]?.subcategories || []).includes(id)
           ),
         ],
+        selectedSubcategories: [],
       },
     }));
-    setSelectedSubcategories([]);
   };
 
   const handleRemoveSubcategory = (functionId: number, subId: number) => {
@@ -256,6 +294,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           subcategories: [],
           isExpanded: false,
           isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
         }),
         subcategories: (prev[functionId]?.subcategories || []).filter(
           id => id !== subId
@@ -265,7 +305,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
   };
 
   const handleAddAllSubcategories = (functionId: number) => {
-    if (!selectedCategory) {
+    const config = roleFunctions[functionId];
+    if (!config || !config.selectedCategory) {
       toast.error(
         t('RoleSection.modalCreate.noCategoryError') ||
           'Please select a category'
@@ -276,20 +317,16 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     const allSubcatIds = subcategories
       .filter(
         sub =>
-          categories.find(cat => cat.account_category_name === selectedCategory)
-            ?.account_category_id === sub.account_category_id
+          categories.find(
+            cat => cat.account_category_name === config.selectedCategory
+          )?.account_category_id === sub.account_category_id
       )
       .map(sub => sub.account_subcategory_id);
 
     setRoleFunctions(prev => ({
       ...prev,
       [functionId]: {
-        ...(prev[functionId] || {
-          operations: [],
-          subcategories: [],
-          isExpanded: false,
-          isNamesChecked: false,
-        }),
+        ...prev[functionId],
         subcategories: [
           ...(prev[functionId]?.subcategories || []),
           ...allSubcatIds.filter(
@@ -301,14 +338,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
   };
 
   const categoryOptions = categories.map(cat => cat.account_category_name);
-  const subcategoryOptions = subcategories
-    .filter(sub =>
-      selectedCategory
-        ? categories.find(cat => cat.account_category_name === selectedCategory)
-            ?.account_category_id === sub.account_category_id
-        : true
-    )
-    .map(sub => sub.account_subcategory_name);
 
   return (
     <form
@@ -376,8 +405,25 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
               subcategories: [],
               isExpanded: false,
               isNamesChecked: false,
+              selectedCategory: '',
+              selectedSubcategories: [],
             };
             const isExpanded = config.isExpanded;
+
+            const subcategoryOptions = subcategories
+              .filter(sub =>
+                config.selectedCategory
+                  ? categories.find(
+                      cat =>
+                        cat.account_category_name === config.selectedCategory
+                    )?.account_category_id === sub.account_category_id
+                  : true
+              )
+              .filter(
+                sub =>
+                  !config.subcategories.includes(sub.account_subcategory_id)
+              )
+              .map(sub => sub.account_subcategory_name);
 
             return (
               <div key={func.function_id} className={ownStyles.functionRow}>
@@ -428,15 +474,20 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                               ...categoryOptions,
                             ]}
                             selected={
-                              selectedCategory ? [selectedCategory] : []
+                              config.selectedCategory
+                                ? [config.selectedCategory]
+                                : []
                             }
-                            onSelect={values => {
-                              setSelectedCategory(values[0] || '');
-                            }}
+                            onSelect={values =>
+                              handleCategoryChange(
+                                func.function_id,
+                                values[0] || ''
+                              )
+                            }
                             multiSelections={false}
                           />
                         </div>
-                        {selectedCategory && (
+                        {config.selectedCategory && (
                           <>
                             <div
                               className={`${styles.field} ${ownStyles.fieldBottom}`}
@@ -457,8 +508,13 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                                   t('UserSection.modalRoles.subCategoryAll'),
                                   ...subcategoryOptions,
                                 ]}
-                                selected={selectedSubcategories}
-                                onSelect={setSelectedSubcategories}
+                                selected={config.selectedSubcategories}
+                                onSelect={values =>
+                                  handleSubcategoriesChange(
+                                    func.function_id,
+                                    values
+                                  )
+                                }
                                 multiSelections={true}
                               />
                             </div>

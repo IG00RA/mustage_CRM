@@ -15,6 +15,7 @@ import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import UserRoles, { UserFunction } from '../UserRoles/UserRoles';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
+import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
@@ -29,6 +30,7 @@ interface FormData {
   tgId: number;
   tgNick: string;
   email?: string;
+  roleId?: number;
 }
 
 interface CreateUserProps {
@@ -41,6 +43,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   const { fetchCategories, fetchSubcategories, categories, subcategories } =
     useCategoriesStore();
   const { createUser, fetchUsers, loading } = useUsersStore();
+  const { fetchRoles, roles } = useRolesStore();
 
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -52,6 +55,9 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   const [userFunctions, setUserFunctions] = useState<UserFunction[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(
+    undefined
+  );
   const hasLoadedRef = useRef(false);
 
   const {
@@ -72,11 +78,12 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
         try {
           if (categories.length === 0) await fetchCategories();
           if (subcategories.length === 0) await fetchSubcategories();
+          await fetchRoles({ limit: 100 });
           hasLoadedRef.current = true;
         } catch {
           toast.error(
             t('UserSection.modalCreate.dataLoadError') ||
-              'Failed to load categories/subcategories'
+              'Failed to load initial data'
           );
         }
       }
@@ -87,10 +94,18 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     fetchCategories,
     fetchSubcategories,
     subcategories.length,
+    fetchRoles,
     t,
   ]);
 
   const onSubmit: SubmitHandler<FormData> = async data => {
+    if (!selectedRoleId) {
+      toast.error(
+        t('UserSection.modalCreate.roleRequired') || 'Please select a role'
+      );
+      return;
+    }
+
     const subcatIds = subcategories
       .filter(sub => addedSubcategories.includes(sub.account_subcategory_name))
       .map(sub => sub.account_subcategory_id);
@@ -104,8 +119,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       is_referral: false,
       telegram_id: data.tgId,
       telegram_username: data.tgNick,
-      // role_id,
-      functions: userFunctions,
+      role_id: selectedRoleId,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
 
@@ -170,6 +184,31 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     );
   };
 
+  const handleAddAllSubcategories = () => {
+    const filteredSubcategories = subcategories
+      .filter(sub => {
+        if (
+          selectedCategories.includes(t('UserSection.modalCreate.categoryAll'))
+        ) {
+          return true;
+        }
+        return categories
+          .filter(cat => selectedCategories.includes(cat.account_category_name))
+          .some(cat => cat.account_category_id === sub.account_category_id);
+      })
+      .map(sub => sub.account_subcategory_name)
+      .filter(sub => !addedSubcategories.includes(sub)); // Exclude already added subcategories
+
+    setAddedSubcategories(prev => [
+      ...prev,
+      ...filteredSubcategories.filter(sub => !prev.includes(sub)),
+    ]);
+    toast.success(
+      t('UserSection.modalCreate.subcategoriesAdded') ||
+        'All subcategories added successfully'
+    );
+  };
+
   const handleRemoveSubcategory = (subcategory: string) => {
     setAddedSubcategories(prev => prev.filter(sub => sub !== subcategory));
   };
@@ -197,8 +236,11 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
           .filter(cat => selectedCategories.includes(cat.account_category_name))
           .some(cat => cat.account_category_id === sub.account_category_id);
       })
-      .map(sub => sub.account_subcategory_name),
+      .map(sub => sub.account_subcategory_name)
+      .filter(sub => !addedSubcategories.includes(sub)), // Filter out already added subcategories
   ];
+
+  const roleOptions = roles.map(role => role.name);
 
   const handleCategorySelect = (values: string[]) => {
     if (values.includes(t('UserSection.modalCreate.categoryAll'))) {
@@ -208,6 +250,30 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     }
     setSelectedSubcategories([]);
   };
+
+  const handleRoleSelect = (values: string[]) => {
+    const selectedValue = values[0];
+    if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
+      setSelectedRoleId(undefined);
+    } else {
+      const selectedRole = roles.find(role => role.name === selectedValue);
+      setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
+    }
+  };
+
+  const handleNotificationsToggle = () => {
+    const newValue = !isNotificationsEnabled;
+    setIsNotificationsEnabled(newValue);
+    if (!newValue) {
+      setSelectedCategories([]);
+      setSelectedSubcategories([]);
+      setAddedSubcategories([]);
+    }
+  };
+
+  const isAddAllSubcategoriesEnabled =
+    selectedCategories.length > 0 &&
+    !selectedCategories.includes(t('UserSection.modalCreate.categoryAll'));
 
   return (
     <>
@@ -346,6 +412,25 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
         </div>
         <div className={styles.field}>
           <label className={styles.label}>
+            {t('UserSection.modalCreate.job')}
+          </label>
+          <CustomSelect
+            options={
+              roleOptions.length > 0
+                ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
+                : [t('UserSection.modalCreate.jobSelect')]
+            }
+            selected={
+              selectedRoleId
+                ? [roles.find(r => r.role_id === selectedRoleId)!.name]
+                : []
+            }
+            onSelect={handleRoleSelect}
+            multiSelections={false}
+          />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>
             {t('UserSection.modalCreate.tgId')}
           </label>
           <input
@@ -398,21 +483,11 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             <p className={styles.error}>{errors.email.message}</p>
           )}
         </div>
-        <div className={styles.field}>
-          <label className={styles.label}>
-            {t('UserSection.modalCreate.job')}
-          </label>
-          <CustomSelect
-            options={[t('UserSection.modalCreate.jobSelect')]}
-            selected={[]}
-            onSelect={values => {}}
-            multiSelections={false}
-          />
-        </div>
+
         <div className={styles.field}>
           <CustomCheckbox
             checked={isNotificationsEnabled}
-            onChange={() => setIsNotificationsEnabled(!isNotificationsEnabled)}
+            onChange={handleNotificationsToggle}
             label={t('UserSection.modalCreate.notifSettings')}
           />
         </div>
@@ -445,11 +520,20 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
               />
             </div>
             <div className={`${styles.field} ${ownStyles.field}`}>
-              <WhiteBtn
-                onClick={handleAddSubcategories}
-                text={'UserSection.modalCreate.namesBtn'}
-                icon="icon-add-color"
-              />
+              <div className={ownStyles.checkboxWrapper}>
+                <WhiteBtn
+                  onClick={handleAddSubcategories}
+                  text={'UserSection.modalCreate.namesBtn'}
+                  icon="icon-add-color"
+                />
+                {isAddAllSubcategoriesEnabled && (
+                  <WhiteBtn
+                    onClick={handleAddAllSubcategories}
+                    text={'UserSection.modalCreate.addAllSubcategoriesBtn'}
+                    icon="icon-add-color"
+                  />
+                )}
+              </div>
             </div>
             <div className={styles.field}>
               <label className={styles.label}>

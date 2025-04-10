@@ -37,7 +37,7 @@ interface CreateUserRequest {
   telegram_id: number;
   telegram_username: string;
   role_id: number;
-  functions: {
+  functions?: {
     function_id: number;
     operations: string[];
     subcategories: number[];
