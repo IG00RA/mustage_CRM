@@ -8,6 +8,15 @@
   } */
 }
 
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #a9a9c1;
+}
+
 .logo_wrap {
   display: flex;
   gap: 12px;
