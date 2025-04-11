@@ -4,7 +4,7 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './EditUser.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import { useTranslations } from 'next-intl';
@@ -12,9 +12,10 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect, useRef } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import UserRoles from '../UserRoles/UserRoles';
+import UserRoles, { UserFunction } from '../UserRoles/UserRoles';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore, User } from '@/store/usersStore';
+import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
@@ -28,6 +29,7 @@ interface FormData {
   tgId: number;
   tgNick: string;
   email?: string;
+  roleId?: number;
 }
 
 interface EditUserProps {
@@ -36,24 +38,17 @@ interface EditUserProps {
   pagination: PaginationState;
 }
 
-interface UserFunction {
-  function_id: number;
-  operations: string[];
-  subcategories: number[];
-}
-
 export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   const t = useTranslations('');
   const { fetchCategories, fetchSubcategories, categories, subcategories } =
     useCategoriesStore();
   const { editUser, fetchUsers, loading } = useUsersStore();
+  const { fetchRoles, roles } = useRolesStore();
 
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState<boolean>(
     !!user.notifications_for_subcategories?.length
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     []
   );
@@ -65,6 +60,11 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       operations: f.operations,
       subcategories: f.subcategories || [],
     }))
+  );
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(
+    user?.role?.role_id
   );
   const hasLoadedRef = useRef(false);
 
@@ -83,6 +83,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       tgNick: user.telegram_username,
       email: user.email,
     },
+    mode: 'onChange',
   });
 
   const password = watch('pass');
@@ -93,6 +94,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
         try {
           if (categories.length === 0) await fetchCategories();
           if (subcategories.length === 0) await fetchSubcategories();
+          await fetchRoles({ limit: 100 });
 
           if (user.notifications_for_subcategories) {
             const initialSubs = subcategories
@@ -102,9 +104,10 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
                 )
               )
               .map(sub => sub.account_subcategory_name);
-            setAddedSubcategories(initialSubs);
+            // Ensure uniqueness by converting to Set and back to array
+            setAddedSubcategories([...new Set(initialSubs)]);
           }
-        } catch (error) {
+        } catch {
           toast.error(
             t('UserSection.modalCreate.dataLoadError') || 'Failed to load data'
           );
@@ -114,9 +117,24 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       }
     };
     loadInitialData();
-  }, [user, categories, subcategories, fetchCategories, fetchSubcategories, t]);
+  }, [
+    user,
+    categories,
+    subcategories,
+    fetchCategories,
+    fetchSubcategories,
+    fetchRoles,
+    t,
+  ]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async data => {
+    if (!selectedRoleId) {
+      toast.error(
+        t('UserSection.modalCreate.roleRequired') || 'Please select a role'
+      );
+      return;
+    }
+
     const subcatIds = subcategories
       .filter(sub => addedSubcategories.includes(sub.account_subcategory_name))
       .map(sub => sub.account_subcategory_id);
@@ -130,7 +148,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       telegram_id: Number(data.tgId),
       telegram_username: data.tgNick,
       email: data.email,
-      functions: userFunctions,
+      role_id: selectedRoleId,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
 
@@ -144,7 +162,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
         offset: pagination.pageIndex,
       });
       onClose();
-    } catch (error) {
+    } catch {
       toast.error(
         t('UserSection.modalEdit.errorMessage') || 'Failed to update user'
       );
@@ -179,12 +197,41 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       : selectedSubcategories;
 
     setAddedSubcategories(prev => [
-      ...prev,
-      ...subcategoriesToAdd.filter(sub => !prev.includes(sub)),
+      ...new Set([
+        ...prev,
+        ...subcategoriesToAdd.filter(sub => !prev.includes(sub)),
+      ]),
     ]);
     setSelectedSubcategories([]);
     toast.success(
       t('UserSection.modalCreate.subcategoriesAdded') || 'Subcategories added'
+    );
+  };
+
+  const handleAddAllSubcategories = () => {
+    const filteredSubcategories = subcategories
+      .filter(sub => {
+        if (
+          selectedCategories.includes(t('UserSection.modalCreate.categoryAll'))
+        ) {
+          return true;
+        }
+        return categories
+          .filter(cat => selectedCategories.includes(cat.account_category_name))
+          .some(cat => cat.account_category_id === sub.account_category_id);
+      })
+      .map(sub => sub.account_subcategory_name)
+      .filter(sub => !addedSubcategories.includes(sub));
+
+    setAddedSubcategories(prev => [
+      ...new Set([
+        ...prev,
+        ...filteredSubcategories.filter(sub => !prev.includes(sub)),
+      ]),
+    ]);
+    toast.success(
+      t('UserSection.modalCreate.subcategoriesAdded') ||
+        'All subcategories added successfully'
     );
   };
 
@@ -213,8 +260,11 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
           .filter(cat => selectedCategories.includes(cat.account_category_name))
           .some(cat => cat.account_category_id === sub.account_category_id);
       })
-      .map(sub => sub.account_subcategory_name),
+      .map(sub => sub.account_subcategory_name)
+      .filter(sub => !addedSubcategories.includes(sub)),
   ];
+
+  const roleOptions = roles.map(role => role.name);
 
   const handleCategorySelect = (values: string[]) => {
     if (values.includes(t('UserSection.modalCreate.categoryAll'))) {
@@ -225,12 +275,66 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     setSelectedSubcategories([]);
   };
 
+  const handleRoleSelect = (values: string[]) => {
+    const selectedValue = values[0];
+    if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
+      setSelectedRoleId(undefined);
+    } else {
+      const selectedRole = roles.find(role => role.name === selectedValue);
+      setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
+    }
+  };
+
+  const handleNotificationsToggle = () => {
+    const newValue = !isNotificationsEnabled;
+    setIsNotificationsEnabled(newValue);
+    if (!newValue) {
+      setSelectedCategories([]);
+      setSelectedSubcategories([]);
+      setAddedSubcategories([]);
+    }
+  };
+
+  const isAddAllSubcategoriesEnabled =
+    selectedCategories.length > 0 &&
+    !selectedCategories.includes(t('UserSection.modalCreate.categoryAll'));
+
   return (
     <>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className={`${styles.form} ${ownStyles.form}`}
       >
+        <div className={styles.field}>
+          <label className={styles.label}>
+            {t('UserSection.modalCreate.name')}
+          </label>
+          <input
+            className={`${styles.input} ${
+              errors.name ? styles.input_error : ''
+            }`}
+            {...register('name', {
+              required: t('DBSettings.form.errorMessage'),
+            })}
+          />
+          {errors.name && <p className={styles.error}>{errors.name.message}</p>}
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>
+            {t('UserSection.modalCreate.secondName')}
+          </label>
+          <input
+            className={`${styles.input} ${
+              errors.secondName ? styles.input_error : ''
+            }`}
+            {...register('secondName', {
+              required: t('DBSettings.form.errorMessage'),
+            })}
+          />
+          {errors.secondName && (
+            <p className={styles.error}>{errors.secondName.message}</p>
+          )}
+        </div>
         <div className={styles.field}>
           <label className={styles.label}>
             {t('UserSection.modalCreate.login')}
@@ -305,6 +409,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
               type={showConfirmPassword ? 'text' : 'password'}
               {...register('confirmPass', {
                 validate: value =>
+                  !value ||
                   value === password ||
                   t('UserSection.modalCreate.passwordMismatch'),
               })}
@@ -327,33 +432,22 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
         </div>
         <div className={styles.field}>
           <label className={styles.label}>
-            {t('UserSection.modalCreate.name')}
+            {t('UserSection.modalCreate.job')}
           </label>
-          <input
-            className={`${styles.input} ${
-              errors.name ? styles.input_error : ''
-            }`}
-            {...register('name', {
-              required: t('DBSettings.form.errorMessage'),
-            })}
+          <CustomSelect
+            options={
+              roleOptions.length > 0
+                ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
+                : [t('UserSection.modalCreate.jobSelect')]
+            }
+            selected={
+              selectedRoleId
+                ? [roles.find(r => r.role_id === selectedRoleId)!.name]
+                : []
+            }
+            onSelect={handleRoleSelect}
+            multiSelections={false}
           />
-          {errors.name && <p className={styles.error}>{errors.name.message}</p>}
-        </div>
-        <div className={styles.field}>
-          <label className={styles.label}>
-            {t('UserSection.modalCreate.secondName')}
-          </label>
-          <input
-            className={`${styles.input} ${
-              errors.secondName ? styles.input_error : ''
-            }`}
-            {...register('secondName', {
-              required: t('DBSettings.form.errorMessage'),
-            })}
-          />
-          {errors.secondName && (
-            <p className={styles.error}>{errors.secondName.message}</p>
-          )}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>
@@ -406,13 +500,21 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             <p className={styles.error}>{errors.email.message}</p>
           )}
         </div>
-
         <div className={styles.field}>
-          <CustomCheckbox
-            checked={isNotificationsEnabled}
-            onChange={() => setIsNotificationsEnabled(!isNotificationsEnabled)}
-            label={t('UserSection.modalCreate.notifSettings')}
-          />
+          <div className={ownStyles.checkboxWrapper}>
+            <CustomCheckbox
+              checked={isNotificationsEnabled}
+              onChange={handleNotificationsToggle}
+              label={t('UserSection.modalCreate.notifSettings')}
+            />
+            {isAddAllSubcategoriesEnabled && (
+              <WhiteBtn
+                onClick={handleAddAllSubcategories}
+                text={'UserSection.modalCreate.addAllSubcategoriesBtn'}
+                icon="icon-add-color"
+              />
+            )}
+          </div>
         </div>
 
         {isNotificationsEnabled && (
@@ -460,14 +562,6 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             </div>
           </>
         )}
-
-        <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
-          <WhiteBtn
-            onClick={toggleRolesModal}
-            text={'UserSection.modalCreate.rolesBtn'}
-            icon="icon-settings-btn"
-          />
-        </div>
 
         <div className={styles.buttons_wrap}>
           <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleClose} />

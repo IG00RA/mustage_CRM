@@ -5,7 +5,7 @@ import Icon from '@/helpers/Icon';
 
 interface CustomButtonsInputProps {
   buttons: string[];
-  onRemove: (label: string, index: number) => void; // Оновлена сигнатура
+  onRemove: (label: string) => void; // Simplified to only pass the label
 }
 
 export default function CustomButtonsInput({
@@ -15,12 +15,12 @@ export default function CustomButtonsInput({
   return (
     <div className={styles.container}>
       {buttons?.map((btn, index) => (
-        <div key={btn} className={styles.button}>
+        <div key={`${btn}-${index}`} className={styles.button}>
           {btn}
           <button
             type="button"
             className={styles.close}
-            onClick={() => onRemove(btn, index)} // Передаємо label і index
+            onClick={() => onRemove(btn)}
           >
             <Icon
               name="icon-close-small"

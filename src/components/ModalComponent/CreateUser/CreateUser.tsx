@@ -139,10 +139,15 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       });
       reset();
       onClose();
-    } catch {
-      toast.error(
-        t('UserSection.modalCreate.errorMessage') || 'Failed to create user'
-      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'Such user already exists'
+      ) {
+        toast.error(t('UserSection.modalCreate.errorMessageUserExist'));
+      } else {
+        toast.error(t('UserSection.modalCreate.errorMessage'));
+      }
     }
   };
 

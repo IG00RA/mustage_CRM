@@ -24,7 +24,7 @@
 }
 
 .form {
-  min-width: 580px;
+  width: 600px;
 }
 
 .inputWrapper {
@@ -48,4 +48,10 @@
   color: #666;
   padding: 0;
   font-size: 12px;
+}
+
+.checkboxWrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
