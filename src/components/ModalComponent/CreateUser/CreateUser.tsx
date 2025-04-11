@@ -19,6 +19,7 @@ import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
+import CreateRole from '../CreateRole/CreateRole';
 
 // Define interfaces
 interface FormData {
@@ -52,6 +53,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
+  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false); // New state for CreateRole modal
   const [userFunctions, setUserFunctions] = useState<UserFunction[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -202,7 +204,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
           .some(cat => cat.account_category_id === sub.account_category_id);
       })
       .map(sub => sub.account_subcategory_name)
-      .filter(sub => !addedSubcategories.includes(sub)); // Exclude already added subcategories
+      .filter(sub => !addedSubcategories.includes(sub));
 
     setAddedSubcategories(prev => [
       ...prev,
@@ -218,8 +220,20 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     setAddedSubcategories(prev => prev.filter(sub => sub !== subcategory));
   };
 
-  const toggleRolesModal = () => {
-    setIsRolesModalOpen(!isRolesModalOpen);
+  const toggleRolesModal = () => setIsRolesModalOpen(!isRolesModalOpen);
+  const toggleCreateRoleModal = () =>
+    setIsCreateRoleModalOpen(!isCreateRoleModalOpen);
+
+  const handleCreateRoleClose = async () => {
+    toggleCreateRoleModal();
+    // Refresh roles after creating a new one
+    try {
+      await fetchRoles({ limit: 100 });
+    } catch {
+      toast.error(
+        t('UserSection.modalCreate.dataLoadError') || 'Failed to refresh roles'
+      );
+    }
   };
 
   const categoryOptions = [
@@ -242,7 +256,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
           .some(cat => cat.account_category_id === sub.account_category_id);
       })
       .map(sub => sub.account_subcategory_name)
-      .filter(sub => !addedSubcategories.includes(sub)), // Filter out already added subcategories
+      .filter(sub => !addedSubcategories.includes(sub)),
   ];
 
   const roleOptions = roles.map(role => role.name);
@@ -260,6 +274,8 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     const selectedValue = values[0];
     if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
       setSelectedRoleId(undefined);
+    } else if (selectedValue === t('RoleSection.addBtn')) {
+      toggleCreateRoleModal(); // Open the CreateRole modal
     } else {
       const selectedRole = roles.find(role => role.name === selectedValue);
       setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
@@ -422,8 +438,15 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
           <CustomSelect
             options={
               roleOptions.length > 0
-                ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
-                : [t('UserSection.modalCreate.jobSelect')]
+                ? [
+                    t('UserSection.modalCreate.jobSelect'),
+                    ...roleOptions,
+                    t('RoleSection.addBtn'),
+                  ]
+                : [
+                    t('UserSection.modalCreate.jobSelect'),
+                    t('RoleSection.addBtn'),
+                  ]
             }
             selected={
               selectedRoleId
@@ -571,6 +594,14 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
         title="UserSection.modalRoles.title"
       >
         <UserRoles onRolesSubmit={handleRolesSubmit} />
+      </ModalComponent>
+
+      <ModalComponent
+        isOpen={isCreateRoleModalOpen}
+        onClose={toggleCreateRoleModal}
+        title="RoleSection.modalCreate.title"
+      >
+        <CreateRole pagination={pagination} onClose={handleCreateRoleClose} />
       </ModalComponent>
     </>
   );

@@ -120,7 +120,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
   }, [isAccessSectionOpen]);
 
   const onSubmit: SubmitHandler<FormData> = async data => {
-    // Додаємо глобальні підкатегорії до всіх функцій із операціями
     const updatedRoleFunctions = Object.fromEntries(
       Object.entries(roleFunctions).map(([functionId, config]) => {
         if (
@@ -158,6 +157,14 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           subcategories: config.subcategories,
         })),
     };
+
+    if (roleData.functions.length === 0) {
+      toast.error(
+        t('RoleSection.modalCreate.noFunctionsError') ||
+          'Please select at least one function'
+      );
+      return;
+    }
 
     try {
       await createRole(roleData);
@@ -261,6 +268,17 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         [functionId]: {
           ...current,
           isNamesChecked: newNamesChecked,
+          // Додаємо глобальні підкатегорії при увімкненні isNamesChecked
+          subcategories:
+            newNamesChecked &&
+            globalSubcategoriesConfig.subcategories.length > 0
+              ? [
+                  ...current.subcategories,
+                  ...globalSubcategoriesConfig.subcategories.filter(
+                    id => !current.subcategories.includes(id)
+                  ),
+                ]
+              : current.subcategories,
         },
       };
     });
@@ -352,6 +370,12 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
             cat => cat.account_category_name === config.selectedCategory
           )?.account_category_id === sub.account_category_id
       )
+      .filter(
+        sub =>
+          !globalSubcategoriesConfig.subcategories.includes(
+            sub.account_subcategory_id
+          )
+      ) // Виключаємо глобальні підкатегорії
       .map(sub => sub.account_subcategory_id);
 
     setRoleFunctions(prev => ({
@@ -576,6 +600,12 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                     sub =>
                       !config.subcategories.includes(sub.account_subcategory_id)
                   )
+                  .filter(
+                    sub =>
+                      !globalSubcategoriesConfig.subcategories.includes(
+                        sub.account_subcategory_id
+                      )
+                  ) // Виключаємо глобальні підкатегорії
                   .map(sub => sub.account_subcategory_name);
 
                 return (
@@ -738,7 +768,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                                         handleRemoveSubcategory(
                                           func.function_id,
                                           subId
-                                        ); // Правильне посилання
+                                        );
                                       }
                                     }}
                                   />
@@ -833,15 +863,13 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                       )}
                       onRemove={label => {
                         const subId =
-                          globalSubcategoriesConfig.subcategories.find(
-                            (id, idx) => {
-                              const subName =
-                                subcategories.find(
-                                  sub => sub.account_subcategory_id === id
-                                )?.account_subcategory_name || '';
-                              return `(READ) - ${subName}` === label;
-                            }
-                          );
+                          globalSubcategoriesConfig.subcategories.find(id => {
+                            const subName =
+                              subcategories.find(
+                                sub => sub.account_subcategory_id === id
+                              )?.account_subcategory_name || '';
+                            return `(READ) - ${subName}` === label;
+                          });
                         if (subId !== undefined) {
                           handleRemoveGlobalSubcategory(subId);
                         }

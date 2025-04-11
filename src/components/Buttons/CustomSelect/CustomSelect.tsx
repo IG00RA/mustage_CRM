@@ -100,9 +100,10 @@ export default function CustomSelect({
           {options.map((option, index) => (
             <li
               key={index}
-              className={`${styles.option_item} ${
-                selected.includes(option) ? styles.selected : ''
-              }`}
+              className={`${styles.option_item} 
+  ${selected.includes(option) ? styles.selected : ''} 
+  ${option === 'Добавить должность' ? styles.add_position : ''}
+`}
               onClick={() => handleOptionClick(option, index)}
             >
               <p className={styles.list_text}>{option}</p>

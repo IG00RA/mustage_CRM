@@ -19,6 +19,7 @@ import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
 import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
+import CreateRole from '../CreateRole/CreateRole';
 
 interface FormData {
   login: string;
@@ -54,6 +55,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
+  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false); // New state for CreateRole modal
   const [userFunctions, setUserFunctions] = useState<UserFunction[]>(
     user.functions.map(f => ({
       function_id: f.function_id,
@@ -104,7 +106,6 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
                 )
               )
               .map(sub => sub.account_subcategory_name);
-            // Ensure uniqueness by converting to Set and back to array
             setAddedSubcategories([...new Set(initialSubs)]);
           }
         } catch {
@@ -245,6 +246,19 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   };
 
   const toggleRolesModal = () => setIsRolesModalOpen(!isRolesModalOpen);
+  const toggleCreateRoleModal = () =>
+    setIsCreateRoleModalOpen(!isCreateRoleModalOpen);
+
+  const handleCreateRoleClose = async () => {
+    toggleCreateRoleModal();
+    try {
+      await fetchRoles({ limit: 100 });
+    } catch {
+      toast.error(
+        t('UserSection.modalCreate.dataLoadError') || 'Failed to refresh roles'
+      );
+    }
+  };
 
   const categoryOptions = [
     t('UserSection.modalCreate.categoryAll'),
@@ -284,6 +298,8 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     const selectedValue = values[0];
     if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
       setSelectedRoleId(undefined);
+    } else if (selectedValue === t('RoleSection.addBtn')) {
+      toggleCreateRoleModal(); // Open the CreateRole modal
     } else {
       const selectedRole = roles.find(role => role.name === selectedValue);
       setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
@@ -442,8 +458,15 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
           <CustomSelect
             options={
               roleOptions.length > 0
-                ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
-                : [t('UserSection.modalCreate.jobSelect')]
+                ? [
+                    t('UserSection.modalCreate.jobSelect'),
+                    ...roleOptions,
+                    t('RoleSection.addBtn'),
+                  ]
+                : [
+                    t('UserSection.modalCreate.jobSelect'),
+                    t('RoleSection.addBtn'),
+                  ]
             }
             selected={
               selectedRoleId
@@ -590,6 +613,14 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
           onRolesSubmit={handleRolesSubmit}
           initialFunctions={userFunctions}
         />
+      </ModalComponent>
+
+      <ModalComponent
+        isOpen={isCreateRoleModalOpen}
+        onClose={toggleCreateRoleModal}
+        title="RoleSection.modalCreate.title"
+      >
+        <CreateRole pagination={pagination} onClose={handleCreateRoleClose} />
       </ModalComponent>
     </>
   );
