@@ -35,6 +35,12 @@ interface CreateRoleProps {
   pagination: PaginationState;
 }
 
+interface GlobalSubcategoriesConfig {
+  subcategories: number[];
+  selectedCategory: string;
+  selectedSubcategories: string[];
+}
+
 export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
   const t = useTranslations('');
   const { createRole, fetchRoles, loading } = useRolesStore();
@@ -42,6 +48,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     useCategoriesStore();
 
   const [isAccessSectionOpen, setIsAccessSectionOpen] = useState(false);
+  const [isGlobalSubcategoriesOpen, setIsGlobalSubcategoriesOpen] =
+    useState(false);
   const [functions, setFunctions] = useState<FunctionType[]>([]);
   const [roleFunctions, setRoleFunctions] = useState<
     Record<
@@ -56,6 +64,12 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
       }
     >
   >({});
+  const [globalSubcategoriesConfig, setGlobalSubcategoriesConfig] =
+    useState<GlobalSubcategoriesConfig>({
+      subcategories: [],
+      selectedCategory: '',
+      selectedSubcategories: [],
+    });
 
   const {
     register,
@@ -93,18 +107,47 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     fetchSubcategories,
   ]);
 
-  // Очищення roleFunctions при вимкненні перемикача
+  // Очищення roleFunctions та globalSubcategoriesConfig при вимкненні перемикача
   useEffect(() => {
     if (!isAccessSectionOpen) {
       setRoleFunctions({});
+      setGlobalSubcategoriesConfig({
+        subcategories: [],
+        selectedCategory: '',
+        selectedSubcategories: [],
+      });
     }
   }, [isAccessSectionOpen]);
 
   const onSubmit: SubmitHandler<FormData> = async data => {
+    // Додаємо глобальні підкатегорії до всіх функцій із операціями
+    const updatedRoleFunctions = Object.fromEntries(
+      Object.entries(roleFunctions).map(([functionId, config]) => {
+        if (
+          config.operations.length > 0 &&
+          globalSubcategoriesConfig.subcategories.length > 0
+        ) {
+          return [
+            functionId,
+            {
+              ...config,
+              subcategories: [
+                ...config.subcategories,
+                ...globalSubcategoriesConfig.subcategories.filter(
+                  id => !config.subcategories.includes(id)
+                ),
+              ],
+            },
+          ];
+        }
+        return [functionId, config];
+      })
+    );
+
     const roleData = {
       name: data.name,
       description: data.description,
-      functions: Object.entries(roleFunctions)
+      functions: Object.entries(updatedRoleFunctions)
         .filter(
           ([, config]) =>
             config.operations.length > 0 || config.subcategories.length > 0
@@ -142,6 +185,9 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
 
   const toggleAccessSection = () => setIsAccessSectionOpen(prev => !prev);
 
+  const toggleGlobalSubcategoriesSection = () =>
+    setIsGlobalSubcategoriesOpen(prev => !prev);
+
   const toggleFunctionExpansion = (functionId: number) => {
     setRoleFunctions(prev => ({
       ...prev,
@@ -173,10 +219,10 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         ? current.operations.filter(op => op !== operation)
         : [...current.operations, operation];
 
-      // Автоматично додавати READ, якщо вибрано CREATE, UPDATE або DELETE, але лише якщо READ доступний
-      const func = functions.find(f => f.function_id === functionId);
       if (
-        func?.available_operations.includes('READ') &&
+        functions
+          .find(f => f.function_id === functionId)
+          ?.available_operations.includes('READ') &&
         (operation === 'CREATE' ||
           operation === 'UPDATE' ||
           operation === 'DELETE') &&
@@ -185,7 +231,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         operations.push('READ');
       }
 
-      // Якщо операцій більше немає, скидаємо isNamesChecked
       const updatedConfig = {
         ...current,
         operations,
@@ -200,20 +245,25 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
   };
 
   const handleNamesCheck = (functionId: number) => {
-    setRoleFunctions(prev => ({
-      ...prev,
-      [functionId]: {
-        ...(prev[functionId] || {
-          operations: [],
-          subcategories: [],
-          isExpanded: false,
-          isNamesChecked: false,
-          selectedCategory: '',
-          selectedSubcategories: [],
-        }),
-        isNamesChecked: !prev[functionId]?.isNamesChecked,
-      },
-    }));
+    setRoleFunctions(prev => {
+      const current = prev[functionId] || {
+        operations: [],
+        subcategories: [],
+        isExpanded: false,
+        isNamesChecked: false,
+        selectedCategory: '',
+        selectedSubcategories: [],
+      };
+      const newNamesChecked = !current.isNamesChecked;
+
+      return {
+        ...prev,
+        [functionId]: {
+          ...current,
+          isNamesChecked: newNamesChecked,
+        },
+      };
+    });
   };
 
   const handleCategoryChange = (functionId: number, category: string) => {
@@ -285,25 +335,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     }));
   };
 
-  const handleRemoveSubcategory = (functionId: number, subId: number) => {
-    setRoleFunctions(prev => ({
-      ...prev,
-      [functionId]: {
-        ...(prev[functionId] || {
-          operations: [],
-          subcategories: [],
-          isExpanded: false,
-          isNamesChecked: false,
-          selectedCategory: '',
-          selectedSubcategories: [],
-        }),
-        subcategories: (prev[functionId]?.subcategories || []).filter(
-          id => id !== subId
-        ),
-      },
-    }));
-  };
-
   const handleAddAllSubcategories = (functionId: number) => {
     const config = roleFunctions[functionId];
     if (!config || !config.selectedCategory) {
@@ -337,7 +368,123 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     }));
   };
 
+  const handleRemoveSubcategory = (functionId: number, subId: number) => {
+    setRoleFunctions(prev => ({
+      ...prev,
+      [functionId]: {
+        ...(prev[functionId] || {
+          operations: [],
+          subcategories: [],
+          isExpanded: false,
+          isNamesChecked: false,
+          selectedCategory: '',
+          selectedSubcategories: [],
+        }),
+        subcategories: (prev[functionId]?.subcategories || []).filter(
+          id => id !== subId
+        ),
+      },
+    }));
+  };
+
+  // Глобальні підкатегорії
+  const handleGlobalCategoryChange = (category: string) => {
+    setGlobalSubcategoriesConfig(prev => ({
+      ...prev,
+      selectedCategory: category,
+      selectedSubcategories: [],
+    }));
+  };
+
+  const handleGlobalSubcategoriesChange = (subcategories: string[]) => {
+    setGlobalSubcategoriesConfig(prev => ({
+      ...prev,
+      selectedSubcategories: subcategories,
+    }));
+  };
+
+  const handleAddGlobalSubcategories = () => {
+    if (globalSubcategoriesConfig.selectedSubcategories.length === 0) {
+      toast.error(
+        t('RoleSection.modalCreate.noSubcategoriesError') ||
+          'Please select subcategories'
+      );
+      return;
+    }
+
+    const subcatIds = subcategories
+      .filter(sub =>
+        globalSubcategoriesConfig.selectedSubcategories.includes(
+          sub.account_subcategory_name
+        )
+      )
+      .map(sub => sub.account_subcategory_id);
+
+    setGlobalSubcategoriesConfig(prev => ({
+      ...prev,
+      subcategories: [
+        ...prev.subcategories,
+        ...subcatIds.filter(id => !prev.subcategories.includes(id)),
+      ],
+      selectedSubcategories: [],
+    }));
+  };
+
+  const handleRemoveGlobalSubcategory = (subId: number) => {
+    setGlobalSubcategoriesConfig(prev => ({
+      ...prev,
+      subcategories: prev.subcategories.filter(id => id !== subId),
+    }));
+  };
+
+  const handleAddAllGlobalSubcategories = () => {
+    if (!globalSubcategoriesConfig.selectedCategory) {
+      toast.error(
+        t('RoleSection.modalCreate.noCategoryError') ||
+          'Please select a category'
+      );
+      return;
+    }
+
+    const allSubcatIds = subcategories
+      .filter(
+        sub =>
+          categories.find(
+            cat =>
+              cat.account_category_name ===
+              globalSubcategoriesConfig.selectedCategory
+          )?.account_category_id === sub.account_category_id
+      )
+      .map(sub => sub.account_subcategory_id);
+
+    setGlobalSubcategoriesConfig(prev => ({
+      ...prev,
+      subcategories: [
+        ...prev.subcategories,
+        ...allSubcatIds.filter(id => !prev.subcategories.includes(id)),
+      ],
+    }));
+  };
+
   const categoryOptions = categories.map(cat => cat.account_category_name);
+
+  const globalSubcategoryOptions = subcategories
+    .filter(sub =>
+      globalSubcategoriesConfig.selectedCategory
+        ? categories.find(
+            cat =>
+              cat.account_category_name ===
+              globalSubcategoriesConfig.selectedCategory
+          )?.account_category_id === sub.account_category_id
+        : true
+    )
+    .filter(
+      sub =>
+        !globalSubcategoriesConfig.subcategories.includes(
+          sub.account_subcategory_id
+        )
+    )
+    .map(sub => sub.account_subcategory_name);
 
   return (
     <form
@@ -372,195 +519,341 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           <p className={styles.error}>{errors.description.message}</p>
         )}
       </div>
-
+      <p className={ownStyles.settings_text}>
+        {t('RoleSection.modalCreate.settings')}
+      </p>
       <div className={ownStyles.accessSection}>
-        <p>{t('RoleSection.modalCreate.accSection')}</p>
-        <div className={ownStyles.switch}>
-          <input
-            type="checkbox"
-            checked={isAccessSectionOpen}
-            onChange={toggleAccessSection}
-            id="accessToggle"
-          />
-          <label
-            htmlFor="accessToggle"
-            className={ownStyles.switchLabel}
-          ></label>
-        </div>
-      </div>
-
-      {isAccessSectionOpen && (
-        <div className={ownStyles.functionsTable}>
-          <div className={ownStyles.tableHeader}>
-            <div className={ownStyles.headerCheckboxes}>
-              <span>{t('RoleSection.modalCreate.readCheck')}</span>
-              <span>{t('RoleSection.modalCreate.addCheck')}</span>
-              <span>{t('RoleSection.modalCreate.editCheck')}</span>
-              <span>{t('RoleSection.modalCreate.delCheck')}</span>
-            </div>
+        <div className={ownStyles.toggler_wrap}>
+          <p className={ownStyles.toggler_text}>
+            {t('RoleSection.modalCreate.accSection')}
+          </p>
+          <div className={ownStyles.switch}>
+            <input
+              type="checkbox"
+              checked={isAccessSectionOpen}
+              onChange={toggleAccessSection}
+              id="accessToggle"
+            />
+            <label
+              htmlFor="accessToggle"
+              className={ownStyles.switchLabel}
+            ></label>
           </div>
-          {functions.map(func => {
-            const config = roleFunctions[func.function_id] || {
-              operations: [],
-              subcategories: [],
-              isExpanded: false,
-              isNamesChecked: false,
-              selectedCategory: '',
-              selectedSubcategories: [],
-            };
-            const isExpanded = config.isExpanded;
-
-            const subcategoryOptions = subcategories
-              .filter(sub =>
-                config.selectedCategory
-                  ? categories.find(
-                      cat =>
-                        cat.account_category_name === config.selectedCategory
-                    )?.account_category_id === sub.account_category_id
-                  : true
-              )
-              .filter(
-                sub =>
-                  !config.subcategories.includes(sub.account_subcategory_id)
-              )
-              .map(sub => sub.account_subcategory_name);
-
-            return (
-              <div key={func.function_id} className={ownStyles.functionRow}>
-                <div className={ownStyles.functionName}>
-                  <span>{func.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => toggleFunctionExpansion(func.function_id)}
-                    className={ownStyles.expandButton}
-                  >
-                    <Icon
-                      name={isExpanded ? 'icon-arrow-up' : 'icon-arrow-down'}
-                      width={16}
-                      height={16}
-                    />
-                  </button>
+        </div>
+        {isAccessSectionOpen && (
+          <>
+            <div className={ownStyles.functionsTable}>
+              <div className={ownStyles.tableHeader}>
+                <div className={ownStyles.headerCheckboxes}>
+                  <span>{t('RoleSection.modalCreate.readCheck')}</span>
+                  <span>{t('RoleSection.modalCreate.addCheck')}</span>
+                  <span>{t('RoleSection.modalCreate.editCheck')}</span>
+                  <span>{t('RoleSection.modalCreate.delCheck')}</span>
                 </div>
-                <div className={ownStyles.checkboxes}>
-                  {['READ', 'CREATE', 'UPDATE', 'DELETE'].map(op => (
-                    <CustomCheckbox
-                      key={op}
-                      checked={config.operations.includes(op)}
-                      onChange={() =>
-                        handleOperationChange(func.function_id, op)
-                      }
-                      disabled={!func.available_operations.includes(op)}
-                    />
-                  ))}
-                </div>
+              </div>
+              {functions.map(func => {
+                const config = roleFunctions[func.function_id] || {
+                  operations: [],
+                  subcategories: [],
+                  isExpanded: false,
+                  isNamesChecked: false,
+                  selectedCategory: '',
+                  selectedSubcategories: [],
+                };
+                const isExpanded = config.isExpanded;
 
-                {isExpanded && (
-                  <div className={ownStyles.subcategoriesSection}>
-                    <CustomCheckbox
-                      checked={config.isNamesChecked}
-                      onChange={() => handleNamesCheck(func.function_id)}
-                      label={t('UserSection.modalRoles.namesCheck')}
-                      disabled={config.operations.length === 0}
-                    />
-                    {config.isNamesChecked && (
-                      <>
-                        <div className={styles.field}>
-                          <label className={styles.label}>
-                            {t('UserSection.modalCreate.category')}
-                          </label>
-                          <CustomSelect
-                            options={[
-                              t('UserSection.modalRoles.categoryAll'),
-                              ...categoryOptions,
-                            ]}
-                            selected={
-                              config.selectedCategory
-                                ? [config.selectedCategory]
-                                : []
-                            }
-                            onSelect={values =>
-                              handleCategoryChange(
-                                func.function_id,
-                                values[0] || ''
-                              )
-                            }
-                            multiSelections={false}
+                const subcategoryOptions = subcategories
+                  .filter(sub =>
+                    config.selectedCategory
+                      ? categories.find(
+                          cat =>
+                            cat.account_category_name ===
+                            config.selectedCategory
+                        )?.account_category_id === sub.account_category_id
+                      : true
+                  )
+                  .filter(
+                    sub =>
+                      !config.subcategories.includes(sub.account_subcategory_id)
+                  )
+                  .map(sub => sub.account_subcategory_name);
+
+                return (
+                  <div key={func.function_id} className={ownStyles.functionRow}>
+                    <div
+                      className={`${ownStyles.functionName_wrap} ${
+                        isExpanded ? ownStyles.name_open : ''
+                      }`}
+                    >
+                      <div
+                        className={ownStyles.functionName}
+                        onClick={() =>
+                          toggleFunctionExpansion(func.function_id)
+                        }
+                      >
+                        <span className={ownStyles.functionName_text}>
+                          {func.name}
+                        </span>
+                        <button
+                          type="button"
+                          className={`${ownStyles.expandButton} ${
+                            isExpanded ? ownStyles.expandButton_open : ''
+                          }`}
+                        >
+                          <Icon
+                            className={`${ownStyles.icon_angle} ${
+                              isExpanded ? ownStyles.icon_angle_open : ''
+                            }`}
+                            name="icon-angle-down"
+                            width={16}
+                            height={16}
                           />
-                        </div>
-                        {config.selectedCategory && (
+                        </button>
+                      </div>
+                      <div className={ownStyles.checkboxes}>
+                        {['READ', 'CREATE', 'UPDATE', 'DELETE'].map(op => (
+                          <CustomCheckbox
+                            key={op}
+                            checked={config.operations.includes(op)}
+                            onChange={() =>
+                              handleOperationChange(func.function_id, op)
+                            }
+                            disabled={!func.available_operations.includes(op)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className={ownStyles.subcategoriesSection}>
+                        <CustomCheckbox
+                          checked={config.isNamesChecked}
+                          onChange={() => handleNamesCheck(func.function_id)}
+                          label={t('UserSection.modalRoles.namesCheck')}
+                          disabled={config.operations.length === 0}
+                        />
+                        {config.isNamesChecked && (
                           <>
-                            <div
-                              className={`${styles.field} ${ownStyles.fieldBottom}`}
-                            >
-                              <WhiteBtn
-                                onClick={() =>
-                                  handleAddAllSubcategories(func.function_id)
-                                }
-                                text={'UserSection.modalRoles.namesAllBtn'}
-                              />
-                            </div>
                             <div className={styles.field}>
                               <label className={styles.label}>
-                                {t('UserSection.modalCreate.names')}
+                                {t('UserSection.modalCreate.category')}
                               </label>
                               <CustomSelect
                                 options={[
-                                  t('UserSection.modalRoles.subCategoryAll'),
-                                  ...subcategoryOptions,
+                                  t('UserSection.modalRoles.categoryAll'),
+                                  ...categoryOptions,
                                 ]}
-                                selected={config.selectedSubcategories}
+                                selected={
+                                  config.selectedCategory
+                                    ? [config.selectedCategory]
+                                    : []
+                                }
                                 onSelect={values =>
-                                  handleSubcategoriesChange(
+                                  handleCategoryChange(
                                     func.function_id,
-                                    values
+                                    values[0] || ''
                                   )
                                 }
-                                multiSelections={true}
+                                multiSelections={false}
                               />
                             </div>
-                            <div
-                              className={`${styles.field} ${ownStyles.fieldBottom}`}
-                            >
-                              <WhiteBtn
-                                onClick={() =>
-                                  handleAddSubcategories(func.function_id)
-                                }
-                                text={'UserSection.modalRoles.namesBtn'}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <CustomButtonsInput
-                                buttons={config.subcategories.map(subId => {
-                                  const subName =
-                                    subcategories.find(
-                                      sub =>
-                                        sub.account_subcategory_id === subId
-                                    )?.account_subcategory_name || '';
-                                  return `${
-                                    func.name
-                                  } (${config.operations.join(
-                                    ', '
-                                  )}) - ${subName}`;
-                                })}
-                                onRemove={(_, index) =>
-                                  handleRemoveSubcategory(
-                                    func.function_id,
-                                    config.subcategories[index]
-                                  )
-                                }
-                              />
-                            </div>
+                            {config.selectedCategory && (
+                              <>
+                                <div
+                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
+                                >
+                                  <WhiteBtn
+                                    onClick={() =>
+                                      handleAddAllSubcategories(
+                                        func.function_id
+                                      )
+                                    }
+                                    text={'UserSection.modalRoles.namesAllBtn'}
+                                  />
+                                </div>
+                                <div className={styles.field}>
+                                  <label className={styles.label}>
+                                    {t('UserSection.modalCreate.names')}
+                                  </label>
+                                  <CustomSelect
+                                    options={[
+                                      t(
+                                        'UserSection.modalRoles.subCategoryAll'
+                                      ),
+                                      ...subcategoryOptions,
+                                    ]}
+                                    selected={config.selectedSubcategories}
+                                    onSelect={values =>
+                                      handleSubcategoriesChange(
+                                        func.function_id,
+                                        values
+                                      )
+                                    }
+                                    multiSelections={true}
+                                  />
+                                </div>
+                                <div
+                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
+                                >
+                                  <WhiteBtn
+                                    onClick={() =>
+                                      handleAddSubcategories(func.function_id)
+                                    }
+                                    text={'UserSection.modalRoles.namesBtn'}
+                                  />
+                                </div>
+                                <div className={styles.field}>
+                                  <CustomButtonsInput
+                                    buttons={config.subcategories.map(subId => {
+                                      const subName =
+                                        subcategories.find(
+                                          sub =>
+                                            sub.account_subcategory_id === subId
+                                        )?.account_subcategory_name || '';
+                                      return `${
+                                        func.name
+                                      } (${config.operations.join(
+                                        ', '
+                                      )}) - ${subName}`;
+                                    })}
+                                    onRemove={label => {
+                                      const subId = config.subcategories.find(
+                                        id => {
+                                          const subName =
+                                            subcategories.find(
+                                              sub =>
+                                                sub.account_subcategory_id ===
+                                                id
+                                            )?.account_subcategory_name || '';
+                                          return (
+                                            `${
+                                              func.name
+                                            } (${config.operations.join(
+                                              ', '
+                                            )}) - ${subName}` === label
+                                          );
+                                        }
+                                      );
+                                      if (subId !== undefined) {
+                                        handleRemoveSubcategory(
+                                          func.function_id,
+                                          subId
+                                        ); // Правильне посилання
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </>
+                            )}
                           </>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
-                )}
+                );
+              })}
+            </div>
+
+            <div className={ownStyles.accessSection}>
+              <div className={ownStyles.toggler_wrap}>
+                <p className={ownStyles.toggler_text}>
+                  {t('RoleSection.modalCreate.globalSubcategories')}
+                </p>
+                <div className={ownStyles.switch}>
+                  <input
+                    type="checkbox"
+                    checked={isGlobalSubcategoriesOpen}
+                    onChange={toggleGlobalSubcategoriesSection}
+                    id="globalSubcategoriesToggle"
+                  />
+                  <label
+                    htmlFor="globalSubcategoriesToggle"
+                    className={ownStyles.switchLabel}
+                  ></label>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              {isGlobalSubcategoriesOpen && (
+                <div className={ownStyles.subcategoriesSection}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>
+                      {t('UserSection.modalCreate.category')}
+                    </label>
+                    <CustomSelect
+                      options={[
+                        t('UserSection.modalRoles.categoryAll'),
+                        ...categoryOptions,
+                      ]}
+                      selected={
+                        globalSubcategoriesConfig.selectedCategory
+                          ? [globalSubcategoriesConfig.selectedCategory]
+                          : []
+                      }
+                      onSelect={values =>
+                        handleGlobalCategoryChange(values[0] || '')
+                      }
+                      multiSelections={false}
+                    />
+                  </div>
+                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
+                    <WhiteBtn
+                      onClick={handleAddAllGlobalSubcategories}
+                      text={'UserSection.modalRoles.namesAllBtn'}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>
+                      {t('UserSection.modalCreate.names')}
+                    </label>
+                    <CustomSelect
+                      options={[
+                        t('UserSection.modalRoles.subCategoryAll'),
+                        ...globalSubcategoryOptions,
+                      ]}
+                      selected={globalSubcategoriesConfig.selectedSubcategories}
+                      onSelect={handleGlobalSubcategoriesChange}
+                      multiSelections={true}
+                    />
+                  </div>
+                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
+                    <WhiteBtn
+                      onClick={handleAddGlobalSubcategories}
+                      text={'UserSection.modalRoles.namesBtn'}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <CustomButtonsInput
+                      buttons={globalSubcategoriesConfig.subcategories.map(
+                        subId => {
+                          const subName =
+                            subcategories.find(
+                              sub => sub.account_subcategory_id === subId
+                            )?.account_subcategory_name || '';
+                          return `(READ) - ${subName}`;
+                        }
+                      )}
+                      onRemove={label => {
+                        const subId =
+                          globalSubcategoriesConfig.subcategories.find(
+                            (id, idx) => {
+                              const subName =
+                                subcategories.find(
+                                  sub => sub.account_subcategory_id === id
+                                )?.account_subcategory_name || '';
+                              return `(READ) - ${subName}` === label;
+                            }
+                          );
+                        if (subId !== undefined) {
+                          handleRemoveGlobalSubcategory(subId);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
       <div className={styles.buttons_wrap}>
         <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleClose} />

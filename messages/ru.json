@@ -753,6 +753,7 @@
       "readCheck": "Просмотр",
       "editCheck": "Редакт.",
       "delCheck": "Удаление",
+      "settings": "НАСТРОЙКИ ДОСТУПА",
       "cglobalCtegory": "Глобальная настройка наименований",
       "load": "Загрузка...",
       "successMessage": "Должность успешно создана",
@@ -760,7 +761,8 @@
       "noSubcategoriesError": "Выберите хотя бы одну подкатегорию",
       "functionName": "Название функции",
       "noCategoryError": "Выберите категорию",
-      "errorMessage": "Не удалось создать должность"
+      "errorMessage": "Не удалось создать должность",
+      "globalSubcategories": "Глобальные настройки подкатегорий"
     },
     "modalEdit": {
       "title": "Редактировать должность",

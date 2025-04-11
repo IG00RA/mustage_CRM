@@ -24,7 +24,7 @@
 }
 
 .form {
-  min-width: 580px;
+  width: 600px;
 }
 
 .inputWrapper {
@@ -50,22 +50,40 @@
   font-size: 12px;
 }
 
-.accessSection {
-  display: flex;
-  align-items: center;
-  margin-top: 20px;
-  margin-bottom: 10px;
+.settings_text {
+  color: var(--text_light);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.57;
+  margin-bottom: 16px;
 }
 
-.accessSection p {
-  margin-right: 15px;
-  font-weight: 500;
+.accessSection {
+  border-radius: 16px;
+  border: 1px solid var(--Grey-Grey, #e1e1ec);
+}
+
+.toggler_wrap {
+  display: flex;
+  padding: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggler_text {
+  color: var(--text-Dark);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0px;
 }
 
 .switch {
   position: relative;
   display: inline-block;
-  width: 50px;
+  width: 40px;
   height: 24px;
 }
 
@@ -100,17 +118,16 @@
 }
 
 .switch input:checked + .switchLabel {
-  background-color: #2196f3;
+  background-color: #5671ff;
 }
 
 .switch input:checked + .switchLabel:before {
-  transform: translateX(26px);
+  transform: translateX(16px);
 }
 
 .functionsTable {
-  margin-top: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
 }
 
 .tableHeader {
@@ -118,7 +135,6 @@
   justify-content: space-between;
   padding: 10px;
   font-weight: 500;
-  border-bottom: 1px solid #ddd;
 }
 
 .tableHeader span:first-child {
@@ -140,43 +156,93 @@
   }
 }
 
+.icon_angle {
+  fill: #a9a9c1;
+  transition: fill 0.3s ease, transform 0.3s ease;
+}
+
+.icon_angle_open {
+  fill: #2a2a2a;
+  transform: rotate(180deg);
+}
+
 .functionRow {
   display: flex;
   flex-direction: column;
   padding: 10px;
-  border-bottom: 1px solid #ddd;
 }
 
 .functionRow:last-child {
   border-bottom: none;
 }
 
-.functionName {
+.functionName_wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 500;
-  margin-bottom: 10px;
+  padding: 8px;
+  transition: background 0.3s ease;
+  border-radius: 8px;
+
+  &:hover {
+    background: #f1f1f6;
+  }
+}
+
+.name_open {
+  background: #f1f1f6;
+}
+
+.functionName {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+
+  &:hover {
+    .expandButton {
+      background: rgba(145, 158, 171, 0.24);
+    }
+  }
+}
+
+.functionName_text {
+  color: var(--text_dark);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
 }
 
 .expandButton {
-  background: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
   border: none;
   cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.expandButton_open {
+  background: rgba(145, 158, 171, 0.24);
 }
 
 .checkboxes {
   display: flex;
-  gap: 32px; /* Відстань між чекбоксами, щоб відповідати заголовкам */
-  width: 200px; /* Фіксована ширина для вирівнювання */
+  gap: 32px;
+  width: 200px;
   margin-left: auto;
+  justify-content: flex-end;
 }
 
 .subcategoriesSection {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
 }
 
 .fieldBottom {

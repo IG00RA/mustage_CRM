@@ -162,10 +162,15 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
         offset: pagination.pageIndex,
       });
       onClose();
-    } catch {
-      toast.error(
-        t('UserSection.modalEdit.errorMessage') || 'Failed to update user'
-      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'Such user already exists'
+      ) {
+        toast.error(t('UserSection.modalCreate.errorMessageUserExist'));
+      } else {
+        toast.error(t('UserSection.modalEdit.errorMessage'));
+      }
     }
   };
 
