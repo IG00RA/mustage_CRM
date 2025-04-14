@@ -14,7 +14,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import { Account, RangeType } from '@/types/salesTypes';
+import { Account, RangeType, FetchAccountsParams } from '@/types/salesTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -121,7 +121,7 @@ export default function AllAccountsSection() {
 
   const loadAccounts = useCallback(
     async (updatedPagination: PaginationState, updateState = true) => {
-      const fetchParams: any = {
+      const fetchParams: FetchAccountsParams = {
         subcategory_ids:
           hasReadSubcategories && selectedSubcategoryIds.length > 0
             ? selectedSubcategoryIds.map(Number)
@@ -429,7 +429,7 @@ export default function AllAccountsSection() {
     const sheet = workbook.addWorksheet('Filtered Accounts');
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
-    const fetchParams: any = {
+    const fetchParams: FetchAccountsParams = {
       subcategory_ids:
         hasReadSubcategories && selectedSubcategoryIds.length > 0
           ? selectedSubcategoryIds.map(Number)
@@ -497,7 +497,8 @@ export default function AllAccountsSection() {
     const sheet = workbook.addWorksheet('All Accounts');
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
-    const { items } = await fetchAccounts({ limit: totalAllRows }, false);
+    const fetchParams: FetchAccountsParams = { limit: totalAllRows };
+    const { items } = await fetchAccounts(fetchParams, false);
     items.forEach(account => {
       sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
     });

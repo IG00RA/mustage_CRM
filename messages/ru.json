@@ -207,6 +207,7 @@
     "selectText": "Категории:",
     "downloadBtn": "Скачать xlsx-файл",
     "downloadBtnAll": "Скачать xlsx-файл за весь период",
+    "downloadBtLoad": "Загрузка...",
     "editBtn": "Настроить внешний вид таблички",
     "loadDate": "Дата загрузки ",
     "sellDate": "Дата продажи ",

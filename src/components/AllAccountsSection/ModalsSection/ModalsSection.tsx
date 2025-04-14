@@ -2,6 +2,7 @@ import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import ViewSettings from '@/components/ModalComponent/ViewSettings/ViewSettings';
 import styles from '../AllAccountsSection.module.css';
+import { useState } from 'react';
 
 interface ModalsSectionProps {
   isOpenEdit: boolean;
@@ -12,7 +13,7 @@ interface ModalsSectionProps {
   onSaveSettings: (newSelectedColumns: string[]) => void;
   onExportFilteredToExcel: () => Promise<void>;
   onExportAllToExcel: () => Promise<void>;
-  t: (key: string) => string;
+  t?: (key: string) => string;
 }
 
 const settingsOptions = [
@@ -34,41 +35,73 @@ export const ModalsSection = ({
   onSaveSettings,
   onExportFilteredToExcel,
   onExportAllToExcel,
-  t,
-}: ModalsSectionProps) => (
-  <>
-    <ModalComponent
-      isOpen={isOpenEdit}
-      onClose={onToggleEditModal}
-      title="AllAccounts.modalUpdate.title"
-      text="AllAccounts.modalUpdate.description"
-    >
-      <ViewSettings
-        defaultColumns={settingsOptions}
+}: ModalsSectionProps) => {
+  const [isExportFilteredLoading, setIsExportFilteredLoading] = useState(false);
+  const [isExportAllLoading, setIsExportAllLoading] = useState(false);
+
+  const handleExportFiltered = async () => {
+    setIsExportFilteredLoading(true);
+    try {
+      await onExportFilteredToExcel();
+    } finally {
+      setIsExportFilteredLoading(false);
+    }
+  };
+
+  const handleExportAll = async () => {
+    setIsExportAllLoading(true);
+    try {
+      await onExportAllToExcel();
+    } finally {
+      setIsExportAllLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <ModalComponent
+        isOpen={isOpenEdit}
         onClose={onToggleEditModal}
-        selectedColumns={selectedColumns}
-        onSave={onSaveSettings}
-      />
-    </ModalComponent>
-    <ModalComponent
-      title="AllAccounts.modalUpdate.titleDownload"
-      isOpen={isOpenDownload}
-      onClose={onToggleDownload}
-    >
-      <div className={styles.modal_btn_wrap}>
-        <WhiteBtn
-          onClick={onExportFilteredToExcel}
-          text={'AllAccounts.downloadBtn'}
-          icon="icon-cloud-download"
-          iconFill="icon-cloud-download-fill"
+        title="AllAccounts.modalUpdate.title"
+        text="AllAccounts.modalUpdate.description"
+      >
+        <ViewSettings
+          defaultColumns={settingsOptions}
+          onClose={onToggleEditModal}
+          selectedColumns={selectedColumns}
+          onSave={onSaveSettings}
         />
-        <WhiteBtn
-          onClick={onExportAllToExcel}
-          text={'AllAccounts.downloadBtnAll'}
-          icon="icon-cloud-download"
-          iconFill="icon-cloud-download-fill"
-        />
-      </div>
-    </ModalComponent>
-  </>
-);
+      </ModalComponent>
+      <ModalComponent
+        title="AllAccounts.modalUpdate.titleDownload"
+        isOpen={isOpenDownload}
+        onClose={onToggleDownload}
+      >
+        <div className={styles.modal_btn_wrap}>
+          <WhiteBtn
+            onClick={handleExportFiltered}
+            disabled={isExportFilteredLoading}
+            text={
+              isExportFilteredLoading
+                ? 'AllAccounts.downloadBtLoad'
+                : 'AllAccounts.downloadBtn'
+            }
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <WhiteBtn
+            disabled={isExportAllLoading}
+            onClick={handleExportAll}
+            text={
+              isExportAllLoading
+                ? 'AllAccounts.downloadBtLoad'
+                : 'AllAccounts.downloadBtnAll'
+            }
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+        </div>
+      </ModalComponent>
+    </>
+  );
+};

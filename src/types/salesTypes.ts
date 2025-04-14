@@ -120,7 +120,7 @@ export interface CategoriesState {
   fetchSubcategories: (categoryId?: number) => Promise<void>;
 }
 
-interface FetchAccountsParams {
+export interface FetchAccountsParams {
   category_ids?: number[];
   subcategory_ids?: number[];
   status?: string[];
