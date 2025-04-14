@@ -9,6 +9,7 @@ interface ButtonProps {
   text: string;
   icon?: string;
   iconFill?: string;
+  disabled?: boolean;
   type?: 'submit' | 'button';
 }
 
@@ -18,11 +19,17 @@ export default function WhiteBtn({
   type = 'button',
   icon,
   iconFill,
+  disabled = false,
 }: ButtonProps) {
   const t = useTranslations();
 
   return (
-    <button type={type} className={styles.button} onClick={onClick}>
+    <button
+      type={type}
+      disabled={disabled}
+      className={styles.button}
+      onClick={onClick}
+    >
       {icon && (
         <>
           <Icon className={styles.icon} name={icon} width={16} height={16} />

@@ -37,4 +37,11 @@
       opacity: 1;
     }
   }
+
+  &:disabled {
+    border-radius: 12px;
+    border: 1px solid var(--grey);
+    background: var(--grey_light);
+    color: var(--disabled_grey);
+  }
 }

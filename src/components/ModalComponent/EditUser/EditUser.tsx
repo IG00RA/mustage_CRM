@@ -470,7 +470,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             }
             selected={
               selectedRoleId
-                ? [roles.find(r => r.role_id === selectedRoleId)!.name]
+                ? [roles.find(r => r.role_id === selectedRoleId)!?.name]
                 : []
             }
             onSelect={handleRoleSelect}

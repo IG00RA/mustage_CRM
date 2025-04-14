@@ -66,7 +66,7 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
       : [];
 
   const [isGlobalSubcategoriesOpen, setIsGlobalSubcategoriesOpen] = useState(
-    initialGlobalSubcategories.length > 0 // Увімкнено, якщо є глобальні підкатегорії
+    initialGlobalSubcategories.length > 0
   );
   const [functions, setFunctions] = useState<FunctionType[]>([]);
   const [roleFunctions, setRoleFunctions] = useState<
@@ -146,13 +146,13 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
   // Очищення при зміні стану тоглерів
   useEffect(() => {
     if (!isAccessSectionOpen) {
-      setRoleFunctions({}); // Скидаємо функції
+      setRoleFunctions({});
       setGlobalSubcategoriesConfig({
         subcategories: [],
         selectedCategory: '',
         selectedSubcategories: [],
       });
-      setIsGlobalSubcategoriesOpen(false); // Вимикаємо тоглер глобальних налаштувань
+      setIsGlobalSubcategoriesOpen(false);
     }
   }, [isAccessSectionOpen]);
 
@@ -161,7 +161,7 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     if (!isGlobalSubcategoriesOpen) {
       setGlobalSubcategoriesConfig(prev => ({
         ...prev,
-        subcategories: [], // Скидаємо глобальні підкатегорії
+        subcategories: [],
         selectedSubcategories: [],
       }));
     }
@@ -170,24 +170,22 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
   const onSubmit: SubmitHandler<FormData> = async data => {
     const updatedRoleFunctions = Object.fromEntries(
       Object.entries(roleFunctions).map(([functionId, config]) => {
-        if (
-          config.operations.length > 0 &&
-          globalSubcategoriesConfig.subcategories.length > 0
-        ) {
-          return [
-            functionId,
-            {
-              ...config,
-              subcategories: [
-                ...config.subcategories,
-                ...globalSubcategoriesConfig.subcategories.filter(
-                  id => !config.subcategories.includes(id)
-                ),
-              ],
-            },
-          ];
-        }
-        return [functionId, config];
+        const subcategories = [
+          ...(config.subcategories || []),
+          ...(config.operations.length > 0
+            ? globalSubcategoriesConfig.subcategories.filter(
+                id => !(config.subcategories || []).includes(id)
+              )
+            : []),
+        ];
+
+        return [
+          functionId,
+          {
+            ...config,
+            subcategories,
+          },
+        ];
       })
     );
 
@@ -196,14 +194,20 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
       name: data.name,
       description: data.description,
       functions: Object.entries(updatedRoleFunctions)
-        .filter(
-          ([, config]) =>
-            config.operations.length > 0 || config.subcategories.length > 0
-        )
+        .filter(([, config]) => config.operations.length > 0)
         .map(([functionId, config]) => ({
           function_id: Number(functionId),
           operations: config.operations,
-          subcategories: config.subcategories,
+          subcategories: config.isNamesChecked
+            ? [
+                ...new Set([
+                  ...(config.subcategories || []),
+                  ...(config.operations.length > 0
+                    ? globalSubcategoriesConfig.subcategories
+                    : []),
+                ]),
+              ]
+            : [],
         })),
     };
 
@@ -243,20 +247,36 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     setIsGlobalSubcategoriesOpen(prev => !prev);
 
   const toggleFunctionExpansion = (functionId: number) => {
-    setRoleFunctions(prev => ({
-      ...prev,
-      [functionId]: {
-        ...(prev[functionId] || {
-          operations: [],
-          subcategories: [],
-          isExpanded: false,
-          isNamesChecked: false,
-          selectedCategory: '',
-          selectedSubcategories: [],
-        }),
-        isExpanded: !prev[functionId]?.isExpanded,
-      },
-    }));
+    setRoleFunctions(prev => {
+      const current = prev[functionId] || {
+        operations: [],
+        subcategories: [],
+        isExpanded: false,
+        isNamesChecked: false,
+        selectedCategory: '',
+        selectedSubcategories: [],
+      };
+
+      const updatedSubcategories = current.isExpanded
+        ? current.subcategories
+        : [
+            ...current.subcategories,
+            ...globalSubcategoriesConfig.subcategories.filter(
+              id => !current.subcategories.includes(id)
+            ),
+          ];
+
+      return {
+        ...prev,
+        [functionId]: {
+          ...current,
+          isExpanded: !current.isExpanded,
+          subcategories: updatedSubcategories,
+          isNamesChecked:
+            updatedSubcategories.length > 0 ? true : current.isNamesChecked,
+        },
+      };
+    });
   };
 
   const handleOperationChange = (functionId: number, operation: string) => {
@@ -315,16 +335,10 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
         [functionId]: {
           ...current,
           isNamesChecked: newNamesChecked,
-          subcategories:
-            newNamesChecked &&
-            globalSubcategoriesConfig.subcategories.length > 0
-              ? [
-                  ...current.subcategories,
-                  ...globalSubcategoriesConfig.subcategories.filter(
-                    id => !current.subcategories.includes(id)
-                  ),
-                ]
-              : current.subcategories,
+          subcategories: newNamesChecked ? current.subcategories : [],
+          selectedSubcategories: newNamesChecked
+            ? current.selectedSubcategories
+            : [],
         },
       };
     });
@@ -707,7 +721,9 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                         />
                         {config.isNamesChecked && (
                           <>
-                            <div className={styles.field}>
+                            <div
+                              className={`${styles.field} ${ownStyles.fieldGap}`}
+                            >
                               <label className={styles.label}>
                                 {t('UserSection.modalCreate.category')}
                               </label>
@@ -730,94 +746,88 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                                 multiSelections={false}
                               />
                             </div>
-                            {config.selectedCategory && (
-                              <>
-                                <div
-                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
-                                >
-                                  <WhiteBtn
-                                    onClick={() =>
-                                      handleAddAllSubcategories(
-                                        func.function_id
-                                      )
-                                    }
-                                    text={'UserSection.modalRoles.namesAllBtn'}
-                                  />
-                                </div>
-                                <div className={styles.field}>
-                                  <label className={styles.label}>
-                                    {t('UserSection.modalCreate.names')}
-                                  </label>
-                                  <CustomSelect
-                                    options={[
-                                      t(
-                                        'UserSection.modalRoles.subCategoryAll'
-                                      ),
-                                      ...subcategoryOptions,
-                                    ]}
-                                    selected={config.selectedSubcategories}
-                                    onSelect={values =>
-                                      handleSubcategoriesChange(
-                                        func.function_id,
-                                        values
-                                      )
-                                    }
-                                    multiSelections={true}
-                                  />
-                                </div>
-                                <div
-                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
-                                >
-                                  <WhiteBtn
-                                    onClick={() =>
-                                      handleAddSubcategories(func.function_id)
-                                    }
-                                    text={'UserSection.modalRoles.namesBtn'}
-                                  />
-                                </div>
-                                <div className={styles.field}>
-                                  <CustomButtonsInput
-                                    buttons={config.subcategories.map(subId => {
+
+                            <div className={styles.field}>
+                              <label className={styles.label}>
+                                {t('UserSection.modalCreate.names')}
+                              </label>
+                              <CustomSelect
+                                options={[
+                                  t('UserSection.modalRoles.subCategoryAll'),
+                                  ...subcategoryOptions,
+                                ]}
+                                selected={config.selectedSubcategories}
+                                onSelect={values =>
+                                  handleSubcategoriesChange(
+                                    func.function_id,
+                                    values
+                                  )
+                                }
+                                multiSelections={true}
+                              />
+                            </div>
+                            <div
+                              className={`${styles.field} ${ownStyles.fieldBottom} ${ownStyles.btnWrap}`}
+                            >
+                              <WhiteBtn
+                                disabled={
+                                  !config ||
+                                  config.selectedSubcategories.length === 0
+                                }
+                                onClick={() =>
+                                  handleAddSubcategories(func.function_id)
+                                }
+                                text={'UserSection.modalRoles.namesBtn'}
+                              />
+                              <WhiteBtn
+                                disabled={
+                                  !config ||
+                                  config.selectedCategory.length === 0
+                                }
+                                onClick={() =>
+                                  handleAddAllSubcategories(func.function_id)
+                                }
+                                text={'UserSection.modalRoles.namesAllBtn'}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <CustomButtonsInput
+                                buttons={config.subcategories.map(subId => {
+                                  const subName =
+                                    subcategories.find(
+                                      sub =>
+                                        sub.account_subcategory_id === subId
+                                    )?.account_subcategory_name || '';
+                                  return `${
+                                    func.name
+                                  } (${config.operations.join(
+                                    ', '
+                                  )}) - ${subName}`;
+                                })}
+                                onRemove={label => {
+                                  const subId = config.subcategories.find(
+                                    id => {
                                       const subName =
                                         subcategories.find(
                                           sub =>
-                                            sub.account_subcategory_id === subId
+                                            sub.account_subcategory_id === id
                                         )?.account_subcategory_name || '';
-                                      return `${
-                                        func.name
-                                      } (${config.operations.join(
-                                        ', '
-                                      )}) - ${subName}`;
-                                    })}
-                                    onRemove={label => {
-                                      const subId = config.subcategories.find(
-                                        id => {
-                                          const subName =
-                                            subcategories.find(
-                                              sub =>
-                                                sub.account_subcategory_id ===
-                                                id
-                                            )?.account_subcategory_name || '';
-                                          return (
-                                            `${
-                                              func.name
-                                            } (${config.operations.join(
-                                              ', '
-                                            )}) - ${subName}` === label
-                                          );
-                                        }
+                                      return (
+                                        `${func.name} (${config.operations.join(
+                                          ', '
+                                        )}) - ${subName}` === label
                                       );
-                                      if (subId !== undefined) {
-                                        handleRemoveSubcategory(
-                                          func.function_id,
-                                          subId
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              </>
-                            )}
+                                    }
+                                  );
+                                  if (subId !== undefined) {
+                                    handleRemoveSubcategory(
+                                      func.function_id,
+                                      subId
+                                    );
+                                  }
+                                }}
+                              />
+                            </div>
                           </>
                         )}
                       </div>
@@ -867,12 +877,6 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                       multiSelections={false}
                     />
                   </div>
-                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
-                    <WhiteBtn
-                      onClick={handleAddAllGlobalSubcategories}
-                      text={'UserSection.modalRoles.namesAllBtn'}
-                    />
-                  </div>
                   <div className={styles.field}>
                     <label className={styles.label}>
                       {t('UserSection.modalCreate.names')}
@@ -887,10 +891,25 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                       multiSelections={true}
                     />
                   </div>
-                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
+                  <div
+                    className={`${styles.field} ${ownStyles.fieldBottom} ${ownStyles.btnWrap}`}
+                  >
                     <WhiteBtn
                       onClick={handleAddGlobalSubcategories}
                       text={'UserSection.modalRoles.namesBtn'}
+                      disabled={
+                        !globalSubcategoriesConfig ||
+                        globalSubcategoriesConfig.selectedSubcategories
+                          .length === 0
+                      }
+                    />
+                    <WhiteBtn
+                      onClick={handleAddAllGlobalSubcategories}
+                      text={'UserSection.modalRoles.namesAllBtn'}
+                      disabled={
+                        !globalSubcategoriesConfig ||
+                        globalSubcategoriesConfig.selectedCategory.length === 0
+                      }
                     />
                   </div>
                   <div className={styles.field}>
@@ -901,7 +920,7 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                             subcategories.find(
                               sub => sub.account_subcategory_id === subId
                             )?.account_subcategory_name || '';
-                          return `(READ) - ${subName}`;
+                          return subName;
                         }
                       )}
                       onRemove={label => {
@@ -911,7 +930,7 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
                               subcategories.find(
                                 sub => sub.account_subcategory_id === id
                               )?.account_subcategory_name || '';
-                            return `(READ) - ${subName}` === label;
+                            return subName === label;
                           });
                         if (subId !== undefined) {
                           handleRemoveGlobalSubcategory(subId);

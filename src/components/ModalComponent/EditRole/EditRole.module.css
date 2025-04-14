@@ -241,10 +241,19 @@
 .subcategoriesSection {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   padding: 12px;
 }
 
 .fieldBottom {
   margin-bottom: 15px;
+}
+
+.fieldGap {
+  margin-top: 10px;
+}
+
+.btnWrap {
+  display: flex;
+  gap: 10px;
+  flex-direction: row !important;
 }
