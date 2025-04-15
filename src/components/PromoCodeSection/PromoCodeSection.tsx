@@ -22,7 +22,11 @@ import EditPromoCode from '../ModalComponent/EditPromoCode/EditPromoCode';
 import { usePromoCodesStore } from '@/store/promoCodesStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import Loader from '../Loader/Loader';
-import { PaginationState, PromoCode } from '@/types/componentsTypes';
+import {
+  FetchPromoCodesTypes,
+  PaginationState,
+  PromoCode,
+} from '@/types/componentsTypes';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
 import { toast } from 'react-toastify';
@@ -92,7 +96,7 @@ export default function PromoCodeSection() {
 
   const loadPromoCodes = useCallback(
     async (updatedPagination: { pageIndex: number; pageSize: number }) => {
-      const fetchParams: any = {
+      const fetchParams: FetchPromoCodesTypes = {
         subcategory_ids:
           selectedSubcategoryIds.length > 0
             ? selectedSubcategoryIds.map(Number)
@@ -102,7 +106,11 @@ export default function PromoCodeSection() {
             ? selectedCategoryIds.map(Number)
             : undefined,
         promocode_status:
-          selectedStatuses.length === 1 ? selectedStatuses[0] : undefined,
+          selectedStatuses.length === 1 &&
+          (selectedStatuses[0] === 'ACTIVE' ||
+            selectedStatuses[0] === 'DEACTIVATED')
+            ? selectedStatuses[0]
+            : 'DEACTIVATED',
         search_query: globalFilter || undefined,
         limit: updatedPagination.pageSize,
         offset: updatedPagination.pageIndex * updatedPagination.pageSize,

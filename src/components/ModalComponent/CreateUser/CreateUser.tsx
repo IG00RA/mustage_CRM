@@ -12,7 +12,7 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect, useRef } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import UserRoles, { UserFunction } from '../UserRoles/UserRoles';
+import UserRoles from '../UserRoles/UserRoles';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
 import { useRolesStore } from '@/store/rolesStore';
@@ -53,8 +53,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
-  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false); // New state for CreateRole modal
-  const [userFunctions, setUserFunctions] = useState<UserFunction[]>([]);
+  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(
@@ -153,8 +152,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     }
   };
 
-  const handleRolesSubmit = (functions: UserFunction[]) => {
-    setUserFunctions(functions);
+  const handleRolesSubmit = () => {
     setIsRolesModalOpen(false);
   };
 

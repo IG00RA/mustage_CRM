@@ -195,7 +195,7 @@ export default function DistributionAll() {
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
 
-  const [selectCategory, setSelectCategory] = useState('');
+  const [selectCategory, setSelectCategory] = useState(['']);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,

@@ -64,7 +64,6 @@ interface UpdateUserRequest {
   notifications_for_subcategories?: number[];
 }
 
-interface UserFullResponse extends User {}
 interface CreateUserResponse {
   login: string;
   is_admin: boolean;
@@ -74,7 +73,7 @@ interface CreateUserResponse {
 interface UsersState {
   users: User[];
   totalRows: number;
-  currentUser: UserFullResponse | null;
+  currentUser: User | null;
   loading: boolean;
   error: string | null;
   fetchUsers: (params: { limit?: number; offset?: number }) => Promise<{
@@ -83,7 +82,7 @@ interface UsersState {
   }>;
   createUser: (userData: CreateUserRequest) => Promise<CreateUserResponse>;
   editUser: (userData: UpdateUserRequest) => Promise<void>;
-  fetchCurrentUser: () => Promise<UserFullResponse>;
+  fetchCurrentUser: () => Promise<User>;
   resetCurrentUser: () => void;
 }
 
@@ -114,7 +113,7 @@ export const useUsersStore = create<UsersState>(set => ({
           headers: getAuthHeaders(),
           credentials: 'include',
         },
-        set
+        () => {}
       );
 
       set({
@@ -135,14 +134,14 @@ export const useUsersStore = create<UsersState>(set => ({
   fetchCurrentUser: async () => {
     set({ loading: true, error: null });
     try {
-      const data = await fetchWithErrorHandling<UserFullResponse>(
+      const data = await fetchWithErrorHandling<User>(
         `${ENDPOINTS.USERS_ME}`,
         {
           method: 'GET',
           headers: getAuthHeaders(),
           credentials: 'include',
         },
-        set
+        () => {}
       );
 
       set({
@@ -173,7 +172,7 @@ export const useUsersStore = create<UsersState>(set => ({
           credentials: 'include',
           body: JSON.stringify(userData),
         },
-        set
+        () => {}
       );
 
       set({ loading: false });
@@ -200,7 +199,7 @@ export const useUsersStore = create<UsersState>(set => ({
           credentials: 'include',
           body: JSON.stringify({ ...userData, user_id: undefined }),
         },
-        set
+        () => {}
       );
 
       set(state => {

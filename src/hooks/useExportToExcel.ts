@@ -1,6 +1,6 @@
+import { Sale } from '@/types/salesTypes';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { Sale } from '@/api/sales/data';
 
 interface UseExportToExcelParams {
   sales: Sale[];

@@ -281,8 +281,8 @@ export default function ReferralsStatSection() {
   const t = useTranslations();
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenAdd, setIsOpenAdd] = useState(false);
-  const [selectSell, setSelectSell] = useState('');
-  const [selectLoad, setSelectLoad] = useState('');
+  const [selectSell, setSelectSell] = useState(['']);
+  const [selectLoad, setSelectLoad] = useState(['']);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,

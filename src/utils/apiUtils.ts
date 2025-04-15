@@ -13,10 +13,15 @@ export const getAuthHeaders = () => {
   };
 };
 
+interface StateType {
+  loading?: boolean;
+  error?: Error | null | string;
+}
+
 export const fetchWithErrorHandling = async <T>(
   url: string,
   options: RequestInit,
-  set: (state: Partial<any>) => void
+  set: (state: StateType) => void
 ): Promise<T> => {
   set({ loading: true, error: null });
   try {

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
-import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
+// import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 
 type FormData = {
   nameField: string;
@@ -21,7 +21,7 @@ type FormData = {
 export default function ReplenishmentAccountsFarm() {
   const t = useTranslations('');
 
-  const [selectCategory, setSelectCategory] = useState('');
+  const [selectCategory, setSelectCategory] = useState(['']);
 
   const {
     register,
@@ -36,9 +36,9 @@ export default function ReplenishmentAccountsFarm() {
     reset();
   };
 
-  const handleFileUpload = (file: File) => {
-    console.log('Завантажений файл:', file);
-  };
+  // const handleFileUpload = (file: File) => {
+  //   console.log('Завантажений файл:', file);
+  // };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
@@ -82,10 +82,10 @@ export default function ReplenishmentAccountsFarm() {
         {errors.cost && <p className={styles.error}>{errors.cost.message}</p>}
       </div>
       <div className={styles.field}>
-        <CustomDragDropFile
+        {/* <CustomDragDropFile
           acceptedExtensions={['xlsx', 'csv']}
           onFileUpload={handleFileUpload}
-        />
+        /> */}
         {errors.nameCategoryField && (
           <p className={styles.error}>{errors.nameCategoryField.message}</p>
         )}

@@ -14,7 +14,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import { Account, RangeType, FetchAccountsParams } from '@/types/salesTypes';
+import { Account, FetchAllAccountsParams, RangeType } from '@/types/salesTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -121,7 +121,7 @@ export default function AllAccountsSection() {
 
   const loadAccounts = useCallback(
     async (updatedPagination: PaginationState, updateState = true) => {
-      const fetchParams: FetchAccountsParams = {
+      const fetchParams: FetchAllAccountsParams = {
         subcategory_ids:
           hasReadSubcategories && selectedSubcategoryIds.length > 0
             ? selectedSubcategoryIds.map(Number)
@@ -173,10 +173,7 @@ export default function AllAccountsSection() {
           selectedTransfers[0] === t('AllAccounts.selects.transferYes');
       }
 
-      const { total_rows, items } = await fetchAccounts(
-        fetchParams,
-        updateState
-      );
+      const { total_rows } = await fetchAccounts(fetchParams, updateState);
       setTotalRows(total_rows);
     },
     [
@@ -429,7 +426,7 @@ export default function AllAccountsSection() {
     const sheet = workbook.addWorksheet('Filtered Accounts');
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
-    const fetchParams: FetchAccountsParams = {
+    const fetchParams: FetchAllAccountsParams = {
       subcategory_ids:
         hasReadSubcategories && selectedSubcategoryIds.length > 0
           ? selectedSubcategoryIds.map(Number)
@@ -497,7 +494,7 @@ export default function AllAccountsSection() {
     const sheet = workbook.addWorksheet('All Accounts');
     sheet.addRow(selectedColumns.map(colId => t(colId)));
 
-    const fetchParams: FetchAccountsParams = { limit: totalAllRows };
+    const fetchParams: FetchAllAccountsParams = { limit: totalAllRows };
     const { items } = await fetchAccounts(fetchParams, false);
     items.forEach(account => {
       sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));

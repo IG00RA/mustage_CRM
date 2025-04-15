@@ -82,7 +82,7 @@ export const useRolesStore = create<RolesState>(set => ({
           headers: getAuthHeaders(),
           credentials: 'include',
         },
-        set
+        () => {}
       );
 
       set({
@@ -110,7 +110,7 @@ export const useRolesStore = create<RolesState>(set => ({
           headers: getAuthHeaders(),
           credentials: 'include',
         },
-        set
+        () => {}
       );
 
       set({
@@ -141,7 +141,7 @@ export const useRolesStore = create<RolesState>(set => ({
           credentials: 'include',
           body: JSON.stringify(roleData),
         },
-        set
+        () => {}
       );
 
       set(state => ({
@@ -173,7 +173,7 @@ export const useRolesStore = create<RolesState>(set => ({
           credentials: 'include',
           body: JSON.stringify({ ...roleData, role_id: undefined }),
         },
-        set
+        () => {}
       );
 
       set(state => {

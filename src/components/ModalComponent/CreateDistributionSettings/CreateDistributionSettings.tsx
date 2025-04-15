@@ -25,8 +25,8 @@ export default function CreateDistributionSettings() {
     formState: { errors },
   } = useForm<FormData>();
 
-  const [selectCategory, setSelectCategory] = useState('');
-  const [selectNames, setSelectNames] = useState('');
+  const [selectCategory, setSelectCategory] = useState(['']);
+  const [selectNames, setSelectNames] = useState(['']);
 
   const onSubmit = (data: FormData) => {
     console.log('Form Data:', data);

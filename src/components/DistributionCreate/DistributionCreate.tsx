@@ -26,7 +26,7 @@ export default function DistributionCreate() {
 
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
 
-  const [selectNames, setSelectNames] = useState('');
+  const [selectNames, setSelectNames] = useState(['']);
 
   const {
     register,

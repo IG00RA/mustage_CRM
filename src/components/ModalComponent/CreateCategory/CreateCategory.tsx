@@ -8,7 +8,7 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { Category } from '@/types/salesTypes';
-import { useState } from 'react'; // Add this import
+import { useState } from 'react';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 
 type FormData = {

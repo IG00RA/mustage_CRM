@@ -19,10 +19,10 @@ import { Bar, Line } from 'react-chartjs-2';
 import { useTranslations } from 'next-intl';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import styles from './SalesChart.module.css';
-import { Sale } from '@/api/sales/data';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import filterSalesData from '@/helpers/filterData';
+import { Sale } from '@/types/salesTypes';
 
 ChartJS.register(
   CategoryScale,
@@ -44,8 +44,8 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [dataType, setDataType] = useState<'amount' | 'quantity'>('amount');
   const [dateRange, setDateRange] = useState('today');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedName, setSelectedName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(['']);
+  const [selectedName, setSelectedName] = useState(['']);
 
   const filteredSales = useMemo(
     () => filterSalesData(dateRange, salesData),
@@ -74,10 +74,10 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
   const customTooltip: Plugin<'bar' | 'line'> = {
     id: 'customTooltip',
     afterDraw: () => {
-      return undefined; // Явний return для уникнення помилки unused-expressions
+      return undefined;
     },
     beforeTooltipDraw: () => {
-      return false; // Уже виправлено у вашому коді
+      return false;
     },
     afterTooltipDraw: (
       chart: ChartJS,
@@ -91,7 +91,7 @@ const SalesChart: React.FC<SalesChartProps> = ({ salesData }) => {
         tooltipEl.id = 'custom-tooltip';
         tooltipEl.classList.add(styles.custom_tooltip);
         if (chartContainer) {
-          chartContainer.appendChild(tooltipEl); // Виправлено в попередньому запиті
+          chartContainer.appendChild(tooltipEl);
         }
       }
 

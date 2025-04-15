@@ -48,23 +48,23 @@ type MenuFunctionMap = {
 };
 
 // Список функцій для зіставлення прав
-const availableFunctions = [
-  { function_id: 1, name: 'Обзор' },
-  { function_id: 2, name: 'Категории' },
-  { function_id: 3, name: 'Подкатегории' },
-  { function_id: 4, name: 'Все аккаунты' },
-  { function_id: 5, name: 'Загрузка аккаунтов' },
-  { function_id: 6, name: 'Выгрузка аккаунтов' },
-  { function_id: 7, name: 'Раздача аккаунтов' },
-  { function_id: 8, name: 'Замена аккаунтов' },
-  { function_id: 9, name: 'Убрать аккаунты с продажи' },
-  { function_id: 10, name: 'Управление автофармом' },
-  { function_id: 11, name: 'Промокоды' },
-  { function_id: 12, name: 'Все рефералы' },
-  { function_id: 13, name: 'Статистика реферальной системы' },
-  { function_id: 14, name: 'Пользователи' }, // Додано для "Пользователи"
-  { function_id: 15, name: 'Должности' }, // Додано для "Должности"
-];
+// const availableFunctions = [
+//   { function_id: 1, name: 'Обзор' },
+//   { function_id: 2, name: 'Категории' },
+//   { function_id: 3, name: 'Подкатегории' },
+//   { function_id: 4, name: 'Все аккаунты' },
+//   { function_id: 5, name: 'Загрузка аккаунтов' },
+//   { function_id: 6, name: 'Выгрузка аккаунтов' },
+//   { function_id: 7, name: 'Раздача аккаунтов' },
+//   { function_id: 8, name: 'Замена аккаунтов' },
+//   { function_id: 9, name: 'Убрать аккаунты с продажи' },
+//   { function_id: 10, name: 'Управление автофармом' },
+//   { function_id: 11, name: 'Промокоды' },
+//   { function_id: 12, name: 'Все рефералы' },
+//   { function_id: 13, name: 'Статистика реферальной системы' },
+//   { function_id: 14, name: 'Пользователи' }, // Додано для "Пользователи"
+//   { function_id: 15, name: 'Должности' }, // Додано для "Должности"
+// ];
 
 // Відповідність між пунктами меню та іменами функцій
 const menuFunctionMap: MenuFunctionMap = {

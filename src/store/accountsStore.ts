@@ -8,6 +8,7 @@ import {
   StopSellingResponse,
   SellAccountsRequest,
   SellAccountsResponse,
+  FetchAccountsParams,
 } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -18,7 +19,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
   error: null,
 
   fetchAccounts: async (params = {}, updateState = true) => {
-    const requestBody: Record<string, any> = {};
+    const requestBody: FetchAccountsParams = {};
 
     if (params.subcategory_ids?.length) {
       requestBody.subcategory_id =
@@ -56,7 +57,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
       requestBody.upload_end_date = params.upload_end_date;
     if (params.like_query) requestBody.like_query = params.like_query;
     if (params.sort_by_upload)
-      requestBody.sort_by_upload = params.sort_by_upload; // Додано сортування
+      requestBody.sort_by_upload = params.sort_by_upload;
 
     const url = ENDPOINTS.ACCOUNTS;
     const data = await fetchWithErrorHandling<{
@@ -73,7 +74,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(requestBody),
       },
-      set
+      () => {}
     );
 
     if (updateState) {
@@ -103,7 +104,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
           credentials: 'include',
           body: JSON.stringify(requestBody),
         },
-        set
+        () => {}
       );
 
       set({ loading: false });
@@ -133,7 +134,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
           credentials: 'include',
           body: JSON.stringify(data),
         },
-        set
+        () => {}
       );
 
       set({ loading: false });
@@ -167,7 +168,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
           credentials: 'include',
           body: JSON.stringify(requestBody),
         },
-        set
+        () => {}
       );
 
       set({ loading: false });
@@ -196,7 +197,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
           credentials: 'include',
           body: JSON.stringify(request),
         },
-        set
+        () => {}
       );
 
       set({ loading: false });

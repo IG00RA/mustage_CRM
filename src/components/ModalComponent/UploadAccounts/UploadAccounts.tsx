@@ -11,7 +11,6 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 import { useTranslations } from 'next-intl';
 import ExcelJS from 'exceljs';
-import { getAuthHeaders } from '@/utils/apiUtils';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { UploadResponse } from '@/components/UploadSection/UploadSection';
@@ -38,7 +37,6 @@ export default function UploadAccounts({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [accountCount, setAccountCount] = useState<number>(0);
-  const [settings, setSettings] = useState(settingsOptions);
   const [file, setFile] = useState<File | null>(null);
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
@@ -196,8 +194,12 @@ export default function UploadAccounts({
         setSelectedCategory([]);
         setSelectedSubcategory([]);
       }
-    } catch (error: any) {
-      toast.error(error.message || t('Upload.modalUpload.uploadError'));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('Upload.modalUpload.uploadError')
+      );
       console.error('Upload error:', error);
     }
   };
@@ -263,9 +265,9 @@ export default function UploadAccounts({
 
       <div className={styles.field}>
         <CustomCheckbox
-          checked={checkedSettings[settings[0]] || false}
-          onChange={() => toggleCheckbox(settings[0])}
-          label={t(settings[0])}
+          checked={checkedSettings[settingsOptions[0]] || false}
+          onChange={() => toggleCheckbox(settingsOptions[0])}
+          label={t(settingsOptions[0])}
         />
       </div>
 

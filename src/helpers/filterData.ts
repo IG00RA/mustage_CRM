@@ -1,4 +1,4 @@
-import { Sale } from '@/api/sales/data';
+import { Sale } from '@/types/salesTypes';
 
 export default function filterSalesData(
   dateRange: string,

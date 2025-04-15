@@ -40,6 +40,15 @@ export interface PromoCode {
   expires_at?: string;
   subcategory_ids?: number[];
 }
+
+export interface FetchPromoCodesTypes {
+  category_ids?: number[];
+  subcategory_ids?: number[];
+  promocode_status?: 'ACTIVE' | 'DEACTIVATED';
+  search_query?: string;
+  limit?: number;
+  offset?: number;
+}
 export interface PromoCodesState {
   promoCodes: PromoCode[];
   loading: boolean;

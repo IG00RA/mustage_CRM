@@ -43,7 +43,7 @@ export const usePromoCodesStore = create<PromoCodesState>(set => ({
     }>(
       url,
       { method: 'GET', headers: getAuthHeaders(), credentials: 'include' },
-      set
+      () => {}
     );
     set({ promoCodes: data.items, totalRows: data.total_rows });
     return { items: data.items, total_rows: data.total_rows };

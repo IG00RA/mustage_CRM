@@ -2,13 +2,7 @@
 
 import styles from './CategorySection.module.css';
 import { useTranslations } from 'next-intl';
-import React, {
-  useEffect,
-  useRef,
-  useMemo,
-  useState,
-  useCallback,
-} from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import {
   ColumnDef,
   flexRender,

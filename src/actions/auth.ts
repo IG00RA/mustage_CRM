@@ -52,7 +52,6 @@ export async function logout() {
   const cookieStore = await cookies();
   const authToken = cookieStore.get('access_token');
   if (!authToken?.value) {
-    // Якщо токену немає, просто перенаправляємо на сторінку логіну
     redirect('/ru/login');
     return;
   }
@@ -68,9 +67,7 @@ export async function logout() {
         },
       }
     );
-    console.log(response);
 
-    // Перевіряємо відповідь від бекенду
     if (response.ok) {
       await response.json();
       // Перевіряємо успішність логауту
@@ -91,6 +88,5 @@ export async function logout() {
     return { error: 'Error during logout process' };
   }
 
-  // Редирект виконується поза блоком try/catch
   redirect('/ru/login');
 }

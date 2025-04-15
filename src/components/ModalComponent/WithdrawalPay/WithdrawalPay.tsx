@@ -5,7 +5,7 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
+// import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 
 type FormData = {
   nameField: string;
@@ -32,9 +32,9 @@ export default function WithdrawalPay() {
     reset();
   };
 
-  const handleFileUpload = (file: File) => {
-    console.log('Завантажений файл:', file);
-  };
+  // const handleFileUpload = (file: File) => {
+  //   console.log('Завантажений файл:', file);
+  // };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
@@ -117,10 +117,10 @@ export default function WithdrawalPay() {
         <label className={styles.label}>
           {t('ReferralsAll.modalPay.file')}
         </label>
-        <CustomDragDropFile
+        {/* <CustomDragDropFile
           acceptedExtensions={['xlsx', 'csv']}
           onFileUpload={handleFileUpload}
-        />
+        /> */}
         {errors.nameCategoryField && (
           <p className={styles.error}>{errors.nameCategoryField.message}</p>
         )}

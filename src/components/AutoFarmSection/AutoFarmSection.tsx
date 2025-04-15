@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-table';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
+// import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmModal';
 import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
@@ -370,12 +370,12 @@ export default function AutoFarmSection() {
   const [updateTitle, setUpdateTitle] = useState('');
   const [updateServerName, setUpdateServerName] = useState('');
   const [updateTitleSecond, setUpdateTitleSecond] = useState('');
-  const [selectGeoAcc, setSelectGeoAcc] = useState('');
-  const [selectTypeAcc, setSelectTypeAcc] = useState('');
-  const [selectGeoReplenishment, setSelectGeoReplenishment] = useState('');
-  const [selectTypeReplenishment, setSelectTypeReplenishment] = useState('');
-  const [selectGeoServer, setSelectGeoServer] = useState('');
-  const [selectTypeServer, setSelectTypeServer] = useState('');
+  // const [selectGeoAcc, setSelectGeoAcc] = useState('');
+  // const [selectTypeAcc, setSelectTypeAcc] = useState('');
+  // const [selectGeoReplenishment, setSelectGeoReplenishment] = useState('');
+  // const [selectTypeReplenishment, setSelectTypeReplenishment] = useState('');
+  // const [selectGeoServer, setSelectGeoServer] = useState('');
+  // const [selectTypeServer, setSelectTypeServer] = useState('');
 
   const toggleEditTypeModal = () => {
     setIsOpenEditType(!isOpenEditType);
@@ -526,7 +526,7 @@ export default function AutoFarmSection() {
           {t('AutoFarmSection.tableAcc.header')}
         </h3>
         <div className={styles.buttons_wrap}>
-          <CustomSelect
+          {/* <CustomSelect
             label={`${t('AutoFarmSection.geo')}:`}
             options={Array.from(new Set(data.map(item => item.geo)))}
             selected={selectGeoAcc}
@@ -539,7 +539,7 @@ export default function AutoFarmSection() {
             selected={selectTypeAcc}
             onSelect={setSelectTypeAcc}
             width={296}
-          />
+          /> */}
         </div>
         <div className={styles.table_wrapper}>
           <table className={styles.table}>
@@ -580,7 +580,7 @@ export default function AutoFarmSection() {
             {t('AutoFarmSection.tableReplenishment.header')}
           </h3>
           <div className={styles.buttons_wrap}>
-            <CustomSelect
+            {/* <CustomSelect
               label={`${t('AutoFarmSection.geo')}:`}
               options={Array.from(new Set(data.map(item => item.geo)))}
               selected={selectGeoReplenishment}
@@ -593,7 +593,7 @@ export default function AutoFarmSection() {
               selected={selectTypeReplenishment}
               onSelect={setSelectTypeReplenishment}
               width={140}
-            />
+            /> */}
           </div>
           <div className={styles.replenishment_table_wrapper}>
             <table className={styles.table}>
@@ -642,7 +642,7 @@ export default function AutoFarmSection() {
             {t('AutoFarmSection.tableServers.header')}
           </h3>
           <div className={styles.buttons_wrap}>
-            <CustomSelect
+            {/* <CustomSelect
               label={`${t('AutoFarmSection.geo')}:`}
               options={Array.from(new Set(data.map(item => item.geo)))}
               selected={selectGeoServer}
@@ -655,7 +655,7 @@ export default function AutoFarmSection() {
               selected={selectTypeServer}
               onSelect={setSelectTypeServer}
               width={330}
-            />
+            /> */}
           </div>
           <div className={styles.server_table_wrapper}>
             <table className={styles.table}>

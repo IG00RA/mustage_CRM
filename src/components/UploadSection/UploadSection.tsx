@@ -91,8 +91,10 @@ export default function UploadSection() {
       window.URL.revokeObjectURL(url);
 
       toast.success(t('Upload.downloadError.success'));
-    } catch (error: any) {
-      toast.error(error.message || t('Upload.downloadError.error'));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t('Upload.downloadError.error')
+      );
       console.error('Download error:', error);
     }
   };

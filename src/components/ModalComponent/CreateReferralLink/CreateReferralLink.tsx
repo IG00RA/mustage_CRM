@@ -17,7 +17,7 @@ type FormData = {
 export default function CreateReferralLink() {
   const t = useTranslations('');
 
-  const [selectCategory, setSelectCategory] = useState('');
+  const [selectCategory, setSelectCategory] = useState(['']);
 
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>

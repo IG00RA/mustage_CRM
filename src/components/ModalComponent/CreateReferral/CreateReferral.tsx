@@ -72,6 +72,7 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
         email: data.email,
         is_admin: false,
         is_referral: true,
+        role_id: 0,
         telegram_id: data.tgId,
         telegram_username: data.tgNick,
         functions: [],

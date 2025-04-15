@@ -88,6 +88,14 @@ export type ReportType =
   | 'custom'
   | 'all';
 
+interface ReportParams {
+  date?: string;
+  start_date?: string;
+  end_date?: string;
+  category_id?: number | number[];
+  subcategory_id?: number | number[];
+}
+
 export interface SalesState {
   sales: Sale[];
   chartSales: Sale[];
@@ -101,7 +109,10 @@ export interface SalesState {
   setYearlyChange: (change: number) => void;
   setCustomPeriodLabel: (period: string) => void;
   fetchSalesSummary: () => Promise<void>;
-  fetchReport: (reportType: ReportType, params: any) => Promise<Sale[]>;
+  fetchReport: (
+    reportType: ReportType,
+    params: ReportParams
+  ) => Promise<Sale[]>;
   fetchSalesAndYearlyChange: (
     range: RangeType,
     customStart?: string,
@@ -120,11 +131,27 @@ export interface CategoriesState {
   fetchSubcategories: (categoryId?: number) => Promise<void>;
 }
 
-export interface FetchAccountsParams {
+export interface FetchAllAccountsParams {
   category_ids?: number[];
   subcategory_ids?: number[];
   status?: string[];
   seller_id?: number[];
+  limit?: number;
+  offset?: number;
+  like_query?: string;
+  sort_by_upload?: 'ASC' | 'DESC';
+  with_destination?: boolean;
+  sold_start_date?: string;
+  sold_end_date?: string;
+  upload_start_date?: string;
+  upload_end_date?: string;
+}
+
+export interface FetchAccountsParams {
+  category_id?: number | number[];
+  subcategory_id?: number | number[];
+  status?: string | string[];
+  seller_id?: number | number[];
   limit?: number;
   offset?: number;
   like_query?: string;
@@ -205,7 +232,7 @@ export interface AccountsState {
   loading: boolean;
   error: string | null;
   fetchAccounts: (
-    params?: FetchAccountsParams,
+    params?: FetchAllAccountsParams,
     updateState?: boolean
   ) => Promise<{ items: Account[]; total_rows: number }>;
   searchAccounts: (accountNames: string[]) => Promise<SearchResponse>;

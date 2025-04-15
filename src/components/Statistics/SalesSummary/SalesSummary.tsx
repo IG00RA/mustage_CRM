@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from '../Statistics.module.css';
-import { Sale } from '@/api/sales/data';
+import { Sale } from '@/types/salesTypes';
 
 interface SalesSummaryProps {
   salesData: Sale[];

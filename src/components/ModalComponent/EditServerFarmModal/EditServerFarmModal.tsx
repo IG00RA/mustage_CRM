@@ -15,7 +15,7 @@ type FormData = {
 export default function EditServerFarmModal() {
   const t = useTranslations('');
 
-  const [selectGeoAcc, setSelectGeoAcc] = useState('');
+  const [selectGeoAcc, setSelectGeoAcc] = useState(['']);
 
   const {
     handleSubmit,

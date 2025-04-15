@@ -39,7 +39,7 @@ export const useReferralsStore = create<ReferralsState>(set => ({
           credentials: 'include',
           body: JSON.stringify(settings),
         },
-        set
+        () => {}
       );
       set({ loading: false });
     } catch (error) {

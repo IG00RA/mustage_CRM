@@ -3,11 +3,64 @@ import { Sale, RangeType, ReportType, SalesState } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 
+interface SummaryPeriod {
+  total_amount: number;
+  sales_count: number;
+}
+
+interface SalesSummaryResponse {
+  today: SummaryPeriod;
+  week: SummaryPeriod;
+  month: SummaryPeriod;
+}
+
+interface YearlyTotal {
+  total_amount: number;
+  sales_count: number;
+}
+
+interface SalesAllTimeResponse {
+  [year: string]: {
+    total: YearlyTotal;
+  };
+}
+
+interface ReportPeriod {
+  total_amount: number;
+  sales_count: number;
+}
+
+interface ReportResponse {
+  [period: string]: ReportPeriod;
+}
+
+interface AllTimeReportResponse {
+  [year: string]: {
+    [month: string]:
+      | ReportPeriod
+      | { total_amount: number; sales_count: number };
+  };
+}
+
+interface ReportParams {
+  date?: string;
+  start_date?: string;
+  end_date?: string;
+  category_id?: number | number[];
+  subcategory_id?: number | number[];
+}
+
+interface DateRangeResult {
+  reportType: ReportType;
+  current: ReportParams;
+  lastYear: ReportParams;
+}
+
 const getDateRangeParams = (
   range: RangeType,
   customStart?: string,
   customEnd?: string
-) => {
+): DateRangeResult => {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
   const yesterday = new Date(today.setDate(today.getDate() - 1))
@@ -30,10 +83,7 @@ const getDateRangeParams = (
     .toISOString()
     .split('T')[0];
 
-  const ranges: Record<
-    RangeType,
-    { reportType: ReportType; current: any; lastYear: any }
-  > = {
+  const ranges: Record<RangeType, DateRangeResult> = {
     today: {
       reportType: 'hourly',
       current: { date: todayStr },
@@ -117,7 +167,7 @@ const getDaysDifference = (start: string, end: string): number => {
   const startDate = new Date(start);
   const endDate = new Date(end);
   const diffInMs = endDate.getTime() - startDate.getTime();
-  return Math.ceil(diffInMs / (1000 * 60 * 60 * 24)); // Переводимо мілісекунди в дні
+  return Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
 };
 
 const aggregateToWeekly = (sales: Sale[]): Sale[] => {
@@ -190,7 +240,7 @@ export const useSalesStore = create<SalesState>(set => ({
   setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
 
   fetchSalesSummary: async () => {
-    const summaryData = await fetchWithErrorHandling<any>(
+    const summaryData = await fetchWithErrorHandling<SalesSummaryResponse>(
       ENDPOINTS.SALES_SUMMARY,
       {
         method: 'GET',
@@ -200,10 +250,10 @@ export const useSalesStore = create<SalesState>(set => ({
         },
         credentials: 'include',
       },
-      set
+      () => {}
     );
 
-    const allTimeData = await fetchWithErrorHandling<any>(
+    const allTimeData = await fetchWithErrorHandling<SalesAllTimeResponse>(
       ENDPOINTS.SALES_ALL_TIME,
       {
         method: 'GET',
@@ -213,12 +263,12 @@ export const useSalesStore = create<SalesState>(set => ({
         },
         credentials: 'include',
       },
-      set
+      () => {}
     );
 
     let allTimeQuantity = 0;
     let allTimeAmount = 0;
-    Object.values(allTimeData).forEach((yearData: any) => {
+    Object.values(allTimeData).forEach(yearData => {
       if (yearData.total) {
         allTimeQuantity += yearData.total.sales_count || 0;
         allTimeAmount += yearData.total.total_amount || 0;
@@ -251,7 +301,10 @@ export const useSalesStore = create<SalesState>(set => ({
     set({ sales });
   },
 
-  fetchReport: async (reportType, params) => {
+  fetchReport: async (
+    reportType: ReportType,
+    params: ReportParams
+  ): Promise<Sale[]> => {
     const queryParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {
@@ -264,20 +317,24 @@ export const useSalesStore = create<SalesState>(set => ({
       }
     });
 
-    if (params.category_id && Array.isArray(params.category_id)) {
-      params.category_id.forEach((id: number) => {
-        queryParams.append('category_id', String(id));
-      });
-    } else if (params.category_id) {
-      queryParams.append('category_id', String(params.category_id));
+    if (params.category_id) {
+      if (Array.isArray(params.category_id)) {
+        params.category_id.forEach(id => {
+          queryParams.append('category_id', String(id));
+        });
+      } else {
+        queryParams.append('category_id', String(params.category_id));
+      }
     }
 
-    if (params.subcategory_id && Array.isArray(params.subcategory_id)) {
-      params.subcategory_id.forEach((id: number) => {
-        queryParams.append('subcategory_id', String(id));
-      });
-    } else if (params.subcategory_id) {
-      queryParams.append('subcategory_id', String(params.subcategory_id));
+    if (params.subcategory_id) {
+      if (Array.isArray(params.subcategory_id)) {
+        params.subcategory_id.forEach(id => {
+          queryParams.append('subcategory_id', String(id));
+        });
+      } else {
+        queryParams.append('subcategory_id', String(params.subcategory_id));
+      }
     }
 
     const query = queryParams.toString();
@@ -303,7 +360,40 @@ export const useSalesStore = create<SalesState>(set => ({
         endpoint = `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
     }
 
-    const data = await fetchWithErrorHandling<any>(
+    if (reportType === 'all') {
+      const data = await fetchWithErrorHandling<AllTimeReportResponse>(
+        endpoint,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+        () => {}
+      );
+
+      const sales: Sale[] = [];
+      Object.entries(data).forEach(
+        ([year, months]: [string, AllTimeReportResponse[string]]) => {
+          Object.entries(months).forEach(
+            ([month, report]: [string, ReportPeriod]) => {
+              if (month !== 'total') {
+                sales.push({
+                  period: `${year}-${month}`,
+                  amount: report.total_amount || 0,
+                  quantity: report.sales_count || 0,
+                });
+              }
+            }
+          );
+        }
+      );
+      return sales;
+    }
+
+    const data = await fetchWithErrorHandling<ReportResponse>(
       endpoint,
       {
         method: 'GET',
@@ -313,30 +403,16 @@ export const useSalesStore = create<SalesState>(set => ({
         },
         credentials: 'include',
       },
-      set
+      () => {}
     );
 
-    if (reportType === 'all') {
-      const sales: Sale[] = [];
-      Object.entries(data).forEach(([year, months]: [string, any]) => {
-        Object.entries(months).forEach(([month, report]: [string, any]) => {
-          if (month !== 'total') {
-            sales.push({
-              period: `${year}-${month}`,
-              amount: report.total_amount || 0,
-              quantity: report.sales_count || 0,
-            });
-          }
-        });
-      });
-      return sales;
-    }
-
-    return Object.entries(data).map(([period, report]: [string, any]) => ({
-      period,
-      amount: report.total_amount || 0,
-      quantity: report.sales_count || 0,
-    }));
+    return Object.entries(data).map(
+      ([period, report]: [string, ReportPeriod]) => ({
+        period,
+        amount: report.total_amount || 0,
+        quantity: report.sales_count || 0,
+      })
+    );
   },
 
   fetchSalesAndYearlyChange: async (
@@ -345,13 +421,12 @@ export const useSalesStore = create<SalesState>(set => ({
     customEnd?: string,
     categoryId?: number | number[],
     subcategoryId?: number | number[]
-  ) => {
+  ): Promise<void> => {
     let reportType: ReportType;
-    let currentParams: Record<string, string | string[]> = {};
-    let lastYearParams: Record<string, string | string[]> = {};
+    let currentParams: ReportParams = {};
+    let lastYearParams: ReportParams = {};
 
     if (range === 'custom') {
-      // Отримуємо дати з параметрів або з customPeriodLabel
       let effectiveStart = customStart;
       let effectiveEnd = customEnd;
 
@@ -371,13 +446,11 @@ export const useSalesStore = create<SalesState>(set => ({
           effectiveStart = dates[0];
           effectiveEnd = dates[1];
         } else {
-          // Якщо дати невалідні або відсутні, очищаємо графік і виходимо
           set({ chartSales: [], yearlyChange: null });
           return;
         }
       }
 
-      // На цьому етапі effectiveStart і effectiveEnd точно є валідними рядками
       const daysDiff = getDaysDifference(effectiveStart, effectiveEnd);
       if (daysDiff <= 1) {
         reportType = 'hourly';
@@ -398,32 +471,20 @@ export const useSalesStore = create<SalesState>(set => ({
         lastYear,
       } = getDateRangeParams(range, customStart, customEnd);
       reportType = predefinedReportType;
-      currentParams = { ...current };
-      lastYearParams = { ...lastYear };
+      currentParams = current;
+      lastYearParams = lastYear;
     }
 
-    // Додаємо categoryId і subcategoryId, якщо вони є
     if (categoryId !== undefined) {
-      if (Array.isArray(categoryId) && categoryId.length > 0) {
-        currentParams.category_id = categoryId.map(String);
-        lastYearParams.category_id = categoryId.map(String);
-      } else if (!Array.isArray(categoryId)) {
-        currentParams.category_id = String(categoryId);
-        lastYearParams.category_id = String(categoryId);
-      }
+      currentParams.category_id = categoryId;
+      lastYearParams.category_id = categoryId;
     }
 
     if (subcategoryId !== undefined) {
-      if (Array.isArray(subcategoryId) && subcategoryId.length > 0) {
-        currentParams.subcategory_id = subcategoryId.map(String);
-        lastYearParams.subcategory_id = subcategoryId.map(String);
-      } else if (!Array.isArray(subcategoryId)) {
-        currentParams.subcategory_id = String(subcategoryId);
-        lastYearParams.subcategory_id = String(subcategoryId);
-      }
+      currentParams.subcategory_id = subcategoryId;
+      lastYearParams.subcategory_id = subcategoryId;
     }
 
-    // Виконуємо запити до сервера
     const currentSales = await useSalesStore
       .getState()
       .fetchReport(reportType, currentParams);
@@ -438,9 +499,8 @@ export const useSalesStore = create<SalesState>(set => ({
 
       if (range === 'custom') {
         const daysDiff = getDaysDifference(
-          (currentParams.start_date as string) ||
-            (currentParams.date as string),
-          (currentParams.end_date as string) || (currentParams.date as string)
+          currentParams.start_date || currentParams.date || '',
+          currentParams.end_date || currentParams.date || ''
         );
         if (daysDiff <= 1) {
           chartSales = currentSales;

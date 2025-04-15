@@ -334,7 +334,7 @@ export default function ReferralsAllSection() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenWithdrawal, setIsOpenWithdrawal] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
-  const [selectGeoServer, setSelectGeoServer] = useState('');
+  const [selectGeoServer, setSelectGeoServer] = useState(['']);
   const [isOpenCreate, setIsOpenCreate] = useState(false);
 
   const toggleCreateModal = () => {
@@ -574,7 +574,7 @@ export default function ReferralsAllSection() {
         onClose={toggleCreateModal}
         title="ReferralsAll.modalCreate.title"
       >
-        <CreateReferral />
+        <CreateReferral onClose={toggleCreateModal} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenWithdrawal}

@@ -25,7 +25,7 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
         },
         credentials: 'include',
       },
-      set
+      () => {}
     );
     set({ categories: data.items });
   },
@@ -44,7 +44,7 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
         },
         credentials: 'include',
       },
-      set
+      () => {}
     );
     set({ subcategories: data.items });
   },
