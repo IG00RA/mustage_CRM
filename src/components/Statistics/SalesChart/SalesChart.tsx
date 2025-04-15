@@ -11,9 +11,9 @@ import ChartDisplay from './ChartDisplay';
 import Loader from '@/components/Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
-import { RangeType } from '@/types/salesTypes';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import DateRangeSelector from '@/components/Buttons/DateRangeSelector/DateRangeSelector';
+import { RangeType } from '@/types/salesTypes';
 
 const SalesChart: React.FC = () => {
   const t = useTranslations();

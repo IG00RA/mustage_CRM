@@ -6,7 +6,7 @@ import ownStyles from './SearchResultReplace.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { Account } from '@/types/salesTypes';
+import { Account } from '@/types/accountsTypes';
 import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
 
 interface SearchResultReplaceProps {

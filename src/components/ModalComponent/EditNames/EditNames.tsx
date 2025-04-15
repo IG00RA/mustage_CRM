@@ -14,7 +14,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
-import { Subcategory } from '@/types/salesTypes';
+import { Subcategory } from '@/types/categoriesTypes';
 
 type FormData = {
   nameField: string;

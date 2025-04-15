@@ -8,7 +8,7 @@ import SearchResultReplace from '../ModalComponent/SearchResultReplace/SearchRes
 import ResultReplace from '../ModalComponent/ResultReplace/ResultReplace';
 import { toast } from 'react-toastify';
 import { useAccountsStore } from '@/store/accountsStore';
-import { Account } from '@/types/salesTypes';
+import { Account } from '@/types/accountsTypes';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 
 export interface SearchResults {

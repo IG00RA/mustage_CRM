@@ -8,11 +8,11 @@ import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useEffect, useState } from 'react';
+import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import {
   UpdateCategoryFormData,
   UpdateCategoryProps,
 } from '@/types/componentsTypes';
-import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 
 interface ExtendedUpdateCategoryProps extends UpdateCategoryProps {
   initialIsSetCategory?: boolean;

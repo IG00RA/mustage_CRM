@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import {
-  Category,
-  Subcategory,
-  Response,
-  CategoriesState,
-} from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
+import {
+  CategoriesState,
+  Category,
+  Subcategory,
+} from '@/types/categoriesTypes';
+import { Response } from '@/types/globalTypes';
 
 export const useCategoriesStore = create<CategoriesState>(set => ({
   categories: [],

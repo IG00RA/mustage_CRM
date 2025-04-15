@@ -16,11 +16,12 @@ import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
-import { useRolesStore, Role } from '@/store/rolesStore';
-import { PaginationState } from '@/types/componentsTypes';
+import { useRolesStore } from '@/store/rolesStore';
 import Loader from '../Loader/Loader';
 import CreateRole from '../ModalComponent/CreateRole/CreateRole';
 import EditRole from '../ModalComponent/EditRole/EditRole';
+import { Role } from '@/types/rolesTypes';
+import { PaginationState } from '@/types/componentsTypes';
 
 const PAGINATION_KEY = 'roleSectionPaginationSettings';
 

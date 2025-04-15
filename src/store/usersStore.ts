@@ -1,90 +1,13 @@
 import { create } from 'zustand';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
-
-export interface User {
-  user_id: number;
-  login: string;
-  first_name: string;
-  last_name: string;
-  is_admin?: boolean;
-  is_referral?: boolean;
-  email?: string;
-  telegram_id: number;
-  telegram_username: string;
-  role?: {
-    role_id: number;
-    name: string;
-    description: string;
-  };
-  functions: {
-    function_id: number;
-    function_name: string;
-    operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
-    subcategories: number[] | null;
-  }[];
-  notifications_for_subcategories: number[] | null;
-}
-
-interface CreateUserRequest {
-  login: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  is_admin: boolean;
-  is_referral: boolean;
-  telegram_id: number;
-  telegram_username: string;
-  role_id: number;
-  functions?: {
-    function_id: number;
-    operations: string[];
-    subcategories: number[];
-  }[];
-  notifications_for_subcategories: number[];
-}
-
-interface UpdateUserRequest {
-  user_id: number;
-  login?: string;
-  password?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  is_admin?: boolean;
-  is_referral?: boolean;
-  telegram_id?: number;
-  telegram_username?: string;
-  functions?: {
-    function_id: number;
-    operations: string[];
-    subcategories: number[];
-  }[];
-  notifications_for_subcategories?: number[];
-}
-
-interface CreateUserResponse {
-  login: string;
-  is_admin: boolean;
-  id?: number;
-}
-
-interface UsersState {
-  users: User[];
-  totalRows: number;
-  currentUser: User | null;
-  loading: boolean;
-  error: string | null;
-  fetchUsers: (params: { limit?: number; offset?: number }) => Promise<{
-    items: User[];
-    total_rows: number;
-  }>;
-  createUser: (userData: CreateUserRequest) => Promise<CreateUserResponse>;
-  editUser: (userData: UpdateUserRequest) => Promise<void>;
-  fetchCurrentUser: () => Promise<User>;
-  resetCurrentUser: () => void;
-}
+import {
+  CreateUserRequest,
+  CreateUserResponse,
+  UpdateUserRequest,
+  User,
+  UsersState,
+} from '@/types/usersTypes';
 
 export const useUsersStore = create<UsersState>(set => ({
   users: [],

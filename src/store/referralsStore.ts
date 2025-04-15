@@ -1,25 +1,10 @@
 import { create } from 'zustand';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
-
-export interface PaymentModel {
-  payment_model: 'RevShare' | 'CPA';
-  payment_reason: 'BalanceTopUp' | 'AccountsSold';
-  percentage?: number;
-  fixed?: number;
-  min_amount?: number;
-}
-
-interface ReferralPaymentSettings {
-  referrer_id: number;
-  payment_models: PaymentModel[];
-}
-
-interface ReferralsState {
-  loading: boolean;
-  error: string | null;
-  savePaymentSettings: (settings: ReferralPaymentSettings) => Promise<void>;
-}
+import {
+  ReferralPaymentSettings,
+  ReferralsState,
+} from '@/types/referralsTypes';
 
 export const useReferralsStore = create<ReferralsState>(set => ({
   loading: false,

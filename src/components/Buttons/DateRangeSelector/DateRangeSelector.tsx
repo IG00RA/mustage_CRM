@@ -4,8 +4,8 @@ import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './DateRangeSelector.module.css';
-import { DateRangeSelectorProps } from '@/types/componentsTypes';
 import { useSalesStore } from '@/store/salesStore';
+import { DateRangeSelectorProps } from '@/types/componentsTypes';
 
 const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   dateRange,

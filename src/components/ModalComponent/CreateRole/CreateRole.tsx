@@ -14,10 +14,10 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomButtonsInput from '@/components/Buttons/CustomButtonsInput/CustomButtonsInput';
 import { useRolesStore } from '@/store/rolesStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { PaginationState } from '@/types/componentsTypes';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
 import Icon from '@/helpers/Icon';
+import { PaginationState } from '@/types/componentsTypes';
 
 interface FormData {
   name: string;

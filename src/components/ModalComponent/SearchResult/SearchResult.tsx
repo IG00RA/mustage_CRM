@@ -3,7 +3,7 @@ import styles from '../ModalComponent.module.css';
 import ownStyles from './SearchResult.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import AddBtn from '@/components/Buttons/AddBtn/AddBtn';
-import { SearchResponse } from '@/types/salesTypes';
+import { SearchResponse } from '@/types/accountsTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { toast } from 'react-toastify';
 

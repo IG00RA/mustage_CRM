@@ -22,15 +22,12 @@ import EditPromoCode from '../ModalComponent/EditPromoCode/EditPromoCode';
 import { usePromoCodesStore } from '@/store/promoCodesStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import Loader from '../Loader/Loader';
-import {
-  FetchPromoCodesTypes,
-  PaginationState,
-  PromoCode,
-} from '@/types/componentsTypes';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
 import { toast } from 'react-toastify';
 import debounce from 'lodash/debounce';
+import { FetchPromoCodesTypes, PromoCode } from '@/types/promoCodesTypes';
+import { PaginationState } from '@/types/componentsTypes';
 
 const PAGINATION_KEY = 'promoSectionPaginationSettings';
 

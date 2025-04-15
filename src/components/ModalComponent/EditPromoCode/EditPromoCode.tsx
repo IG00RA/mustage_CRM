@@ -13,8 +13,8 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
-import { PromoCode } from '@/types/componentsTypes';
 import { usePromoCodesStore } from '@/store/promoCodesStore';
+import { PromoCode } from '@/types/promoCodesTypes';
 
 type FormData = {
   name: string;

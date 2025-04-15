@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { Seller, SellersState } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
+import { Seller, SellersState } from '@/types/sellersTypes';
 
 export const useSellersStore = create<SellersState>(set => ({
   sellers: [],

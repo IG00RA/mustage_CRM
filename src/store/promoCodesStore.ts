@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
-import { PromoCode, PromoCodesState } from '@/types/componentsTypes';
+import { PromoCode, PromoCodesState } from '@/types/promoCodesTypes';
 
 export const usePromoCodesStore = create<PromoCodesState>(set => ({
   promoCodes: [],

@@ -1,23 +1,23 @@
 import styles from '../AllAccountsSection.module.css';
 import { Table } from '@tanstack/react-table';
-import { PaginationState } from '@/types/componentsTypes'; // Передбачається, що тип уже визначений
-import { Account } from '@/types/salesTypes'; // Передбачається, що тип Account визначений
+import { Account } from '@/types/accountsTypes';
 import Loader from '@/components/Loader/Loader';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
 import { flexRender } from '@tanstack/react-table';
+import { PaginationState } from '@/types/componentsTypes';
 
 interface TableSectionProps {
-  table: Table<Account>; // Тип таблиці з TanStack Table, параметризований типом Account
-  totalRows: number; // Загальна кількість рядків для пагінації
-  pagination: PaginationState; // Стан пагінації (pageIndex, pageSize)
-  onPaginationChange: (newPagination: PaginationState) => void; // Функція для оновлення стану пагінації
-  showLoader: boolean; // Показувати чи ні завантажувач
-  error: string | null; // Помилка для відображення в Loader
-  onToggleDownload: () => void; // Функція для перемикання модального вікна завантаження
-  onToggleEditModal: () => void; // Функція для перемикання модального вікна редагування
-  loadAccounts: (updatedPagination: PaginationState) => Promise<void>; // Функція для завантаження даних з новою пагінацією
-  t: (key: string) => string; // Функція перекладу з next-intl
+  table: Table<Account>;
+  totalRows: number;
+  pagination: PaginationState;
+  onPaginationChange: (newPagination: PaginationState) => void;
+  showLoader: boolean;
+  error: string | null;
+  onToggleDownload: () => void;
+  onToggleEditModal: () => void;
+  loadAccounts: (updatedPagination: PaginationState) => Promise<void>;
+  t: (key: string) => string;
 }
 
 export const TableSection = ({

@@ -21,9 +21,9 @@ import UpdateCategory from '../ModalComponent/UpdateCategory/UpdateCategory';
 import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
-import { PaginationState } from '@/types/componentsTypes';
-import { Category } from '@/types/salesTypes';
 import { toast } from 'react-toastify';
+import { PaginationState } from '@/types/componentsTypes';
+import { Category } from '@/types/categoriesTypes';
 
 const CATEGORY_PAGINATION_KEY = 'categoryPaginationSettings';
 
@@ -34,16 +34,15 @@ export default function CategorySection() {
   const didFetchRef = useRef(false);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
-  // Логіка прав доступу для "Категории" (function_id: 2)
-  const isFunctionsEmpty = currentUser?.functions.length === 0; // Перевіряємо, чи порожній масив functions
+  const isFunctionsEmpty = currentUser?.functions.length === 0;
   const categoryPermissions =
     currentUser?.functions.find(
       func => func.function_id === 2 && func.function_name === 'Категории'
     )?.operations || [];
-  const hasCreate = isFunctionsEmpty || categoryPermissions.includes('CREATE'); // CREATE доступний, якщо functions порожній або є CREATE
+  const hasCreate = isFunctionsEmpty || categoryPermissions.includes('CREATE');
   const hasRead =
-    isFunctionsEmpty || categoryPermissions.includes('READ') || hasCreate; // READ доступний, якщо functions порожній або є READ чи CREATE
-  const hasUpdate = currentUser?.is_admin || false; // UPDATE доступний лише для адмінів, незалежно від functions
+    isFunctionsEmpty || categoryPermissions.includes('READ') || hasCreate;
+  const hasUpdate = currentUser?.is_admin || false;
 
   useEffect(() => {
     const timer = setTimeout(() => {

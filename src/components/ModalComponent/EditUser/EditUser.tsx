@@ -14,12 +14,13 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import UserRoles, { UserFunction } from '../UserRoles/UserRoles';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { useUsersStore, User } from '@/store/usersStore';
+import { useUsersStore } from '@/store/usersStore';
 import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
-import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
 import CreateRole from '../CreateRole/CreateRole';
+import { User } from '@/types/usersTypes';
+import { PaginationState } from '@/types/componentsTypes';
 
 interface FormData {
   login: string;

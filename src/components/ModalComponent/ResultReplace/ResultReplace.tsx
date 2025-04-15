@@ -15,11 +15,11 @@ import { useAccountsStore } from '@/store/accountsStore';
 import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
 import {
   ReplaceRequest,
-  Subcategory,
   AccountDataWrapper,
   SellAccountsResponse,
-} from '@/types/salesTypes';
+} from '@/types/accountsTypes';
 import ExcelJS from 'exceljs';
+import { Subcategory } from '@/types/categoriesTypes';
 
 interface ResultReplaceProps {
   searchResults: SearchResults | null;

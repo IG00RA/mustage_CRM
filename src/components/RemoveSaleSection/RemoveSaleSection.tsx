@@ -15,10 +15,9 @@ import {
   SortingState,
   flexRender,
 } from '@tanstack/react-table';
-import { Account, SearchResponse } from '@/types/salesTypes';
+import { Account, SearchResponse } from '@/types/accountsTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { PaginationState } from '@/types/componentsTypes';
 import SearchInput from '../Buttons/SearchInput/SearchInput';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Icon from '@/helpers/Icon';
@@ -27,6 +26,7 @@ import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import SearchResult from '../ModalComponent/SearchResult/SearchResult';
 import ViewSettings from '../ModalComponent/ViewSettings/ViewSettings';
 import Loader from '@/components/Loader/Loader';
+import { PaginationState } from '@/types/componentsTypes';
 
 const LOCAL_STORAGE_KEY = 'removeSaleTableSettings';
 const PAGINATION_KEY = 'removeSalePaginationSettings';

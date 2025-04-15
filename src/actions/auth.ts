@@ -97,8 +97,6 @@ export async function logout() {
       }
     );
 
-    console.log('response', response);
-
     if (response.ok) {
       await response.json();
       // Перевіряємо успішність логауту

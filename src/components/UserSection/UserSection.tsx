@@ -19,9 +19,10 @@ import Icon from '@/helpers/Icon';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CreateUser from '../ModalComponent/CreateUser/CreateUser';
 import EditUser from '../ModalComponent/EditUser/EditUser';
-import { useUsersStore, User } from '@/store/usersStore';
-import { PaginationState } from '@/types/componentsTypes';
+import { useUsersStore } from '@/store/usersStore';
 import Loader from '../Loader/Loader';
+import { User } from '@/types/usersTypes';
+import { PaginationState } from '@/types/componentsTypes';
 
 const PAGINATION_KEY = 'userSectionPaginationSettings';
 

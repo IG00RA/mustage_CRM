@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import {
   AccountsState,
+  FetchAccountsParams,
   SearchResponse,
-  Account,
-  ReplaceRequest,
   ReplaceResponse,
   StopSellingResponse,
   SellAccountsRequest,
   SellAccountsResponse,
-  FetchAccountsParams,
-} from '../types/salesTypes';
+  Account,
+  ReplaceRequest,
+} from '../types/accountsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 
@@ -181,6 +181,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
       throw error;
     }
   },
+
   sellAccounts: async (request: SellAccountsRequest) => {
     set({ loading: true, error: null });
 

@@ -7,9 +7,9 @@ import { toast } from 'react-toastify';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
-import { Category } from '@/types/salesTypes';
 import { useState } from 'react';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
+import { Category } from '@/types/categoriesTypes';
 
 type FormData = {
   name: string;

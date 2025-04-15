@@ -11,7 +11,8 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useUsersStore } from '@/store/usersStore';
-import { PaymentModel, useReferralsStore } from '@/store/referralsStore';
+import { useReferralsStore } from '@/store/referralsStore';
+import { PaymentModel } from '@/types/referralsTypes';
 
 interface FormData {
   login: string;

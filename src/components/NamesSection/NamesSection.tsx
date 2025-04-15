@@ -31,9 +31,9 @@ import ShowNamesDescription from '../ModalComponent/ShowNamesDescription/ShowNam
 import Loader from '../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
-import { PaginationState } from '@/types/componentsTypes';
-import { Subcategory } from '@/types/salesTypes';
 import { toast } from 'react-toastify';
+import { Subcategory } from '@/types/categoriesTypes';
+import { PaginationState } from '@/types/componentsTypes';
 
 const NAMES_PAGINATION_KEY = 'namesPaginationSettings';
 

@@ -1,58 +1,7 @@
 import { create } from 'zustand';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 import { ENDPOINTS } from '@/constants/api';
-
-export interface RoleFunction {
-  function_id: number;
-  function_name?: string;
-  operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
-  subcategories: number[] | null;
-}
-
-export interface Role {
-  role_id: number;
-  name: string;
-  description: string | null;
-  functions: RoleFunction[];
-}
-
-interface CreateRoleRequest {
-  name: string;
-  description: string;
-  functions: {
-    function_id: number;
-    operations: string[];
-    subcategories: number[];
-  }[];
-}
-
-interface UpdateRoleRequest {
-  role_id: number;
-  name?: string;
-  description?: string;
-  functions?: {
-    function_id: number;
-    operations: string[];
-    subcategories: number[];
-  }[];
-}
-
-interface RolesState {
-  roles: Role[];
-  totalRows: number;
-  currentRole: Role | null;
-  loading: boolean;
-  error: string | null;
-  fetchRoles: (params: {
-    limit?: number;
-    offset?: number;
-    like_query?: string;
-  }) => Promise<{ items: Role[]; total_rows: number }>;
-  fetchRoleById: (roleId: number) => Promise<Role>;
-  createRole: (roleData: CreateRoleRequest) => Promise<Role>;
-  editRole: (roleData: UpdateRoleRequest) => Promise<void>;
-  resetCurrentRole: () => void;
-}
+import { CreateRoleRequest, Role, RolesState, UpdateRoleRequest } from '@/types/rolesTypes';
 
 export const useRolesStore = create<RolesState>(set => ({
   roles: [],

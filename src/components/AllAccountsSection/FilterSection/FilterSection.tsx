@@ -1,8 +1,9 @@
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import DateRangeSelector from '@/components/Buttons/DateRangeSelector/DateRangeSelector';
 import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
-import { Account, RangeType } from '@/types/salesTypes';
 import styles from '../AllAccountsSection.module.css';
+import { Account } from '@/types/accountsTypes';
+import { RangeType } from '@/types/salesTypes';
 
 interface FilterSectionProps {
   categoryOptions: string[];

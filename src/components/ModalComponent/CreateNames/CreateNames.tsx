@@ -15,7 +15,7 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
-import { Subcategory } from '@/types/salesTypes';
+import { Subcategory } from '@/types/categoriesTypes';
 
 type FormData = {
   nameField: string;
@@ -33,7 +33,6 @@ const settingsOptions = [
   'Names.modalCreate.megaLink',
 ];
 
-// Мапінг ключів локалізації на потрібні значення
 const settingsMapping: Record<string, string> = {
   'Names.modalCreate.id': 'account_subcategory_id',
   'Names.modalCreate.data': 'account_data',
@@ -148,8 +147,8 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       setSelectedCategoryId(0);
       onClose();
     } catch (error) {
-      toast.error(t('Names.modalCreate.errorMessage'), error || "");
-      }
+      toast.error(t('Names.modalCreate.errorMessage'), error || '');
+    }
   };
   return (
     <form

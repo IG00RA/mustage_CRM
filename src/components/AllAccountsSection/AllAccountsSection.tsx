@@ -14,15 +14,16 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import { Account, FetchAllAccountsParams, RangeType } from '@/types/salesTypes';
+import { Account, FetchAllAccountsParams } from '@/types/accountsTypes';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
-import { PaginationState } from '@/types/componentsTypes';
 import { FilterSection } from './FilterSection/FilterSection';
 import { TableSection } from './TableSection/TableSection';
 import { ModalsSection } from './ModalsSection/ModalsSection';
+import { PaginationState } from '@/types/componentsTypes';
+import { RangeType } from '@/types/salesTypes';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';

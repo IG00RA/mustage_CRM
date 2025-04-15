@@ -4,72 +4,6 @@ export interface Sale {
   quantity: number;
 }
 
-export interface Category {
-  account_category_id: number;
-  account_category_name: string;
-  description: string | null;
-  is_set_category: boolean;
-}
-
-export interface Subcategory {
-  account_subcategory_id: number;
-  account_subcategory_name: string;
-  account_category_id: number;
-  price: number;
-  cost_price: number;
-  description?: string | null;
-  output_format_field?: string[] | null;
-  output_separator?: string | null;
-  category?: Category;
-}
-
-interface DestinationResponse {
-  destination_id: number;
-  browser_id: number;
-  username: string;
-  browser?: Browser | null;
-}
-
-interface Browser {
-  browser_id: number;
-  browser_name: string;
-}
-
-export interface Account {
-  account_id: number;
-  upload_datetime: string;
-  sold_datetime?: string | null;
-  worker_name: string;
-  teamlead_name?: string | null;
-  client_name?: string | null;
-  account_name: string;
-  price?: number | null;
-  status: 'SOLD' | 'NOT SOLD' | 'REPLACED' | 'EXCLUDED';
-  frozen_at?: string | null;
-  replace_reason?: string | null;
-  profile_link?: string | null;
-  archive_link?: string | null;
-  account_data?: string | null;
-  seller?: Seller | null;
-  subcategory: Subcategory;
-  category: Category;
-  destination?: DestinationResponse | null;
-}
-
-export interface Seller {
-  seller_id: number;
-  seller_name?: string | null;
-  visible_in_bot: boolean | null;
-}
-
-export interface Response<T> {
-  total_rows: number;
-  returned: number;
-  offset: number;
-  limit: number;
-  items: T[];
-}
-
 export type RangeType =
   | 'today'
   | 'yesterday'
@@ -88,12 +22,57 @@ export type ReportType =
   | 'custom'
   | 'all';
 
-interface ReportParams {
+export interface ReportParams {
   date?: string;
   start_date?: string;
   end_date?: string;
   category_id?: number | number[];
   subcategory_id?: number | number[];
+}
+
+export interface DateRangeResult {
+  reportType: ReportType;
+  current: ReportParams;
+  lastYear: ReportParams;
+}
+
+export interface SummaryPeriod {
+  total_amount: number;
+  sales_count: number;
+}
+
+export interface SalesSummaryResponse {
+  today: SummaryPeriod;
+  week: SummaryPeriod;
+  month: SummaryPeriod;
+}
+
+export interface YearlyTotal {
+  total_amount: number;
+  sales_count: number;
+}
+
+export interface SalesAllTimeResponse {
+  [year: string]: {
+    total: YearlyTotal;
+  };
+}
+
+export interface ReportPeriod {
+  total_amount: number;
+  sales_count: number;
+}
+
+export interface ReportResponse {
+  [period: string]: ReportPeriod;
+}
+
+export interface AllTimeReportResponse {
+  [year: string]: {
+    [month: string]:
+      | ReportPeriod
+      | { total_amount: number; sales_count: number };
+  };
 }
 
 export interface SalesState {
@@ -120,129 +99,4 @@ export interface SalesState {
     categoryId?: number | number[],
     subcategoryId?: number | number[]
   ) => Promise<void>;
-}
-
-export interface CategoriesState {
-  categories: Category[];
-  subcategories: Subcategory[];
-  loading: boolean;
-  error: string | null;
-  fetchCategories: () => Promise<void>;
-  fetchSubcategories: (categoryId?: number) => Promise<void>;
-}
-
-export interface FetchAllAccountsParams {
-  category_ids?: number[];
-  subcategory_ids?: number[];
-  status?: string[];
-  seller_id?: number[];
-  limit?: number;
-  offset?: number;
-  like_query?: string;
-  sort_by_upload?: 'ASC' | 'DESC';
-  with_destination?: boolean;
-  sold_start_date?: string;
-  sold_end_date?: string;
-  upload_start_date?: string;
-  upload_end_date?: string;
-}
-
-export interface FetchAccountsParams {
-  category_id?: number | number[];
-  subcategory_id?: number | number[];
-  status?: string | string[];
-  seller_id?: number | number[];
-  limit?: number;
-  offset?: number;
-  like_query?: string;
-  sort_by_upload?: 'ASC' | 'DESC';
-  with_destination?: boolean;
-  sold_start_date?: string;
-  sold_end_date?: string;
-  upload_start_date?: string;
-  upload_end_date?: string;
-}
-
-export interface SearchResponse {
-  found_accounts: Account[];
-  not_found_accounts: Record<string, (number | string)[]>;
-}
-
-export interface ReplaceRequest {
-  account_ids: number[];
-  subcategory_id: number;
-  seller_id: number;
-  replace_reason: string;
-  new_price: number;
-  client_name: string;
-  client_dolphin_email?: string;
-}
-
-export interface ReplaceResponse {
-  success: boolean;
-  subcategory_id: number;
-  seller_id: number;
-  quantity: number;
-  price: number;
-  client_name: string;
-  client_dolphin_email?: string;
-  account_data: {
-    transfer_requested: boolean;
-    transfer_success: boolean;
-    transfer_message: string;
-    account: Account;
-  }[];
-}
-
-export interface StopSellingResponse {
-  detail: string;
-  message: string;
-  success: boolean;
-}
-
-export interface SellAccountsRequest {
-  subcategory_id: number;
-  seller_id: number;
-  quantity: number;
-  price: number;
-  client_name: string;
-  client_dolphin_email?: string;
-}
-
-export interface SellAccountsResponse {
-  success: boolean;
-  subcategory_id: number;
-  seller_id: number;
-  quantity: number;
-  price: number;
-  client_name: string;
-  client_dolphin_email?: string;
-  account_data: AccountDataWrapper[];
-}
-
-export interface AccountDataWrapper {
-  transfer_requested: boolean;
-  transfer_success: boolean;
-  transfer_message: string;
-  account: Account;
-}
-
-export interface AccountsState {
-  accounts: Account[];
-  loading: boolean;
-  error: string | null;
-  fetchAccounts: (
-    params?: FetchAllAccountsParams,
-    updateState?: boolean
-  ) => Promise<{ items: Account[]; total_rows: number }>;
-  searchAccounts: (accountNames: string[]) => Promise<SearchResponse>;
-  replaceAccounts: (data: ReplaceRequest) => Promise<ReplaceResponse>;
-  stopSellingAccounts: (accountIds: number[]) => Promise<StopSellingResponse>;
-  sellAccounts: (request: SellAccountsRequest) => Promise<SellAccountsResponse>;
-}
-export interface SellersState {
-  sellers: Seller[];
-  loading: boolean;
-  error: string | null;
-  fetchSellers: (visibleInBot?: boolean) => Promise<void>;
 }

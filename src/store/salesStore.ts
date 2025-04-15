@@ -1,60 +1,19 @@
 import { create } from 'zustand';
-import { Sale, RangeType, ReportType, SalesState } from '../types/salesTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
-
-interface SummaryPeriod {
-  total_amount: number;
-  sales_count: number;
-}
-
-interface SalesSummaryResponse {
-  today: SummaryPeriod;
-  week: SummaryPeriod;
-  month: SummaryPeriod;
-}
-
-interface YearlyTotal {
-  total_amount: number;
-  sales_count: number;
-}
-
-interface SalesAllTimeResponse {
-  [year: string]: {
-    total: YearlyTotal;
-  };
-}
-
-interface ReportPeriod {
-  total_amount: number;
-  sales_count: number;
-}
-
-interface ReportResponse {
-  [period: string]: ReportPeriod;
-}
-
-interface AllTimeReportResponse {
-  [year: string]: {
-    [month: string]:
-      | ReportPeriod
-      | { total_amount: number; sales_count: number };
-  };
-}
-
-interface ReportParams {
-  date?: string;
-  start_date?: string;
-  end_date?: string;
-  category_id?: number | number[];
-  subcategory_id?: number | number[];
-}
-
-interface DateRangeResult {
-  reportType: ReportType;
-  current: ReportParams;
-  lastYear: ReportParams;
-}
+import {
+  AllTimeReportResponse,
+  DateRangeResult,
+  RangeType,
+  ReportParams,
+  ReportPeriod,
+  ReportResponse,
+  ReportType,
+  Sale,
+  SalesAllTimeResponse,
+  SalesState,
+  SalesSummaryResponse,
+} from '@/types/salesTypes';
 
 const getDateRangeParams = (
   range: RangeType,

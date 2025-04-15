@@ -17,9 +17,9 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
 import { useRolesStore } from '@/store/rolesStore';
 import ModalComponent from '../ModalComponent';
-import { PaginationState } from '@/types/componentsTypes';
 import Icon from '@/helpers/Icon';
 import CreateRole from '../CreateRole/CreateRole';
+import { PaginationState } from '@/types/componentsTypes';
 
 // Define interfaces
 interface FormData {

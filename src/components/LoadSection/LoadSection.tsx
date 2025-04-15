@@ -14,7 +14,10 @@ import ExcelJS from 'exceljs';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
-import { AccountDataWrapper, SellAccountsResponse } from '@/types/salesTypes';
+import {
+  AccountDataWrapper,
+  SellAccountsResponse,
+} from '@/types/accountsTypes';
 
 type FormData = {
   nameField: string; // Total available accounts (read-only)
