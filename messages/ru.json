@@ -626,7 +626,8 @@
       "selectAllFunctionError": "Добавьте функцию",
       "selectOperationError": "Пожалуйста, выберите хотя бы одну операцию",
       "success": "Роли успешно добавлены",
-      "addBtn": "Сохранить настройки"
+      "addBtn": "Сохранить настройки",
+      "errorMessageRoleExist": "Роль з таким именем уже существует."
     }
   },
   "ReferralsStat": {

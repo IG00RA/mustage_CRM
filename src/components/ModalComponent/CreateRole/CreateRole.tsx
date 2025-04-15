@@ -178,10 +178,15 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
       });
       reset();
       onClose();
-    } catch {
-      toast.error(
-        t('RoleSection.modalCreate.errorMessage') || 'Failed to create role'
-      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'Role with this name already exists'
+      ) {
+        toast.error(t('UserSection.modalRoles.errorMessageRoleExist'));
+      } else {
+        toast.error(t('UserSection.modalCreate.errorMessage'));
+      }
     }
   };
 
@@ -687,94 +692,88 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                                 multiSelections={false}
                               />
                             </div>
-                            {config.selectedCategory && (
-                              <>
-                                <div
-                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
-                                >
-                                  <WhiteBtn
-                                    onClick={() =>
-                                      handleAddAllSubcategories(
-                                        func.function_id
-                                      )
-                                    }
-                                    text={'UserSection.modalRoles.namesAllBtn'}
-                                  />
-                                </div>
-                                <div className={styles.field}>
-                                  <label className={styles.label}>
-                                    {t('UserSection.modalCreate.names')}
-                                  </label>
-                                  <CustomSelect
-                                    options={[
-                                      t(
-                                        'UserSection.modalRoles.subCategoryAll'
-                                      ),
-                                      ...subcategoryOptions,
-                                    ]}
-                                    selected={config.selectedSubcategories}
-                                    onSelect={values =>
-                                      handleSubcategoriesChange(
-                                        func.function_id,
-                                        values
-                                      )
-                                    }
-                                    multiSelections={true}
-                                  />
-                                </div>
-                                <div
-                                  className={`${styles.field} ${ownStyles.fieldBottom}`}
-                                >
-                                  <WhiteBtn
-                                    onClick={() =>
-                                      handleAddSubcategories(func.function_id)
-                                    }
-                                    text={'UserSection.modalRoles.namesBtn'}
-                                  />
-                                </div>
-                                <div className={styles.field}>
-                                  <CustomButtonsInput
-                                    buttons={config.subcategories.map(subId => {
+
+                            <div className={styles.field}>
+                              <label className={styles.label}>
+                                {t('UserSection.modalCreate.names')}
+                              </label>
+                              <CustomSelect
+                                options={[
+                                  t('UserSection.modalRoles.subCategoryAll'),
+                                  ...subcategoryOptions,
+                                ]}
+                                selected={config.selectedSubcategories}
+                                onSelect={values =>
+                                  handleSubcategoriesChange(
+                                    func.function_id,
+                                    values
+                                  )
+                                }
+                                multiSelections={true}
+                              />
+                            </div>
+                            <div
+                              className={`${styles.field}  ${ownStyles.btnWrap} ${ownStyles.fieldBottom}`}
+                            >
+                              <WhiteBtn
+                                disabled={
+                                  !config ||
+                                  config.selectedSubcategories.length === 0
+                                }
+                                onClick={() =>
+                                  handleAddSubcategories(func.function_id)
+                                }
+                                text={'UserSection.modalRoles.namesBtn'}
+                              />
+                              <WhiteBtn
+                                disabled={
+                                  !config ||
+                                  config.selectedCategory.length === 0
+                                }
+                                onClick={() =>
+                                  handleAddAllSubcategories(func.function_id)
+                                }
+                                text={'UserSection.modalRoles.namesAllBtn'}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <CustomButtonsInput
+                                buttons={config.subcategories.map(subId => {
+                                  const subName =
+                                    subcategories.find(
+                                      sub =>
+                                        sub.account_subcategory_id === subId
+                                    )?.account_subcategory_name || '';
+                                  return `${
+                                    func.name
+                                  } (${config.operations.join(
+                                    ', '
+                                  )}) - ${subName}`;
+                                })}
+                                onRemove={label => {
+                                  const subId = config.subcategories.find(
+                                    id => {
                                       const subName =
                                         subcategories.find(
                                           sub =>
-                                            sub.account_subcategory_id === subId
+                                            sub.account_subcategory_id === id
                                         )?.account_subcategory_name || '';
-                                      return `${
-                                        func.name
-                                      } (${config.operations.join(
-                                        ', '
-                                      )}) - ${subName}`;
-                                    })}
-                                    onRemove={label => {
-                                      const subId = config.subcategories.find(
-                                        id => {
-                                          const subName =
-                                            subcategories.find(
-                                              sub =>
-                                                sub.account_subcategory_id ===
-                                                id
-                                            )?.account_subcategory_name || '';
-                                          return (
-                                            `${
-                                              func.name
-                                            } (${config.operations.join(
-                                              ', '
-                                            )}) - ${subName}` === label
-                                          );
-                                        }
+                                      return (
+                                        `${func.name} (${config.operations.join(
+                                          ', '
+                                        )}) - ${subName}` === label
                                       );
-                                      if (subId !== undefined) {
-                                        handleRemoveSubcategory(
-                                          func.function_id,
-                                          subId
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              </>
-                            )}
+                                    }
+                                  );
+                                  if (subId !== undefined) {
+                                    handleRemoveSubcategory(
+                                      func.function_id,
+                                      subId
+                                    );
+                                  }
+                                }}
+                              />
+                            </div>
                           </>
                         )}
                       </div>
@@ -824,12 +823,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                       multiSelections={false}
                     />
                   </div>
-                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
-                    <WhiteBtn
-                      onClick={handleAddAllGlobalSubcategories}
-                      text={'UserSection.modalRoles.namesAllBtn'}
-                    />
-                  </div>
+
                   <div className={styles.field}>
                     <label className={styles.label}>
                       {t('UserSection.modalCreate.names')}
@@ -844,10 +838,25 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                       multiSelections={true}
                     />
                   </div>
-                  <div className={`${styles.field} ${ownStyles.fieldBottom}`}>
+                  <div
+                    className={`${styles.field}  ${ownStyles.btnWrap} ${ownStyles.fieldBottom}`}
+                  >
                     <WhiteBtn
                       onClick={handleAddGlobalSubcategories}
                       text={'UserSection.modalRoles.namesBtn'}
+                      disabled={
+                        !globalSubcategoriesConfig ||
+                        globalSubcategoriesConfig.selectedSubcategories
+                          .length === 0
+                      }
+                    />
+                    <WhiteBtn
+                      onClick={handleAddAllGlobalSubcategories}
+                      text={'UserSection.modalRoles.namesAllBtn'}
+                      disabled={
+                        !globalSubcategoriesConfig ||
+                        globalSubcategoriesConfig.selectedCategory.length === 0
+                      }
                     />
                   </div>
                   <div className={styles.field}>

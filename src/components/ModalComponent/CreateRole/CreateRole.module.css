@@ -248,3 +248,9 @@
 .fieldBottom {
   margin-bottom: 15px;
 }
+
+.btnWrap {
+  display: flex;
+  gap: 10px;
+  flex-direction: row !important;
+}

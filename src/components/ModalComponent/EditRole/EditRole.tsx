@@ -229,10 +229,17 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
         offset: pagination.pageIndex,
       });
       onClose();
-    } catch {
-      toast.error(
-        t('RoleSection.modalEdit.errorMessage') || 'Failed to update role'
-      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes(
+          'повторювані значення ключа порушують обмеження унікальності'
+        )
+      ) {
+        toast.error(t('UserSection.modalRoles.errorMessageRoleExist'));
+      } else {
+        toast.error(t('UserSection.modalCreate.errorMessage'));
+      }
     }
   };
 
