@@ -91,7 +91,7 @@
 }
 
 .table {
-  width: calc(100vw - 345px);
+  width: 100%;
   background: var(--background);
   border-collapse: collapse;
 }

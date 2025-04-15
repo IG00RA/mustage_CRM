@@ -17,6 +17,7 @@ import {
   mainParMenu,
   otherParMenu,
 } from '@/data/sidebar';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 // Тип для стану відкритих меню
 type OpenMenusState = {
@@ -82,7 +83,7 @@ const menuFunctionMap: MenuFunctionMap = {
   auto_farm: 'Управление автофармом',
   promo_code: 'Промокоды',
   users: 'Пользователи',
-  roles: 'Должности', // Додано для "Должности"
+  roles: 'Должности',
   referrals_all: 'Все рефералы',
   referrals_stat: 'Статистика реферальной системы',
 };
@@ -94,7 +95,7 @@ export default function Sidebar() {
   const [openMenus, setOpenMenus] = useState<OpenMenusState>({
     distribution: false,
     referrals: false,
-    users: false, // Додано для користувачів
+    users: false,
   });
 
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
@@ -171,19 +172,10 @@ export default function Sidebar() {
     isMenuAllowed('distribution_all');
   const hasReferralsAccess =
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
-  const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles'); // Додано для користувачів
+  const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles');
 
-  // Показуємо лоадер, якщо дані користувача завантажуються або ще не визначені
-  if (loading || (isInitialLoad && !currentUser)) {
-    return (
-      <aside className={styles.sidebar}>
-        <div className={styles.loader}>Loading...</div>
-      </aside>
-    );
-  }
-
-  // Якщо користувач скинутий (null), не показуємо меню
-  if (!currentUser) {
+  // Скелетон для відображення під час завантаження
+  if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
       <aside className={styles.sidebar}>
         <Link href="/" className={styles.logo_wrap}>
@@ -197,6 +189,55 @@ export default function Sidebar() {
           />
           <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
         </Link>
+        <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
+          <div className={styles.user_wrap}>
+            <div className={styles.user_image_wrap}>
+              <Skeleton circle width={40} height={40} />
+              <div className={styles.nick_wrap}>
+                <Skeleton width={100} height={16} />
+                <Skeleton width={60} height={12} style={{ marginTop: 8 }} />
+              </div>
+            </div>
+            <Skeleton circle width={24} height={24} />
+          </div>
+
+          <Skeleton
+            width={120}
+            height={16}
+            style={{ marginBottom: 16, marginTop: 22 }}
+          />
+          <div className={styles.nav}>
+            {Array(3)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} style={{ marginBottom: 12 }}>
+                  <Skeleton height={40} />
+                </div>
+              ))}
+          </div>
+
+          <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
+          <div className={styles.nav}>
+            {Array(2)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} style={{ marginBottom: 12 }}>
+                  <Skeleton height={40} />
+                </div>
+              ))}
+          </div>
+
+          <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
+          <div className={styles.nav}>
+            {Array(2)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} style={{ marginBottom: 12 }}>
+                  <Skeleton height={40} />
+                </div>
+              ))}
+          </div>
+        </SkeletonTheme>
       </aside>
     );
   }
@@ -226,10 +267,10 @@ export default function Sidebar() {
           />
           <div className={styles.nick_wrap}>
             <h2 className={styles.nick}>
-              {currentUser.first_name} {currentUser.last_name}
+              {currentUser?.first_name} {currentUser?.last_name}
             </h2>
             <p className={styles.role}>
-              {currentUser.is_admin ? 'Admin' : 'User'}
+              {currentUser?.is_admin ? 'Admin' : currentUser?.role?.name}
             </p>
           </div>
         </div>

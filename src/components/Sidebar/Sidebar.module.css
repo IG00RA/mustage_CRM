@@ -86,6 +86,7 @@
   font-style: normal;
   font-weight: 590;
   line-height: 1.57;
+  text-transform: capitalize;
 }
 
 .role {
@@ -94,6 +95,7 @@
   font-style: normal;
   font-weight: 400;
   line-height: 1.57;
+  text-transform: capitalize;
 }
 
 .parTitle {

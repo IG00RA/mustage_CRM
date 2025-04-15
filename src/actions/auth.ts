@@ -3,11 +3,18 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+interface UserFunction {
+  function_name: string;
+}
+interface UserData {
+  is_admin: boolean;
+  functions?: UserFunction[];
+}
+
 export async function login(formData: FormData) {
   const username = formData.get('username');
   const password = formData.get('password');
 
-  // Базова валідація на сервері
   if (!username || !password) {
     return { error: 'Username and password are required' };
   }
@@ -44,7 +51,30 @@ export async function login(formData: FormData) {
     maxAge: 30 * 24 * 60 * 60,
   });
 
-  redirect('/ru/');
+  // Отримання даних користувача
+  const userResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_HOST_BACK}/users/me`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!userResponse.ok) {
+    return { error: 'Failed to fetch user data' };
+  }
+
+  const userData: UserData = await userResponse.json();
+
+  const isDashboardAllowed =
+    userData.is_admin ||
+    !userData.functions ||
+    userData.functions.length === 0 ||
+    userData.functions.some(func => func.function_name === 'Обзор');
+  redirect(isDashboardAllowed ? '/ru/dashboard' : '/ru/');
 }
 
 export async function logout() {
@@ -57,7 +87,6 @@ export async function logout() {
   }
 
   try {
-    // Викликаємо API логауту на бекенді
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_HOST_BACK}/logout`,
       {
@@ -67,6 +96,8 @@ export async function logout() {
         },
       }
     );
+
+    console.log('response', response);
 
     if (response.ok) {
       await response.json();
@@ -87,6 +118,5 @@ export async function logout() {
     console.error('Error during API logout call:', error);
     return { error: 'Error during logout process' };
   }
-
   redirect('/ru/login');
 }

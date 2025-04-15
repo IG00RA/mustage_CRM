@@ -1,5 +1,6 @@
 @import '/node_modules/modern-normalize/modern-normalize.css';
 @import './variables.css';
+@import 'react-loading-skeleton/dist/skeleton.css';
 
 html {
   box-sizing: border-box;
