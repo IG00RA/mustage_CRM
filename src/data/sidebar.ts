@@ -57,19 +57,12 @@ export const accParMenuBottom = [
     logo: 'icon-copy',
     logo_hov: 'icon-fill_copy',
   },
-
   {
     header: 'Sidebar.accParMenu.removeSale',
     link: 'remove_sale',
     logo: 'icon-trash',
     logo_hov: 'icon-fill_trash',
   },
-  // {
-  //   header: 'Sidebar.accParMenu.autoFarmControl',
-  //   link: 'auto_farm',
-  //   logo: 'icon-send-2',
-  //   logo_hov: 'icon-fill_send-2',
-  // },
 ];
 
 export const otherParMenu = [

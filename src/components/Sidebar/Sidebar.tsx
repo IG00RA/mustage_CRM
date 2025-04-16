@@ -23,7 +23,8 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 type OpenMenusState = {
   distribution: boolean;
   referrals: boolean;
-  users: boolean; // Додано для користувачів
+  users: boolean;
+  autoFarm: boolean;
 };
 
 // Тип для зіставлення пунктів меню з функціями
@@ -43,29 +44,10 @@ type MenuFunctionMap = {
   auto_farm: string;
   promo_code: string;
   users: string;
-  roles: string; // Додано для "Должности"
+  roles: string;
   referrals_all: string;
   referrals_stat: string;
 };
-
-// Список функцій для зіставлення прав
-// const availableFunctions = [
-//   { function_id: 1, name: 'Обзор' },
-//   { function_id: 2, name: 'Категории' },
-//   { function_id: 3, name: 'Подкатегории' },
-//   { function_id: 4, name: 'Все аккаунты' },
-//   { function_id: 5, name: 'Загрузка аккаунтов' },
-//   { function_id: 6, name: 'Выгрузка аккаунтов' },
-//   { function_id: 7, name: 'Раздача аккаунтов' },
-//   { function_id: 8, name: 'Замена аккаунтов' },
-//   { function_id: 9, name: 'Убрать аккаунты с продажи' },
-//   { function_id: 10, name: 'Управление автофармом' },
-//   { function_id: 11, name: 'Промокоды' },
-//   { function_id: 12, name: 'Все рефералы' },
-//   { function_id: 13, name: 'Статистика реферальной системы' },
-//   { function_id: 14, name: 'Пользователи' }, // Додано для "Пользователи"
-//   { function_id: 15, name: 'Должности' }, // Додано для "Должности"
-// ];
 
 // Відповідність між пунктами меню та іменами функцій
 const menuFunctionMap: MenuFunctionMap = {
@@ -96,6 +78,7 @@ export default function Sidebar() {
     distribution: false,
     referrals: false,
     users: false,
+    autoFarm: false,
   });
 
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
@@ -115,25 +98,28 @@ export default function Sidebar() {
       'distribution_all',
     ];
     const referralsLinks = ['referrals_all', 'referrals_stat'];
-    const usersLinks = ['users', 'roles']; // Додано для користувачів
+    const usersLinks = ['users', 'roles'];
+    const autoFarmLinks = ['auto_farm', 'auto_farm_servers'];
 
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
     );
     const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
-    const isAnyUsersActive = usersLinks.some(link => isActiveSub(link)); // Додано для користувачів
+    const isAnyUsersActive = usersLinks.some(link => isActiveSub(link));
+    const isAnyAutoFarmActive = autoFarmLinks.some(link => isActiveSub(link));
 
     setOpenMenus({
       distribution: isAnyDistributionActive,
       referrals: isAnyReferralsActive,
-      users: isAnyUsersActive, // Додано для користувачів
+      users: isAnyUsersActive,
+      autoFarm: isAnyAutoFarmActive,
     });
   }, [pathname]);
 
   const isMenuAllowed = (link: string) => {
     if (!currentUser || currentUser.is_admin) return true; // Адміни мають доступ до всього
     if (!currentUser.functions || currentUser.functions.length === 0)
-      return true; // Порожній масив = максимальні права
+      return true;
 
     const functionName = menuFunctionMap[link];
     return currentUser.functions.some(
@@ -173,6 +159,7 @@ export default function Sidebar() {
   const hasReferralsAccess =
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
   const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles');
+  const hasAutoFarmAccess = isMenuAllowed('auto_farm');
 
   // Скелетон для відображення під час завантаження
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
@@ -328,7 +315,8 @@ export default function Sidebar() {
 
       {(filteredAccParMenu.length > 0 ||
         filteredAccParMenuBottom.length > 0 ||
-        hasDistributionAccess) && (
+        hasDistributionAccess ||
+        hasAutoFarmAccess) && (
         <>
           <h3 className={styles.parTitle}>{t('Sidebar.accPar')}</h3>
           <nav className={styles.nav}>
@@ -519,6 +507,95 @@ export default function Sidebar() {
                   </Link>
                 </li>
               ))}
+              {hasAutoFarmAccess && (
+                <li
+                  className={`${styles.nav_item} ${
+                    openMenus.autoFarm ? styles.active : ''
+                  }`}
+                  key={'autoFarm'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({
+                      ...prev,
+                      autoFarm: !prev.autoFarm,
+                    }))
+                  }
+                >
+                  <div className={styles.nav_item_link}>
+                    <Icon
+                      className={styles.logo}
+                      name={'icon-send-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <Icon
+                      className={styles.logo_hov}
+                      name={'icon-fill_send-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <span className={styles.nav_item_text}>
+                      {t('Sidebar.accParMenu.autoFarmControl')}
+                    </span>
+                    <Icon
+                      className={`${styles.arrow_down} ${
+                        openMenus.autoFarm ? styles.active : ''
+                      }`}
+                      name="icon-angle-down"
+                      width={16}
+                      height={16}
+                      color="#A9A9C1"
+                    />
+                  </div>
+                  <ul
+                    className={`${styles.select_options} ${
+                      openMenus.autoFarm ? styles.select_open : ''
+                    }`}
+                  >
+                    <li
+                      key={'autoFarm'}
+                      onClick={() =>
+                        setOpenMenus(prev => ({ ...prev, autoFarm: false }))
+                      }
+                    >
+                      <Link
+                        className={`${styles.option_item} ${
+                          isActiveSub('auto_farm') ? styles.active_sub_link : ''
+                        }`}
+                        href={`/ru/auto_farm`}
+                      >
+                        <div className={styles.list_sub_mark_wrap}>
+                          <span className={styles.list_sub_mark}></span>
+                        </div>
+                        <p className={styles.list_sub_text}>
+                          {t('Sidebar.accParMenu.autoFarmAcc')}
+                        </p>
+                      </Link>
+                    </li>
+                    <li
+                      key={'autoFarmServers'}
+                      onClick={() =>
+                        setOpenMenus(prev => ({ ...prev, autoFarm: false }))
+                      }
+                    >
+                      <Link
+                        className={`${styles.option_item} ${
+                          isActiveSub('auto_farm_servers')
+                            ? styles.active_sub_link
+                            : ''
+                        }`}
+                        href={`/ru/auto_farm_servers`}
+                      >
+                        <div className={styles.list_sub_mark_wrap}>
+                          <span className={styles.list_sub_mark}></span>
+                        </div>
+                        <p className={styles.list_sub_text}>
+                          {t('Sidebar.accParMenu.autoFarmServers')}
+                        </p>
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+              )}
             </ul>
           </nav>
         </>
@@ -581,13 +658,13 @@ export default function Sidebar() {
                   <div className={styles.nav_item_link}>
                     <Icon
                       className={styles.logo}
-                      name={'icon-users'} // Іконка для "Пользователи"
+                      name={'icon-users'}
                       width={22}
                       height={22}
                     />
                     <Icon
                       className={styles.logo_hov}
-                      name={'icon-fill_users'} // Іконка для активного стану
+                      name={'icon-fill_users'}
                       width={22}
                       height={22}
                     />

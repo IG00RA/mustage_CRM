@@ -47,6 +47,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   const { fetchRoles, roles } = useRolesStore();
 
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     []
@@ -118,6 +119,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       last_name: data.secondName,
       is_admin: false,
       is_referral: false,
+      is_seller: isSeller,
       telegram_id: data.tgId,
       telegram_username: data.tgNick,
       role_id: selectedRoleId,
@@ -224,7 +226,6 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
 
   const handleCreateRoleClose = async () => {
     toggleCreateRoleModal();
-    // Refresh roles after creating a new one
     try {
       await fetchRoles({ limit: 100 });
     } catch {
@@ -288,6 +289,10 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       setSelectedSubcategories([]);
       setAddedSubcategories([]);
     }
+  };
+
+  const handleSellerToggle = () => {
+    setIsSeller(!isSeller);
   };
 
   const isAddAllSubcategoriesEnabled =
@@ -453,6 +458,13 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             }
             onSelect={handleRoleSelect}
             multiSelections={false}
+          />
+        </div>
+        <div className={styles.field}>
+          <CustomCheckbox
+            checked={isSeller}
+            onChange={handleSellerToggle}
+            label={t('UserSection.modalCreate.isSeller')}
           />
         </div>
         <div className={styles.field}>

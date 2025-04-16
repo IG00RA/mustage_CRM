@@ -70,7 +70,7 @@
   max-height: 185px;
   overflow-y: auto;
   overflow-x: auto;
-  width: px;
+  width: 345px;
   border-bottom: 1px solid var(--grey);
 
   & .th:nth-child(1),

@@ -7,6 +7,13 @@ export interface UserFunction {
   subcategories: number[] | null;
 }
 
+interface UserSeller {
+  seller_id: number;
+  seller_name?: string | null;
+  visible_in_bot: boolean | null;
+  user_id: number;
+}
+
 export interface User {
   user_id: number;
   login: string;
@@ -22,6 +29,7 @@ export interface User {
     name: string;
     description: string;
   };
+  seller?: UserSeller;
   functions: UserFunction[];
   notifications_for_subcategories: number[] | null;
 }
@@ -37,12 +45,13 @@ export interface CreateUserRequest {
   telegram_id: number;
   telegram_username: string;
   role_id: number;
+  is_seller?: boolean;
   functions?: {
     function_id: number;
-    operations: string[];
-    subcategories: number[];
+    operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
+    subcategories?: number[];
   }[];
-  notifications_for_subcategories: number[];
+  notifications_for_subcategories?: number[];
 }
 
 export interface UpdateUserRequest {
@@ -56,10 +65,11 @@ export interface UpdateUserRequest {
   is_referral?: boolean;
   telegram_id?: number;
   telegram_username?: string;
+  is_seller?: boolean;
   functions?: {
     function_id: number;
-    operations: string[];
-    subcategories: number[];
+    operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
+    subcategories?: number[];
   }[];
   notifications_for_subcategories?: number[];
 }

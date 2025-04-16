@@ -56,7 +56,8 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   );
   const [addedSubcategories, setAddedSubcategories] = useState<string[]>([]);
   const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
-  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false); // New state for CreateRole modal
+  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false);
+  const [isSeller, setIsSeller] = useState(user.seller ? true : false);
   const [userFunctions, setUserFunctions] = useState<UserFunction[]>(
     user.functions.map(f => ({
       function_id: f.function_id,
@@ -146,6 +147,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       login: data.login,
       ...(data.pass && { password: data.pass }),
       first_name: data.name,
+      is_seller: isSeller,
       last_name: data.secondName,
       telegram_id: Number(data.tgId),
       telegram_username: data.tgNick,
@@ -174,6 +176,10 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
         toast.error(t('UserSection.modalEdit.errorMessage'));
       }
     }
+  };
+
+  const handleSellerToggle = () => {
+    setIsSeller(!isSeller);
   };
 
   const handleRolesSubmit = (functions: UserFunction[]) => {
@@ -300,7 +306,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
       setSelectedRoleId(undefined);
     } else if (selectedValue === t('RoleSection.addBtn')) {
-      toggleCreateRoleModal(); // Open the CreateRole modal
+      toggleCreateRoleModal();
     } else {
       const selectedRole = roles.find(role => role.name === selectedValue);
       setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
@@ -476,6 +482,13 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             }
             onSelect={handleRoleSelect}
             multiSelections={false}
+          />
+        </div>
+        <div className={styles.field}>
+          <CustomCheckbox
+            checked={isSeller}
+            onChange={handleSellerToggle}
+            label={t('UserSection.modalCreate.isSeller')}
           />
         </div>
         <div className={styles.field}>
