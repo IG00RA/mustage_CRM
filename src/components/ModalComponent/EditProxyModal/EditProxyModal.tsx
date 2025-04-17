@@ -1,181 +1,269 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import styles from '../ModalComponent.module.css';
 import { useAutofarmStore } from '@/store/autofarmStore';
 import { Proxy } from '@/types/autofarmTypes';
 import CustomSelect from '../../Buttons/CustomSelect/CustomSelect';
+import SubmitBtn from '../../Buttons/SubmitBtn/SubmitBtn';
+import CancelBtn from '../../Buttons/CancelBtn/CancelBtn';
 
 interface EditProxyModalProps {
   proxy: Proxy;
   onClose: () => void;
 }
 
+interface UpdateProxyFormData {
+  host: string;
+  port: number;
+  modem: string;
+  password: string;
+  change_ip_link: string;
+  geo: string;
+  provider: string;
+  operator: string;
+  server_id: number;
+}
+
 export default function EditProxyModal({
   proxy,
   onClose,
 }: EditProxyModalProps) {
-  const translations = useTranslations();
+  const t = useTranslations();
   const { servers, updateProxy, geosModesStatuses } = useAutofarmStore();
 
-  const [formData, setFormData] = useState({
-    host: proxy.host,
-    port: proxy.port,
-    modem: proxy.modem,
-    password: proxy.password,
-    change_ip_link: proxy.change_ip_link,
-    geo: proxy.geo,
-    provider: proxy.provider,
-    operator: proxy.operator,
-    server_id: proxy.server?.server_id || 0,
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<UpdateProxyFormData>({
+    defaultValues: {
+      host: proxy.host,
+      port: proxy.port,
+      modem: proxy.modem,
+      password: proxy.password,
+      change_ip_link: proxy.change_ip_link,
+      geo: proxy.geo,
+      provider: proxy.provider,
+      operator: proxy.operator,
+      server_id: proxy.server?.server_id || 0,
+    },
   });
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = event.target;
-    setFormData(previous => ({
-      ...previous,
-      [name]: name === 'port' || name === 'server_id' ? Number(value) : value,
-    }));
-  };
+  useEffect(() => {
+    setValue('host', proxy.host);
+    setValue('port', proxy.port);
+    setValue('modem', proxy.modem);
+    setValue('password', proxy.password);
+    setValue('change_ip_link', proxy.change_ip_link);
+    setValue('geo', proxy.geo);
+    setValue('provider', proxy.provider);
+    setValue('operator', proxy.operator);
+    setValue('server_id', proxy.server?.server_id || 0);
+  }, [proxy, setValue]);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const onSubmit = async (data: UpdateProxyFormData) => {
     try {
-      await updateProxy(proxy.proxy_id, formData);
+      await updateProxy(proxy.proxy_id, data);
+      toast.success(t('ServersProxiesSection.updateSuccess'));
       onClose();
     } catch (error) {
-      console.error('Error updating proxy:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('ServersProxiesSection.updateError')
+      );
     }
   };
 
+  // Опції для вибору серверів
   const serverOptions = useMemo(() => {
-    const options = [translations('ServersProxiesSection.selectServer')];
+    const options = [t('ServersProxiesSection.selectServer')];
     options.push(...servers.map(server => server.server_name));
     return options;
-  }, [servers, translations]);
+  }, [servers, t]);
 
+  // Опції для вибору гео
   const geoOptions = useMemo(() => {
-    const options = [translations('AutoFarmSection.geoSelect')];
+    const options = [t('AutoFarmSection.geoSelect')];
     if (geosModesStatuses?.geos) {
       options.push(
         ...geosModesStatuses.geos.map(geo => geo.user_friendly_name)
       );
     }
     return options;
-  }, [geosModesStatuses, translations]);
+  }, [geosModesStatuses, t]);
+
+  // Отримання поточного server_id для відображення в CustomSelect
+  const currentServerId = watch('server_id');
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.host')}:</label>
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.host')}:
+        </label>
         <input
-          type="text"
-          name="host"
-          value={formData.host}
-          onChange={handleChange}
-          required
+          className={`${styles.input} ${errors.host ? styles.input_error : ''}`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('host', {
+            required: t('DBSettings.form.errorMessage'),
+          })}
         />
+        {errors.host && <p className={styles.error}>{errors.host.message}</p>}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.port')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.port')}:
+        </label>
         <input
+          className={`${styles.input} ${errors.port ? styles.input_error : ''}`}
           type="number"
-          name="port"
-          value={formData.port}
-          onChange={handleChange}
-          required
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('port', {
+            required: t('DBSettings.form.errorMessage'),
+            valueAsNumber: true,
+          })}
         />
+        {errors.port && <p className={styles.error}>{errors.port.message}</p>}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.login')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.login')}:
+        </label>
         <input
-          type="text"
-          name="modem"
-          value={formData.modem}
-          onChange={handleChange}
-          required
+          className={`${styles.input} ${
+            errors.modem ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('modem', {
+            required: t('DBSettings.form.errorMessage'),
+          })}
         />
+        {errors.modem && <p className={styles.error}>{errors.modem.message}</p>}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.password')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.password')}:
+        </label>
         <input
-          type="text"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
+          className={`${styles.input} ${
+            errors.password ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('password', {
+            required: t('DBSettings.form.errorMessage'),
+          })}
         />
+        {errors.password && (
+          <p className={styles.error}>{errors.password.message}</p>
+        )}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.rotationLink')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.rotationLink')}:
+        </label>
         <input
-          type="text"
-          name="change_ip_link"
-          value={formData.change_ip_link}
-          onChange={handleChange}
+          className={`${styles.input} ${
+            errors.change_ip_link ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('change_ip_link')}
         />
+        {errors.change_ip_link && (
+          <p className={styles.error}>{errors.change_ip_link.message}</p>
+        )}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.geo')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.geo')}:
+        </label>
         <CustomSelect
           options={geoOptions}
-          selected={[formData.geo]}
-          onSelect={([geo]) => setFormData(previous => ({ ...previous, geo }))}
+          selected={[watch('geo')]}
+          onSelect={([geo]) => setValue('geo', geo)}
           width={200}
           multiSelections={false}
         />
+        {errors.geo && <p className={styles.error}>{errors.geo.message}</p>}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.provider')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.provider')}:
+        </label>
         <input
-          type="text"
-          name="provider"
-          value={formData.provider}
-          onChange={handleChange}
+          className={`${styles.input} ${
+            errors.provider ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('provider')}
         />
+        {errors.provider && (
+          <p className={styles.error}>{errors.provider.message}</p>
+        )}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.operator')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.operator')}:
+        </label>
         <input
-          type="text"
-          name="operator"
-          value={formData.operator}
-          onChange={handleChange}
+          className={`${styles.input} ${
+            errors.operator ? styles.input_error : ''
+          }`}
+          placeholder={t('DBSettings.form.placeholder')}
+          {...register('operator')}
         />
+        {errors.operator && (
+          <p className={styles.error}>{errors.operator.message}</p>
+        )}
       </div>
-      <div className={styles.input_group}>
-        <label>{translations('ServersProxiesSection.serverName')}:</label>
+
+      <div className={styles.field}>
+        <label className={styles.label}>
+          {t('ServersProxiesSection.serverName')}:
+        </label>
         <CustomSelect
           options={serverOptions}
           selected={
-            formData.server_id
+            currentServerId
               ? [
-                  servers.find(s => s.server_id === formData.server_id)
-                    ?.server_name || '',
+                  servers.find(s => s.server_id === currentServerId)
+                    ?.server_name || t('ServersProxiesSection.selectServer'),
                 ]
-              : []
+              : [t('ServersProxiesSection.selectServer')]
           }
           onSelect={([serverName]) =>
-            setFormData(previous => ({
-              ...previous,
-              server_id:
-                servers.find(s => s.server_name === serverName)?.server_id || 0,
-            }))
+            setValue(
+              'server_id',
+              serverName === t('ServersProxiesSection.selectServer')
+                ? 0
+                : servers.find(s => s.server_name === serverName)?.server_id ||
+                    0
+            )
           }
           width={200}
           multiSelections={false}
         />
+        {errors.server_id && (
+          <p className={styles.error}>{errors.server_id.message}</p>
+        )}
       </div>
-      <div className={styles.button_group}>
-        <button type="submit">
-          {translations('ServersProxiesSection.save')}
-        </button>
-        <button type="button" onClick={onClose}>
-          {translations('ServersProxiesSection.cancel')}
-        </button>
+
+      <div className={styles.buttons_wrap}>
+        <CancelBtn text="ServersProxiesSection.cancel" onClick={onClose} />
+        <SubmitBtn text="ServersProxiesSection.save" />
       </div>
     </form>
   );

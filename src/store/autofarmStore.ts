@@ -220,8 +220,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
 
       return data;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      error instanceof Error ? error.message : String(error);
       console.error('Fetch statistics by day error:', error);
       throw error;
     }
