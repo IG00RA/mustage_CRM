@@ -19,13 +19,16 @@ export async function login(formData: FormData) {
     return { error: 'Username and password are required' };
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_HOST_BACK}/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ login: username, password }),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_HOST_BACK_LOCAL}/login`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ login: username, password }),
+    }
+  );
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -53,7 +56,7 @@ export async function login(formData: FormData) {
 
   // Отримання даних користувача
   const userResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_HOST_BACK}/users/me`,
+    `${process.env.NEXT_PUBLIC_HOST_BACK_LOCAL}/users/me`,
     {
       method: 'GET',
       headers: {
@@ -88,7 +91,7 @@ export async function logout() {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_HOST_BACK}/logout`,
+      `${process.env.NEXT_PUBLIC_HOST_BACK_LOCAL}/logout`,
       {
         method: 'POST',
         headers: {
