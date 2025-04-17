@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-table';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
-// import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
+import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import EditTypeFarmModal from '../ModalComponent/EditTypeFarmModal/EditTypeFarmModal';
 import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/UploadAccountsAutoFarm';
@@ -370,12 +370,8 @@ export default function AutoFarmServersSection() {
   const [updateTitle, setUpdateTitle] = useState('');
   const [updateServerName, setUpdateServerName] = useState('');
   const [updateTitleSecond, setUpdateTitleSecond] = useState('');
-  // const [selectGeoAcc, setSelectGeoAcc] = useState('');
-  // const [selectTypeAcc, setSelectTypeAcc] = useState('');
-  // const [selectGeoReplenishment, setSelectGeoReplenishment] = useState('');
-  // const [selectTypeReplenishment, setSelectTypeReplenishment] = useState('');
-  // const [selectGeoServer, setSelectGeoServer] = useState('');
-  // const [selectTypeServer, setSelectTypeServer] = useState('');
+  const [selectGeoServer, setSelectGeoServer] = useState(['']);
+  const [selectTypeServer, setSelectTypeServer] = useState(['']);
 
   const toggleEditTypeModal = () => {
     setIsOpenEditType(!isOpenEditType);
@@ -392,66 +388,6 @@ export default function AutoFarmServersSection() {
     setUpdateTitleSecond(titleSecond);
     setIsOpenUpdate(!isOpenUpdate);
   };
-
-  const mainColumns: ColumnDef<Category>[] = [
-    {
-      accessorKey: 'geo',
-      header: t('AutoFarmSection.geoTable'),
-    },
-    {
-      accessorKey: 'type',
-      header: t('AutoFarmSection.type'),
-    },
-    {
-      accessorKey: 'servers',
-      header: t('AutoFarmSection.tableAcc.servers'),
-    },
-    {
-      accessorKey: 'accountsInUse',
-      header: t('AutoFarmSection.tableAcc.workAcc'),
-    },
-    {
-      accessorKey: 'readyAccounts',
-      header: t('AutoFarmSection.tableAcc.doneAcc'),
-    },
-
-    {
-      accessorKey: 'name',
-      header: t('AutoFarmSection.names'),
-    },
-    {
-      id: 'actions',
-      header: t('AutoFarmSection.actions'),
-      cell: ({ row }) => (
-        <div className={styles.table_buttons}>
-          <WhiteBtn
-            onClick={() =>
-              toggleUpdateModal(
-                `гео - ${row.original.geo}, тип - ${row.original.type}`,
-                row.original.name
-              )
-            }
-            text={'AutoFarmSection.tableAcc.btnLoad'}
-            icon="icon-upload"
-          />
-          <WhiteBtn
-            onClick={() => toggleEditTypeModal()}
-            text={'AutoFarmSection.tableAcc.btnEdit'}
-            icon="icon-edit-pencil"
-          />
-        </div>
-      ),
-    },
-  ];
-
-  const shortageColumns: ColumnDef<Category>[] = [
-    { accessorKey: 'geo', header: t('AutoFarmSection.geoTable') },
-    { accessorKey: 'type', header: t('AutoFarmSection.type') },
-    {
-      accessorKey: 'shortageAccounts',
-      header: t('AutoFarmSection.tableReplenishment.lackAcc'),
-    },
-  ];
 
   const serverColumns: ColumnDef<Category>[] = [
     { accessorKey: 'geo', header: t('AutoFarmSection.geoTable') },
@@ -483,30 +419,6 @@ export default function AutoFarmServersSection() {
     },
   ];
 
-  const mainTable = useReactTable({
-    data,
-    columns: mainColumns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
-    filterFns: {
-      global: (row, columnId, filterValue) => {
-        if (!filterValue) return true;
-        const cellValue = String(row.getValue(columnId) ?? '').toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
-      },
-    },
-  });
-
-  const shortageTable = useReactTable({
-    data,
-    columns: shortageColumns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   const serverTable = useReactTable({
     data,
     columns: serverColumns,
@@ -516,35 +428,35 @@ export default function AutoFarmServersSection() {
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>
-          {t('Sidebar.accParMenu.autoFarmControl')}
-        </h2>
-        <p className={styles.header_text}>{t('AutoFarmSection.headerText')}</p>
+        <h2 className={styles.header}>{t('AutoFarmSection.titleServers')}</h2>
+        <p className={styles.header_text}>
+          {t('AutoFarmSection.headerServersText')}
+        </p>
       </div>
-      <div className={styles.table_container_first}>
+      <div className={styles.table_container}>
         <h3 className={styles.table_header}>
-          {t('AutoFarmSection.tableAcc.header')}
+          {t('AutoFarmSection.tableServers.header')}
         </h3>
         <div className={styles.buttons_wrap}>
-          {/* <CustomSelect
+          <CustomSelect
             label={`${t('AutoFarmSection.geo')}:`}
             options={Array.from(new Set(data.map(item => item.geo)))}
-            selected={selectGeoAcc}
-            onSelect={setSelectGeoAcc}
-            width={296}
+            selected={selectGeoServer}
+            onSelect={setSelectGeoServer}
+            width={330}
           />
           <CustomSelect
             label={`${t('AutoFarmSection.type')}:`}
             options={Array.from(new Set(data.map(item => item.type)))}
-            selected={selectTypeAcc}
-            onSelect={setSelectTypeAcc}
-            width={296}
-          /> */}
+            selected={selectTypeServer}
+            onSelect={setSelectTypeServer}
+            width={330}
+          />
         </div>
-        <div className={styles.table_wrapper}>
+        <div className={styles.server_table_wrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>
-              {mainTable.getHeaderGroups().map(headerGroup => (
+              {serverTable.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
                     <th className={styles.th} key={header.id}>
@@ -558,7 +470,7 @@ export default function AutoFarmServersSection() {
               ))}
             </thead>
             <tbody className={styles.tbody}>
-              {mainTable.getRowModel().rows.map(row => (
+              {serverTable.getRowModel().rows.map(row => (
                 <tr className={styles.tr} key={row.id}>
                   {row.getVisibleCells().map(cell => (
                     <td className={styles.td} key={cell.id}>
@@ -572,123 +484,6 @@ export default function AutoFarmServersSection() {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-      <div className={styles.tables_wrapper}>
-        <div className={styles.table_container}>
-          <h3 className={styles.table_header}>
-            {t('AutoFarmSection.tableReplenishment.header')}
-          </h3>
-          <div className={styles.buttons_wrap}>
-            {/* <CustomSelect
-              label={`${t('AutoFarmSection.geo')}:`}
-              options={Array.from(new Set(data.map(item => item.geo)))}
-              selected={selectGeoReplenishment}
-              onSelect={setSelectGeoReplenishment}
-              width={140}
-            />
-            <CustomSelect
-              label={`${t('AutoFarmSection.type')}:`}
-              options={Array.from(new Set(data.map(item => item.type)))}
-              selected={selectTypeReplenishment}
-              onSelect={setSelectTypeReplenishment}
-              width={140}
-            /> */}
-          </div>
-          <div className={styles.replenishment_table_wrapper}>
-            <table className={styles.table}>
-              <thead className={styles.thead}>
-                {shortageTable.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className={styles.th} key={header.id}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className={styles.tbody}>
-                {shortageTable.getRowModel().rows.map(row => (
-                  <tr className={styles.tr} key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className={styles.td} key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className={styles.table_text}>
-            {t('AutoFarmSection.tableReplenishment.amount')} <span>320</span>
-          </p>
-          <div className={styles.table_add_btn}>
-            <AddBtn
-              onClick={toggleReplenishmentAccountsModal}
-              text={'AutoFarmSection.tableReplenishment.btn'}
-            />
-          </div>
-        </div>
-        <div className={styles.table_container}>
-          <h3 className={styles.table_header}>
-            {t('AutoFarmSection.tableServers.header')}
-          </h3>
-          <div className={styles.buttons_wrap}>
-            {/* <CustomSelect
-              label={`${t('AutoFarmSection.geo')}:`}
-              options={Array.from(new Set(data.map(item => item.geo)))}
-              selected={selectGeoServer}
-              onSelect={setSelectGeoServer}
-              width={330}
-            />
-            <CustomSelect
-              label={`${t('AutoFarmSection.type')}:`}
-              options={Array.from(new Set(data.map(item => item.type)))}
-              selected={selectTypeServer}
-              onSelect={setSelectTypeServer}
-              width={330}
-            /> */}
-          </div>
-          <div className={styles.server_table_wrapper}>
-            <table className={styles.table}>
-              <thead className={styles.thead}>
-                {serverTable.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className={styles.th} key={header.id}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className={styles.tbody}>
-                {serverTable.getRowModel().rows.map(row => (
-                  <tr className={styles.tr} key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className={styles.td} key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
       <ModalComponent

@@ -83,8 +83,7 @@ export default function NamesSection() {
     return { pageIndex: 0, pageSize: 5 };
   });
 
-  // Логіка прав доступу для "Подкатегории" (function_id: 3)
-  const isFunctionsEmpty = currentUser?.functions.length === 0; // Перевіряємо, чи порожній масив functions
+  const isFunctionsEmpty = currentUser?.functions.length === 0;
   const subcategoryPermissions =
     currentUser?.functions.find(
       func => func.function_id === 3 && func.function_name === 'Подкатегории'
@@ -99,7 +98,6 @@ export default function NamesSection() {
     hasCreateSubcategories ||
     hasUpdateSubcategories;
 
-  // Логіка прав доступу для "Категории" (function_id: 2)
   const categoryPermissions =
     currentUser?.functions.find(
       func => func.function_id === 2 && func.function_name === 'Категории'
@@ -121,7 +119,6 @@ export default function NamesSection() {
           didFetchRef.current = false;
         });
       }
-      // Запит за категоріями робимо лише якщо є READ для "Категории"
       if (hasReadCategories && categories.length === 0 && !loading && !error) {
         fetchCategories().catch(err => {
           toast.error(t('Category.errorMessage'), err || '');
@@ -265,7 +262,6 @@ export default function NamesSection() {
       { accessorKey: 'price', header: t('Names.table.price') },
     ];
 
-    // Додаємо колонку "Actions" лише якщо є UPDATE
     if (hasUpdateSubcategories) {
       baseColumns.push({
         id: 'actions',

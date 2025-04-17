@@ -29,10 +29,10 @@ const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней
 
 export default function AutoFarmSection() {
   const t = useTranslations();
-  const { stats, missing, loading, error, fetchStatistics, fetchMissing } =
+  const { stats, missing, error, fetchStatistics, fetchMissing } =
     useAutofarmStore();
   const [globalFilter, setGlobalFilter] = useState('');
-  const [sorting, setSorting] = useState<SortingState>([]); // Додано для сортування
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [isOpenEditType, setIsOpenEditType] = useState(false);
   const [isOpenServer, setIsOpenServer] = useState(false);
   const [isOpenReplenishmentAccounts, setIsOpenReplenishmentAccounts] =
@@ -40,11 +40,10 @@ export default function AutoFarmSection() {
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
   const [updateServerName, setUpdateServerName] = useState('');
-  const [updateTitleSecond, setUpdateTitleSecond] = useState('');
   const [selectedRow, setSelectedRow] = useState<{
     geo: string;
     mode: string;
-  } | null>(null); // Для передачі в модалку
+  } | null>(null);
   const [selectGeoAcc, setSelectGeoAcc] = useState<string[]>([]);
   const [selectTypeAcc, setSelectTypeAcc] = useState<string[]>([]);
   const [selectGeoReplenishment, setSelectGeoReplenishment] = useState<
@@ -69,11 +68,14 @@ export default function AutoFarmSection() {
     setIsOpenReplenishmentAccounts(prev => !prev);
   }, []);
 
-  const toggleUpdateModal = useCallback((title = '', titleSecond = '') => {
-    setUpdateTitle(title);
-    setUpdateTitleSecond(titleSecond);
-    setIsOpenUpdate(prev => !prev);
-  }, []);
+  const toggleUpdateModal = useCallback(
+    (title = '', geo?: string, mode?: string) => {
+      setUpdateTitle(title);
+      setSelectedRow(geo && mode ? { geo, mode } : null);
+      setIsOpenUpdate(prev => !prev);
+    },
+    []
+  );
 
   const fetchData = useCallback(() => {
     fetchStatistics({
@@ -167,7 +169,8 @@ export default function AutoFarmSection() {
             onClick={() =>
               toggleUpdateModal(
                 `гео - ${row.original.geo}, тип - ${row.original.mode}`,
-                `Facebook ${row.original.geo}-автофарм ${row.original.mode}`
+                row.original.geo,
+                row.original.mode
               )
             }
             text={'AutoFarmSection.tableAcc.btnLoad'}
@@ -245,7 +248,7 @@ export default function AutoFarmSection() {
 
   return (
     <section className={styles.section}>
-      {(showLoader || loading) && <Loader error={error} />}
+      {showLoader && <Loader error={error} />}
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('AutoFarmSection.title')}</h2>
         <p className={styles.header_text}>{t('AutoFarmSection.headerText')}</p>
@@ -405,13 +408,17 @@ export default function AutoFarmSection() {
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
-        onClose={toggleUpdateModal}
+        onClose={() => toggleUpdateModal()}
         title="AutoFarmSection.modalLoad.title"
-        titleSecond="AutoFarmSection.modalLoad.titleSecond"
         editedTitle={`"${updateTitle}"`}
-        editedTitleSecond={`"${updateTitleSecond}"`}
       >
-        <UploadAccountsAutoFarm />
+        {selectedRow && (
+          <UploadAccountsAutoFarm
+            geo={selectedRow.geo}
+            activityMode={selectedRow.mode}
+            onClose={() => toggleUpdateModal()}
+          />
+        )}
       </ModalComponent>
     </section>
   );

@@ -31,9 +31,28 @@ export interface AutofarmStatsByDay {
   accounts: number;
 }
 
+export interface AutofarmDumpResponse {
+  subcategory_id: number;
+  quantity: number;
+  account_names: string[];
+}
+
+export interface Subcategory {
+  id: number;
+  name: string;
+}
+
 export interface AutofarmRequestParams extends BaseRequest {
   geo?: string | string[];
   activity_mode?: string | string[];
+}
+
+export interface AutofarmDumpParams {
+  geo: string;
+  activity_mode: string;
+  fp_number: number;
+  subcategory_id: number;
+  to_dump: number;
 }
 
 export interface AutofarmState {
@@ -45,4 +64,10 @@ export interface AutofarmState {
   fetchStatistics: (params?: AutofarmRequestParams) => Promise<void>;
   fetchMissing: (params?: AutofarmRequestParams) => Promise<void>;
   fetchStatisticsByDay: (params: AutofarmRequestParams) => Promise<void>;
+  fetchStatisticsByDayDirect: (
+    params: AutofarmRequestParams
+  ) => Promise<AutofarmStatsByDay[]>;
+  dumpReadyAccounts: (
+    params: AutofarmDumpParams
+  ) => Promise<AutofarmDumpResponse>;
 }

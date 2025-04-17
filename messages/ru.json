@@ -492,11 +492,16 @@
     "modalEditType": {
       "category": "Категория:",
       "names": "Наименование:",
+      "mode": "Режим автофарма:",
       "btn": "Изменить наименование",
       "title": "Статистика автофарма",
-      "day": "День",
+      "day": "День фарма",
       "accounts": "Количество аккаунтов",
-      "noData": "Данные отсутствуют"
+      "downloadBtn": "Скачать общий отчёт по аккаунтам в процессе",
+      "noData": "Данные отсутствуют",
+      "generatingReport": "Генерация отчета...",
+      "reportGenerated": "Отчет успешно сгенерирован!",
+      "reportError": "Ошибка при генерации отчета"
     },
     "modalLoad": {
       "title": "Выгрузка аккаунтов, ",
@@ -505,7 +510,20 @@
       "loadQuantity": "Количество аккаунтов для выгрузки:",
       "check": "Загрузить в шоп",
       "btn": "Выгрузить аккаунты",
-      "btnCancel": "Отменить выгрузку"
+      "btnCancel": "Отменить выгрузку",
+      "loadQuantityPlaceholder": "Введите количество",
+      "subcategory": "Подкатегория",
+      "subcategoryPlaceholder": "Выберите подкатегорию",
+      "subcategoryRequired": "Выберите подкатегорию",
+      "fpNumber": "Количество Fan Pages",
+      "fpNumberPlaceholder": "Выберите количество Fan Pages",
+      "fpNumberRequired": "Выберите количество Fan Pages",
+      "exceedQuantityError": "Количество для выгрузки превышает доступное",
+      "minQuantityError": "Количество должно быть больше 0",
+      "successMessage": "Аккаунты успешно выгружаются в подкатегорию {subcategoryName}, количество: {quantity}",
+      "errorMessage": "Ошибка при загрузке аккаунтов",
+      "loadingButton": "Загрузка...",
+      "loading": "Выполняется выгрузка аккаунтов..."
     },
     "modalReplenishmentAcc": {
       "title": "Пополнение аккаунтов",

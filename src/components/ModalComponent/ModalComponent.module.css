@@ -127,6 +127,12 @@
   line-height: 1.37;
 }
 
+.input:disabled {
+  border: 1px solid var(--Grey, #e1e1ec);
+  background: var(--Grey_light, #f1f1f6);
+  color: var(--disabled_grey);
+}
+
 .input:focus,
 .input:hover {
   outline: none;
