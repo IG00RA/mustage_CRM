@@ -35,6 +35,7 @@ export default function UploadAccountsAutoFarm({
   const t = useTranslations();
   const {
     stats,
+    setStats,
     fetchStatistics,
     dumpReadyAccounts,
     loading: autofarmLoading,
@@ -128,6 +129,14 @@ export default function UploadAccountsAutoFarm({
       );
 
       const newAvailableQuantity = availableQuantity - response.quantity;
+
+      setStats(
+        stats.map(stat =>
+          stat.geo === geo && stat.mode === activityMode
+            ? { ...stat, ready: newAvailableQuantity }
+            : stat
+        )
+      );
 
       toast.dismiss(toastId.current);
       toast.success(

@@ -23,6 +23,9 @@ import EditServerFarmModal from '../ModalComponent/EditServerFarmModal/EditServe
 import { useAutofarmStore } from '@/store/autofarmStore';
 import { AutofarmStats, AutofarmMissing } from '@/types/autofarmTypes';
 import Loader from '../Loader/Loader';
+import { UploadResponse } from '../UploadSection/UploadSection';
+import { toast } from 'react-toastify';
+import { getAuthHeaders } from '@/utils/apiUtils';
 
 const GEO_OPTIONS = ['Україна', 'Польша', 'США'];
 const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней'];
@@ -32,6 +35,8 @@ export default function AutoFarmSection() {
   const { stats, missing, error, fetchStatistics, fetchMissing } =
     useAutofarmStore();
   const [globalFilter, setGlobalFilter] = useState('');
+  const [isOpenError, setIsOpenError] = useState(false);
+  const [responseData, setResponseData] = useState<UploadResponse | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isOpenEditType, setIsOpenEditType] = useState(false);
   const [isOpenServer, setIsOpenServer] = useState(false);
@@ -118,6 +123,66 @@ export default function AutoFarmSection() {
       ),
     [stats, selectGeoAcc, selectTypeAcc]
   );
+
+  const toggleErrorModal = () => {
+    setIsOpenError(!isOpenError);
+  };
+
+  const downloadErrorFile = async () => {
+    if (!responseData?.file) {
+      toast.error(t('Upload.downloadError.noFile'));
+      return;
+    }
+
+    try {
+      const headers = {
+        ...getAuthHeaders(),
+        accept: 'application/octet-stream',
+      };
+
+      const response = await fetch(responseData.file, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            errorData.detail ||
+            t('Upload.downloadError.error')
+        );
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download =
+        responseData.file.split('/').pop() || 'upload-errors.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(t('Upload.downloadError.success'));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t('Upload.downloadError.error')
+      );
+      console.error('Download error:', error);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/assets/farm_replenish_template.xlsx';
+    link.download = 'farm_replenish_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const filteredMissing = useMemo(
     () =>
@@ -372,6 +437,12 @@ export default function AutoFarmSection() {
           <span>{totalMissing}</span>
         </p>
         <div className={styles.table_add_btn}>
+          <WhiteBtn
+            onClick={downloadTemplate}
+            text={'AutoFarmSection.downloadTemplate'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
           <AddBtn
             onClick={toggleReplenishmentAccountsModal}
             text={'AutoFarmSection.tableReplenishment.btn'}
@@ -396,7 +467,11 @@ export default function AutoFarmSection() {
         onClose={toggleReplenishmentAccountsModal}
         title="AutoFarmSection.modalReplenishmentAcc.title"
       >
-        <ReplenishmentAccountsFarm />
+        <ReplenishmentAccountsFarm
+          setResponseData={setResponseData}
+          toggleErrorModal={toggleErrorModal}
+          onClose={toggleReplenishmentAccountsModal}
+        />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenServer}
@@ -419,6 +494,27 @@ export default function AutoFarmSection() {
             onClose={() => toggleUpdateModal()}
           />
         )}
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenError}
+        onClose={toggleErrorModal}
+        title="Upload.modalUpload.titleError"
+        icon="icon-error-load"
+      >
+        <div className={styles.modal_error}>
+          <p className={styles.error_text}>
+            {t('Upload.textError')} <span>{responseData?.message}</span>
+          </p>
+          <p className={styles.error_download_text}>
+            {t('Upload.textDownloadError')}
+          </p>
+        </div>
+        <WhiteBtn
+          onClick={downloadErrorFile}
+          text={'Upload.buttons.errorDownload'}
+          icon="icon-cloud-download"
+          iconFill="icon-cloud-download-fill"
+        />
       </ModalComponent>
     </section>
   );

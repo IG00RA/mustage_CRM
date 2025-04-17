@@ -117,7 +117,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
   padding: 16px 0 24px;
 }
 
@@ -132,7 +131,6 @@
 }
 
 .table_container {
-  max-width: 500px;
   border-radius: 24px;
   background: var(--background);
   box-shadow: var(--box_shadow);

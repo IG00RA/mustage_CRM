@@ -28,4 +28,8 @@ export const ENDPOINTS = {
   AUTO_FARM_STATISTICS: `${BASE_URL}/autofarm/statistics-by-mode`,
   AUTO_FARM_STATISTICS_BY_DAY: `${BASE_URL}/autofarm/statistics-by-day`,
   AUTO_FARM_DUMP_READY_ACCOUNTS: `${BASE_URL}/autofarm/dump-ready-accounts`,
+  AUTO_FARM_PROXIES: `${BASE_URL}/autofarm/proxies`,
+  AUTO_FARM_SERVERS: `${BASE_URL}/autofarm/servers`,
+  AUTO_FARM_GEOS_MODES_STATUSES: `${BASE_URL}/autofarm/geos-modes-statuses`,
+  AUTO_FARM_REPLENISH: `${BASE_URL}/autofarm/replenish`,
 };
