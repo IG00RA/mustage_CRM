@@ -151,7 +151,7 @@ export default function UploadAccountsAutoFarm({
         subcategoryId: '',
         fpNumber: '',
       });
-    } catch (error) {
+    } catch {
       toast.dismiss(toastId.current);
       toast.error(t('AutoFarmSection.modalLoad.errorMessage'));
     }

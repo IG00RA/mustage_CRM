@@ -155,7 +155,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       const missing: AutofarmMissing[] = Object.entries(data).flatMap(
         ([geo, modes]) =>
           Object.entries(modes)
-            .filter(([_, missingData]) => missingData.total_missing > 0)
+            .filter(([, missingData]) => missingData.total_missing > 0)
             .map(([mode_name, missingData]) => ({
               ...missingData,
               mode_name,
