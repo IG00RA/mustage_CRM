@@ -1,101 +1,63 @@
 import { useTranslations } from 'next-intl';
 import styles from '../ModalComponent.module.css';
+import ownStyles from './EditTypeFarmModal.module.css';
+import { useAutofarmStore } from '@/store/autofarmStore';
+import { useEffect } from 'react';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
-import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
-import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
-import { useState } from 'react';
 
-type FormData = {
-  columnName: string;
-  displayName: string;
-};
+interface EditTypeFarmModalProps {
+  geo: string;
+  activityMode: string;
+  onClose: () => void;
+}
 
-export default function EditTypeFarmModal() {
-  const t = useTranslations('');
+export default function EditTypeFarmModal({
+  geo,
+  activityMode,
+  onClose,
+}: EditTypeFarmModalProps) {
+  const t = useTranslations();
+  const { statsByDay, loading, error, fetchStatisticsByDay } =
+    useAutofarmStore();
 
-  const [selectGeoAcc, setSelectGeoAcc] = useState(['']);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>();
-
-  const onSubmit = (data: FormData) => {
-    console.log('Form Data:', data);
-    toast.success(t('DBSettings.form.okMessage'));
-    reset();
-  };
+  useEffect(() => {
+    fetchStatisticsByDay({ geo, activity_mode: activityMode });
+  }, [geo, activityMode, fetchStatisticsByDay]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-      <div className={styles.field}>
-        <label className={styles.label}>{t('AutoFarmSection.geo')}</label>
-        <input
-          className={`${styles.input} ${
-            errors.columnName ? styles.input_error : ''
-          }`}
-          placeholder={t('DBSettings.form.placeholder')}
-          {...register('columnName', {
-            required: t('DBSettings.form.errorMessage'),
-          })}
-          value="UA"
-        />
-        {errors.columnName && (
-          <p className={styles.error}>{errors.columnName.message}</p>
-        )}
-      </div>
-
-      <div className={styles.field}>
-        <label className={styles.label}>{t('AutoFarmSection.type')}</label>
-        <input
-          className={`${styles.input} ${
-            errors.displayName ? styles.input_error : ''
-          }`}
-          value="7 дней"
-          placeholder={t('DBSettings.form.placeholder')}
-          {...register('displayName', {
-            required: t('DBSettings.form.errorMessage'),
-          })}
-        />
-        {errors.displayName && (
-          <p className={styles.error}>{errors.displayName.message}</p>
-        )}
-      </div>
-
-      <div className={styles.field}>
-        <label className={styles.label}>
-          {t('AutoFarmSection.modalEditType.category')}
-        </label>
-        <CustomSelect
-          options={['Facebook UA (автофарм)', 'Facebook UA фарм 7-дней']}
-          selected={selectGeoAcc}
-          onSelect={setSelectGeoAcc}
-        />
-        {errors.displayName && (
-          <p className={styles.error}>{errors.displayName.message}</p>
-        )}
-      </div>
-      <div className={styles.field}>
-        <label className={styles.label}>
-          {t('AutoFarmSection.modalEditType.names')}
-        </label>
-        <CustomSelect
-          options={['Facebook UA фарм 7-дней', 'Facebook UA (автофарм)']}
-          selected={selectGeoAcc}
-          onSelect={setSelectGeoAcc}
-        />
-        {errors.displayName && (
-          <p className={styles.error}>{errors.displayName.message}</p>
-        )}
-      </div>
+    <div className={styles.modal_content}>
+      <h3 className={styles.modal_title}>
+        {t('AutoFarmSection.modalEditType.title')} ({geo}, {activityMode})
+      </h3>
+      {loading && <p>{t('AutoFarmSection.loading')}</p>}
+      {error && <p className={styles.error}>{error}</p>}
+      {!loading && !error && (
+        <>
+          {statsByDay.length > 0 ? (
+            <table className={ownStyles.stats_table}>
+              <thead>
+                <tr>
+                  <th>{t('AutoFarmSection.modalEditType.day')}</th>
+                  <th>{t('AutoFarmSection.modalEditType.accounts')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statsByDay.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.farm_day}</td>
+                    <td>{item.accounts}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>{t('AutoFarmSection.modalEditType.noData')}</p>
+          )}
+        </>
+      )}
       <div className={styles.buttons_wrap}>
-        <CancelBtn text="DBSettings.form.cancelBtn" onClick={() => reset()} />
-        <SubmitBtn text="AutoFarmSection.modalEditType.btn" />
+        <CancelBtn text="DBSettings.form.cancelBtn" onClick={onClose} />
       </div>
-    </form>
+    </div>
   );
 }

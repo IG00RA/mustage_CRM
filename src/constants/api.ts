@@ -26,4 +26,5 @@ export const ENDPOINTS = {
   ROLES: `${BASE_URL}/roles`,
   AUTO_FARM_MISSING: `${BASE_URL}/autofarm/missing`,
   AUTO_FARM_STATISTICS: `${BASE_URL}/autofarm/statistics-by-mode`,
+  AUTO_FARM_STATISTICS_BY_DAY: `${BASE_URL}/autofarm/statistics-by-day`,
 };

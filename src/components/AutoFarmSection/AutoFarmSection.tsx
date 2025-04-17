@@ -8,7 +8,9 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
   useReactTable,
+  SortingState,
 } from '@tanstack/react-table';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
@@ -30,6 +32,7 @@ export default function AutoFarmSection() {
   const { stats, missing, loading, error, fetchStatistics, fetchMissing } =
     useAutofarmStore();
   const [globalFilter, setGlobalFilter] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]); // Додано для сортування
   const [isOpenEditType, setIsOpenEditType] = useState(false);
   const [isOpenServer, setIsOpenServer] = useState(false);
   const [isOpenReplenishmentAccounts, setIsOpenReplenishmentAccounts] =
@@ -38,6 +41,10 @@ export default function AutoFarmSection() {
   const [updateTitle, setUpdateTitle] = useState('');
   const [updateServerName, setUpdateServerName] = useState('');
   const [updateTitleSecond, setUpdateTitleSecond] = useState('');
+  const [selectedRow, setSelectedRow] = useState<{
+    geo: string;
+    mode: string;
+  } | null>(null); // Для передачі в модалку
   const [selectGeoAcc, setSelectGeoAcc] = useState<string[]>([]);
   const [selectTypeAcc, setSelectTypeAcc] = useState<string[]>([]);
   const [selectGeoReplenishment, setSelectGeoReplenishment] = useState<
@@ -48,7 +55,8 @@ export default function AutoFarmSection() {
   >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
 
-  const toggleEditTypeModal = useCallback(() => {
+  const toggleEditTypeModal = useCallback((geo?: string, mode?: string) => {
+    setSelectedRow(geo && mode ? { geo, mode } : null);
     setIsOpenEditType(prev => !prev);
   }, []);
 
@@ -166,7 +174,9 @@ export default function AutoFarmSection() {
             icon="icon-upload"
           />
           <WhiteBtn
-            onClick={toggleEditTypeModal}
+            onClick={() =>
+              toggleEditTypeModal(row.original.geo, row.original.mode)
+            }
             text={'AutoFarmSection.tableAcc.btnEdit'}
           />
         </div>
@@ -175,8 +185,24 @@ export default function AutoFarmSection() {
   ];
 
   const shortageColumns: ColumnDef<AutofarmMissing>[] = [
-    { accessorKey: 'geo', header: t('AutoFarmSection.geoTable') },
-    { accessorKey: 'mode_name', header: t('AutoFarmSection.type') },
+    {
+      accessorKey: 'geo',
+      header: () => (
+        <div className={styles.sortable_header}>
+          {t('AutoFarmSection.geoTable')}
+          {sorting.find(s => s.id === 'geo')?.desc ? (
+            <span>↓</span>
+          ) : (
+            <span>↑</span>
+          )}
+        </div>
+      ),
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'mode_name',
+      header: t('AutoFarmSection.type'),
+    },
     {
       accessorKey: 'total_missing',
       header: t('AutoFarmSection.tableReplenishment.lackAcc'),
@@ -205,6 +231,11 @@ export default function AutoFarmSection() {
     data: filteredMissing,
     columns: shortageColumns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
   });
 
   const totalMissing = useMemo(
@@ -239,7 +270,6 @@ export default function AutoFarmSection() {
             width={296}
           />
         </div>
-
         <div className={styles.table_wrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>
@@ -293,14 +323,22 @@ export default function AutoFarmSection() {
             width={350}
           />
         </div>
-
         <div className={styles.replenishment_table_wrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>
               {shortageTable.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th className={styles.th} key={header.id}>
+                    <th
+                      className={styles.th}
+                      key={header.id}
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{
+                        cursor: header.column.getCanSort()
+                          ? 'pointer'
+                          : 'default',
+                      }}
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()
@@ -339,10 +377,16 @@ export default function AutoFarmSection() {
       </div>
       <ModalComponent
         isOpen={isOpenEditType}
-        onClose={toggleEditTypeModal}
+        onClose={() => toggleEditTypeModal()}
         title="AutoFarmSection.modalEditType.title"
       >
-        <EditTypeFarmModal />
+        {selectedRow && (
+          <EditTypeFarmModal
+            geo={selectedRow.geo}
+            activityMode={selectedRow.mode}
+            onClose={() => toggleEditTypeModal()}
+          />
+        )}
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenReplenishmentAccounts}

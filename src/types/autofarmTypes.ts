@@ -26,6 +26,11 @@ export interface AutofarmMissingResponse {
   };
 }
 
+export interface AutofarmStatsByDay {
+  farm_day: number;
+  accounts: number;
+}
+
 export interface AutofarmRequestParams extends BaseRequest {
   geo?: string | string[];
   activity_mode?: string | string[];
@@ -34,8 +39,10 @@ export interface AutofarmRequestParams extends BaseRequest {
 export interface AutofarmState {
   stats: AutofarmStats[];
   missing: AutofarmMissing[];
+  statsByDay: AutofarmStatsByDay[];
   loading: boolean;
   error: string | null;
   fetchStatistics: (params?: AutofarmRequestParams) => Promise<void>;
   fetchMissing: (params?: AutofarmRequestParams) => Promise<void>;
+  fetchStatisticsByDay: (params: AutofarmRequestParams) => Promise<void>;
 }
