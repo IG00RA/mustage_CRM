@@ -5,11 +5,11 @@ export const getCookie = (name: string): string | undefined => {
 };
 
 export const getAuthHeaders = () => {
-  const accessToken = getCookie('access_token');
-  if (!accessToken) throw new Error('No access token found');
+  // const accessToken = getCookie('access_token');
+  // if (!accessToken) throw new Error('No access token found');
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${accessToken}`,
+    // Authorization: `Bearer ${accessToken}`,
   };
 };
 
