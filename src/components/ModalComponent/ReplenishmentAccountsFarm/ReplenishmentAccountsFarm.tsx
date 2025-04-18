@@ -134,27 +134,29 @@ export default function ReplenishmentAccountsFarm({
       return;
     }
 
+    // Створюємо query-параметри
+    const queryParams = new URLSearchParams({
+      desired_geo: selectGeo[0],
+      desired_mode: selectMode[0],
+    });
+
+    const url = `${ENDPOINTS.AUTO_FARM_REPLENISH}?${queryParams.toString()}`;
+
     const formData = new FormData();
     formData.append('accounts_file', uploadedFile);
-    formData.append('desired_geo', selectGeo[0]);
-    formData.append('desired_mode', selectMode[0]);
 
     try {
-      const headers = {
-        accept: 'application/json',
-      };
-
-      const response = await fetch(ENDPOINTS.AUTO_FARM_REPLENISH, {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
-        headers,
         credentials: 'include',
       });
 
-      console.log('response', response);
+      console.log('Response:', response);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Error details:', errorData);
         throw new Error(
           errorData.message ||
             errorData.detail ||
