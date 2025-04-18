@@ -25,7 +25,7 @@ type ProxyItem = {
 
 type SuccessResponse = ProxyItem[];
 
-type ErrorResponse = {
+export type ErrorResponse = {
   status: 'failed';
   message: string;
   file: string;
@@ -34,7 +34,7 @@ type ErrorResponse = {
 type ProxiesResponse = SuccessResponse | ErrorResponse;
 
 interface ReplenishmentProxyFarmProps {
-  setResponseData: (data: ProxiesResponse) => void;
+  setResponseData: (data: ErrorResponse) => void;
   toggleErrorModal: () => void;
   onClose: () => void;
 }
@@ -134,11 +134,15 @@ export default function ReplenishmentProxyFarm({
       }
 
       const data: ProxiesResponse = await response.json();
-      setResponseData(data);
+      setResponseData(data as ErrorResponse);
       if (!Array.isArray(data)) {
         toggleErrorModal();
       } else {
-        toast.success(`Вигружено аккаунта ${data.length}`);
+        toast.success(
+          `${t('ServersProxiesSection.loadSuccess')} ${data.length} ${t(
+            'ServersProxiesSection.loadSuccessSecond'
+          )} `
+        );
         setUploadedFile(null);
         setFile(null);
         setAccountCount(0);
@@ -178,11 +182,8 @@ export default function ReplenishmentProxyFarm({
       )}
 
       <div className={styles.buttons_wrap}>
-        <CancelBtn
-          text="AutoFarmSection.modalReplenishmentAcc.btnCancel"
-          onClick={handleReset}
-        />
-        <SubmitBtn text="AutoFarmSection.modalReplenishmentAcc.btn" />
+        <CancelBtn text="ServersProxiesSection.cancel" onClick={handleReset} />
+        <SubmitBtn text="ServersProxiesSection.proxyBtn" />
       </div>
     </form>
   );

@@ -22,8 +22,9 @@ import { useAutofarmStore } from '@/store/autofarmStore';
 import { useUsersStore } from '@/store/usersStore';
 import { Server, Proxy } from '@/types/autofarmTypes';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
-import ReplenishmentProxyFarm from '../ModalComponent/ReplenishmentProxyFarm/ReplenishmentProxyFarm';
-import { UploadResponse } from '../UploadSection/UploadSection';
+import ReplenishmentProxyFarm, {
+  ErrorResponse,
+} from '../ModalComponent/ReplenishmentProxyFarm/ReplenishmentProxyFarm';
 import { toast } from 'react-toastify';
 import { getAuthHeaders } from '@/utils/apiUtils';
 import Icon from '@/helpers/Icon';
@@ -65,7 +66,7 @@ export default function ServersProxiesSection() {
   const [isOpenReplenishmentProxyFarm, setIsOpenReplenishmentProxyFarm] =
     useState(false);
   const [isOpenError, setIsOpenError] = useState(false);
-  const [responseData, setResponseData] = useState<UploadResponse | null>(null);
+  const [responseData, setResponseData] = useState<ErrorResponse | null>(null);
   const [hasFetchedUser, setHasFetchedUser] = useState(false);
 
   const [serversPagination, setServersPagination] = useState<PaginationState>(
@@ -743,7 +744,7 @@ export default function ServersProxiesSection() {
             />
             <AddBtn
               onClick={toggleReplenishmentProxyFarmModal}
-              text={'AutoFarmSection.tableReplenishment.btn'}
+              text={'ServersProxiesSection.proxyBtn'}
             />
           </div>
         )}
@@ -764,7 +765,7 @@ export default function ServersProxiesSection() {
       <ModalComponent
         isOpen={isOpenReplenishmentProxyFarm}
         onClose={toggleReplenishmentProxyFarmModal}
-        title="AutoFarmSection.modalReplenishmentAcc.title"
+        title="ServersProxiesSection.proxyTitle"
       >
         <ReplenishmentProxyFarm
           setResponseData={setResponseData}
