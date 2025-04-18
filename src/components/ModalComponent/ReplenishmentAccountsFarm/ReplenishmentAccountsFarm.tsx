@@ -5,7 +5,7 @@ import ownStyles from './ReplenishmentAccountsFarm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { toast } from 'react-toastify';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 import { useTranslations } from 'next-intl';
@@ -47,6 +47,12 @@ export default function ReplenishmentAccountsFarm({
     '20 дней': 'TWENTY_DAYS',
     '30 дней': 'THIRTY_DAYS',
   };
+
+  useEffect(() => {
+    if (!file) {
+      setAccountCount(0);
+    }
+  }, [file]);
 
   const totalMissing = useMemo(() => {
     const selectedGeo =
@@ -134,7 +140,6 @@ export default function ReplenishmentAccountsFarm({
       return;
     }
 
-    // Створюємо query-параметри
     const queryParams = new URLSearchParams({
       desired_geo: selectGeo[0],
       desired_mode: selectMode[0],
@@ -156,7 +161,6 @@ export default function ReplenishmentAccountsFarm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error details:', errorData);
         throw new Error(
           errorData.message ||
             errorData.detail ||
@@ -184,7 +188,6 @@ export default function ReplenishmentAccountsFarm({
           ? error.message
           : t('Upload.modalUpload.uploadError')
       );
-      console.error('Upload error:', error);
     }
   };
 

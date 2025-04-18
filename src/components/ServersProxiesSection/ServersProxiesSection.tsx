@@ -216,9 +216,21 @@ export default function ServersProxiesSection() {
             text={'ServersProxiesSection.edit'}
           />
           <WhiteBtn
-            onClick={() => deleteProxy(row.original.proxy_id)}
+            onClick={() => {
+              if (
+                window.confirm(
+                  t('ServersProxiesSection.confirmDelete', {
+                    proxyId: row.original.proxy_id,
+                  })
+                )
+              ) {
+                console.log('запит на видалення ');
+                // deleteProxy(row.original.proxy_id);
+              }
+            }}
             text={'ServersProxiesSection.delete'}
             icon="icon-trash"
+            iconFill="icon-fill_trash"
           />
         </div>
       ),

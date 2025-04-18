@@ -567,6 +567,7 @@
     "save": "Сохранить",
     "cancel": "Отменить",
     "selectServer": "Выберите сервер",
+    "confirmDelete": "Вы уверены, что хотите удалить прокси с ID {proxyId}?",
     "statusSelect": "Выберите статус"
   },
   "PromoCodeSection": {

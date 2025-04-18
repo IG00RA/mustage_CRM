@@ -173,7 +173,6 @@ export default function UploadAccounts({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('Server error response:', errorData);
         throw new Error(
           errorData.message ||
             errorData.detail ||
@@ -201,7 +200,6 @@ export default function UploadAccounts({
           ? error.message
           : t('Upload.modalUpload.uploadError')
       );
-      console.error('Upload error:', error);
     }
   };
 
