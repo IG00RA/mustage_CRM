@@ -1,0 +1,15 @@
+.locate_accounts {
+  color: var(--text_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+
+  & span {
+    color: var(--text_dark);
+    font-size: var(--fs_xsmall);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.37;
+  }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import styles from '../ModalComponent.module.css';
-import ownStyles from './ReplenishmentAccountsFarm.module.css';
+import ownStyles from './ReplenishmentProxyFarm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { toast } from 'react-toastify';
@@ -17,17 +17,17 @@ import { UploadResponse } from '@/components/UploadSection/UploadSection';
 const GEO_OPTIONS = ['Україна', 'Польша', 'США'];
 const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней'];
 
-interface ReplenishmentAccountsFarmProps {
+interface ReplenishmentProxyFarmProps {
   setResponseData: (data: UploadResponse) => void;
   toggleErrorModal: () => void;
   onClose: () => void;
 }
 
-export default function ReplenishmentAccountsFarm({
+export default function ReplenishmentProxyFarm({
   setResponseData,
   toggleErrorModal,
   onClose,
-}: ReplenishmentAccountsFarmProps) {
+}: ReplenishmentProxyFarmProps) {
   const t = useTranslations('');
   const { missing } = useAutofarmStore();
 

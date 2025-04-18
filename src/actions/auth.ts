@@ -47,7 +47,7 @@ export async function login(formData: FormData) {
   // Збереження токену в HTTP-only куках на 30 днів
   const cookieStore = await cookies();
   cookieStore.set('access_token', token, {
-    httpOnly: true,
+    httpOnly: process.env.NEXT_PUBLIC_LOCAL !== 'local',
     // secure: process.env.NODE_ENV === 'production',
     secure: true,
     sameSite: 'lax',

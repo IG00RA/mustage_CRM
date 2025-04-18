@@ -198,3 +198,33 @@
     }
   }
 }
+
+.error_download_text {
+  color: var(--text_light);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  margin-bottom: 16px;
+}
+
+.error_text {
+  color: var(--text_light);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  margin-bottom: 16px;
+
+  & span {
+    color: var(--text_dark);
+  }
+}
+
+.modal_error {
+  max-width: 500px;
+}
+
+.table_add_btn {
+  gap: 10px;
+}

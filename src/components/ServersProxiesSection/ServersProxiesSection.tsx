@@ -19,6 +19,11 @@ import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Loader from '../Loader/Loader';
 import { useAutofarmStore } from '@/store/autofarmStore';
 import { Server, Proxy } from '@/types/autofarmTypes';
+import AddBtn from '../Buttons/AddBtn/AddBtn';
+import ReplenishmentProxyFarm from '../ModalComponent/ReplenishmentProxyFarm/ReplenishmentProxyFarm';
+import { UploadResponse } from '../UploadSection/UploadSection';
+import { toast } from 'react-toastify';
+import { getAuthHeaders } from '@/utils/apiUtils';
 
 export default function ServersProxiesSection() {
   const t = useTranslations();
@@ -42,6 +47,10 @@ export default function ServersProxiesSection() {
   const [isOpenEditProxy, setIsOpenEditProxy] = useState(false);
   const [selectedProxy, setSelectedProxy] = useState<Proxy | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [isOpenReplenishmentProxyFarm, setIsOpenReplenishmentProxyFarm] =
+    useState(false);
+  const [isOpenError, setIsOpenError] = useState(false);
+  const [responseData, setResponseData] = useState<UploadResponse | null>(null);
 
   const toggleEditProxyModal = useCallback((proxy?: Proxy) => {
     setSelectedProxy(proxy || null);
@@ -57,6 +66,10 @@ export default function ServersProxiesSection() {
       setShowLoader(false);
     }
   }, [servers]);
+
+  const toggleReplenishmentProxyFarmModal = useCallback(() => {
+    setIsOpenReplenishmentProxyFarm(prev => !prev);
+  }, []);
 
   const fetchData = useCallback(() => {
     fetchServers({
@@ -85,6 +98,15 @@ export default function ServersProxiesSection() {
     }, 300);
     return () => clearTimeout(timeout);
   }, [fetchData]);
+
+  const downloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/assets/proxies_template.xlsx';
+    link.download = 'proxies_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const geoOptions = useMemo(() => {
     const options = [t('AutoFarmSection.geoSelect')];
@@ -235,6 +257,57 @@ export default function ServersProxiesSection() {
       ),
     },
   ];
+
+  const downloadErrorFile = async () => {
+    if (!responseData?.file) {
+      toast.error(t('Upload.downloadError.noFile'));
+      return;
+    }
+
+    try {
+      const headers = {
+        ...getAuthHeaders(),
+        accept: 'application/octet-stream',
+      };
+
+      const response = await fetch(responseData.file, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            errorData.detail ||
+            t('Upload.downloadError.error')
+        );
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download =
+        responseData.file.split('/').pop() || 'upload-errors.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(t('Upload.downloadError.success'));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t('Upload.downloadError.error')
+      );
+      console.error('Download error:', error);
+    }
+  };
+
+  const toggleErrorModal = () => {
+    setIsOpenError(!isOpenError);
+  };
 
   const serversTable = useReactTable({
     data: servers,
@@ -389,6 +462,18 @@ export default function ServersProxiesSection() {
             </tbody>
           </table>
         </div>
+        <div className={styles.table_add_btn}>
+          <WhiteBtn
+            onClick={downloadTemplate}
+            text={'AutoFarmSection.downloadTemplate'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <AddBtn
+            onClick={toggleReplenishmentProxyFarmModal}
+            text={'AutoFarmSection.tableReplenishment.btn'}
+          />
+        </div>
       </div>
 
       <ModalComponent
@@ -402,6 +487,38 @@ export default function ServersProxiesSection() {
             onClose={() => toggleEditProxyModal()}
           />
         )}
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenReplenishmentProxyFarm}
+        onClose={toggleReplenishmentProxyFarmModal}
+        title="AutoFarmSection.modalReplenishmentAcc.title"
+      >
+        <ReplenishmentProxyFarm
+          setResponseData={setResponseData}
+          toggleErrorModal={toggleErrorModal}
+          onClose={toggleReplenishmentProxyFarmModal}
+        />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenError}
+        onClose={toggleErrorModal}
+        title="Upload.modalUpload.titleError"
+        icon="icon-error-load"
+      >
+        <div className={styles.modal_error}>
+          <p className={styles.error_text}>
+            {t('Upload.textError')} <span>{responseData?.message}</span>
+          </p>
+          <p className={styles.error_download_text}>
+            {t('Upload.textDownloadError')}
+          </p>
+        </div>
+        <WhiteBtn
+          onClick={downloadErrorFile}
+          text={'Upload.buttons.errorDownload'}
+          icon="icon-cloud-download"
+          iconFill="icon-cloud-download-fill"
+        />
       </ModalComponent>
     </section>
   );

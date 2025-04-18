@@ -4,13 +4,18 @@ export const getCookie = (name: string): string | undefined => {
   return parts.length === 2 ? parts.pop()?.split(';').shift() : undefined;
 };
 
-export const getAuthHeaders = () => {
-  // const accessToken = getCookie('access_token');
-  // if (!accessToken) throw new Error('No access token found');
-  return {
+export const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    // Authorization: `Bearer ${accessToken}`,
   };
+
+  if (process.env.NEXT_PUBLIC_LOCAL === 'local') {
+    const accessToken = getCookie('access_token');
+    if (!accessToken) throw new Error('No access token found');
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  return headers;
 };
 
 interface StateType {

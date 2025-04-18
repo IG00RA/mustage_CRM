@@ -198,7 +198,10 @@ export default function AutoFarmSection() {
           (selectGeoReplenishment.length === 0 ||
             selectGeoReplenishment.includes(item.geo)) &&
           (selectTypeReplenishment.length === 0 ||
-            selectTypeReplenishment.includes(item.mode_name))
+            selectTypeReplenishment.includes(
+              MODE_NAME_MAP[item.mode_name as keyof typeof MODE_NAME_MAP] ||
+                item.mode_name
+            ))
       ),
     [missing, selectGeoReplenishment, selectTypeReplenishment]
   );
