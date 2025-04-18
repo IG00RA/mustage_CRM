@@ -114,7 +114,7 @@ export default function ReplenishmentProxyFarm({
 
       const data: UploadResponse = await response.json();
       setResponseData(data);
-
+      console.log('data', data);
       if (data.status === 'failed') {
         toggleErrorModal();
       } else {
