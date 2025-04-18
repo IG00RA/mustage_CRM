@@ -10,10 +10,31 @@ import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDr
 import { useTranslations } from 'next-intl';
 import ExcelJS from 'exceljs';
 import { ENDPOINTS } from '@/constants/api';
-import { UploadResponse } from '@/components/UploadSection/UploadSection';
+
+type ProxyItem = {
+  host: string;
+  port: number;
+  modem: string;
+  password: string;
+  change_ip_link: string;
+  geo: string;
+  provider: string | null;
+  operator: string | null;
+  proxy_id: number;
+};
+
+type SuccessResponse = ProxyItem[];
+
+type ErrorResponse = {
+  status: 'failed';
+  message: string;
+  file: string;
+};
+
+type ProxiesResponse = SuccessResponse | ErrorResponse;
 
 interface ReplenishmentProxyFarmProps {
-  setResponseData: (data: UploadResponse) => void;
+  setResponseData: (data: ProxiesResponse) => void;
   toggleErrorModal: () => void;
   onClose: () => void;
 }
@@ -112,13 +133,12 @@ export default function ReplenishmentProxyFarm({
         );
       }
 
-      const data: UploadResponse = await response.json();
+      const data: ProxiesResponse = await response.json();
       setResponseData(data);
-      console.log('data', data);
-      if (data.status === 'failed') {
+      if (!Array.isArray(data)) {
         toggleErrorModal();
       } else {
-        toast.success(data.message);
+        toast.success(`Вигружено аккаунта ${data.length}`);
         setUploadedFile(null);
         setFile(null);
         setAccountCount(0);
