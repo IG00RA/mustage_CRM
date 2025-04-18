@@ -157,8 +157,6 @@ export default function ReplenishmentAccountsFarm({
         credentials: 'include',
       });
 
-      console.log('Response:', response);
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -203,7 +201,6 @@ export default function ReplenishmentAccountsFarm({
   return (
     <form onSubmit={onSubmit} className={styles.form}>
       <div className={styles.field}>
-        <label className={styles.label}>{t('AutoFarmSection.geo')}</label>
         <CustomSelect
           label={`${t('AutoFarmSection.geo')}:`}
           options={[t('AutoFarmSection.geoSelect'), ...GEO_OPTIONS]}
@@ -216,9 +213,6 @@ export default function ReplenishmentAccountsFarm({
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>
-          {t('AutoFarmSection.modalReplenishmentAcc.type')}
-        </label>
         <CustomSelect
           label={`${t('AutoFarmSection.type')}:`}
           options={[t('AutoFarmSection.typeSelect'), ...ACTIVITY_MODES]}

@@ -66,7 +66,6 @@ export default function UploadSection() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('Download error response:', errorData);
         throw new Error(
           errorData.message ||
             errorData.detail ||
@@ -74,20 +73,17 @@ export default function UploadSection() {
         );
       }
 
-      // Отримуємо бінарні дані файлу
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
-      // Створюємо посилання для скачування
       const link = document.createElement('a');
       link.href = url;
       link.download =
-        responseData.file.split('/').pop() || 'upload-errors.xlsx'; // Ім’я файлу з URL
+        responseData.file.split('/').pop() || 'upload-errors.xlsx';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      // Очищаємо URL
       window.URL.revokeObjectURL(url);
 
       toast.success(t('Upload.downloadError.success'));

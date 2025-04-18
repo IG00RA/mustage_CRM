@@ -81,14 +81,12 @@ export default function EditProxyModal({
     }
   };
 
-  // Опції для вибору серверів
   const serverOptions = useMemo(() => {
     const options = [t('ServersProxiesSection.selectServer')];
     options.push(...servers.map(server => server.server_name));
     return options;
   }, [servers, t]);
 
-  // Опції для вибору гео
   const geoOptions = useMemo(() => {
     const options = [t('AutoFarmSection.geoSelect')];
     if (geosModesStatuses?.geos) {
@@ -99,7 +97,6 @@ export default function EditProxyModal({
     return options;
   }, [geosModesStatuses, t]);
 
-  // Отримання поточного server_id для відображення в CustomSelect
   const currentServerId = watch('server_id');
 
   return (

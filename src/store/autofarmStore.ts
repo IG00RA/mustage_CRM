@@ -184,7 +184,6 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
     const data = await get().fetchStatisticsByDayDirect(params);
 
     set({ statsByDay: data, loading: false });
-    console.log('Statistics by day fetched:', data);
   },
 
   fetchStatisticsByDayDirect: async (params: AutofarmRequestParams = {}) => {

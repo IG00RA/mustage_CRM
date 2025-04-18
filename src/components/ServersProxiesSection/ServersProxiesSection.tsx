@@ -224,8 +224,7 @@ export default function ServersProxiesSection() {
                   })
                 )
               ) {
-                console.log('запит на видалення ');
-                // deleteProxy(row.original.proxy_id);
+                deleteProxy(row.original.proxy_id);
               }
             }}
             text={'ServersProxiesSection.delete'}

@@ -150,7 +150,7 @@
 }
 
 .table_wrapper {
-  max-height: 300px;
+  max-height: 280px;
   overflow-y: auto;
   border-bottom: 1px solid var(--grey);
 }

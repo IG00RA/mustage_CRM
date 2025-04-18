@@ -30,6 +30,13 @@ import { getAuthHeaders } from '@/utils/apiUtils';
 const GEO_OPTIONS = ['Україна', 'Польша', 'США'];
 const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней'];
 
+const MODE_NAME_MAP = {
+  SEVEN_DAYS: '7 дней',
+  FOURTEEN_DAYS: '14 дней',
+  TWENTY_DAYS: '20 дней',
+  THIRTY_DAYS: '30 дней',
+};
+
 export default function AutoFarmSection() {
   const t = useTranslations();
   const { stats, missing, error, fetchStatistics, fetchMissing } =
@@ -270,6 +277,10 @@ export default function AutoFarmSection() {
     {
       accessorKey: 'mode_name',
       header: t('AutoFarmSection.type'),
+      cell: ({ row }) => {
+        const modeKey = row.original.mode_name;
+        return MODE_NAME_MAP[modeKey as keyof typeof MODE_NAME_MAP] || modeKey;
+      },
     },
     {
       accessorKey: 'total_missing',
