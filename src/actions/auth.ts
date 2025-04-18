@@ -47,9 +47,10 @@ export async function login(formData: FormData) {
   // Збереження токену в HTTP-only куках на 30 днів
   const cookieStore = await cookies();
   cookieStore.set('access_token', token, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    httpOnly: true,
+    // secure: process.env.NODE_ENV === 'production',
+    secure: true,
+    sameSite: 'lax',
     path: '/',
     maxAge: 30 * 24 * 60 * 60,
   });
@@ -67,7 +68,7 @@ export async function login(formData: FormData) {
     }
   );
 
-  console.log("userResponse", userResponse);
+  console.log('userResponse', userResponse);
 
   if (!userResponse.ok) {
     return { error: 'Failed to fetch user data' };
