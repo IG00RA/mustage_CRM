@@ -151,6 +151,8 @@ export default function ReplenishmentAccountsFarm({
         credentials: 'include',
       });
 
+      console.log('response', response);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(

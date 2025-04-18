@@ -3,13 +3,13 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-interface UserFunction {
-  function_name: string;
-}
-interface UserData {
-  is_admin: boolean;
-  functions?: UserFunction[];
-}
+// interface UserFunction {
+//   function_name: string;
+// }
+// interface UserData {
+//   is_admin: boolean;
+//   functions?: UserFunction[];
+// }
 
 export async function login(formData: FormData) {
   const username = formData.get('username');
@@ -55,37 +55,36 @@ export async function login(formData: FormData) {
     maxAge: 30 * 24 * 60 * 60,
   });
 
-  // Отримання даних користувача
-  const userResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_HOST_BACK_LOCAL}/users/me`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-    }
-  );
+  // const userResponse = await fetch(
+  //   `${process.env.NEXT_PUBLIC_HOST_BACK_LOCAL}/users/me`,
+  //   {
+  //     method: 'GET',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //     credentials: 'include',
+  //   }
+  // );
 
-  console.log('userResponse', userResponse);
+  // console.log('userResponse', userResponse);
 
-  if (!userResponse.ok) {
-    return { error: 'Failed to fetch user data' };
-  }
+  // if (!userResponse.ok) {
+  //   return { error: 'Failed to fetch user data' };
+  // }
 
-  const userData: UserData = await userResponse.json();
+  // const userData: UserData = await userResponse.json();
 
-  const isDashboardAllowed =
-    userData.is_admin ||
-    !userData.functions ||
-    userData.functions.length === 0 ||
-    userData.functions.some(func => func.function_name === 'Обзор');
-  redirect(isDashboardAllowed ? '/ru/dashboard' : '/ru/');
+  // const isDashboardAllowed =
+  //   userData.is_admin ||
+  //   !userData.functions ||
+  //   userData.functions.length === 0 ||
+  //   userData.functions.some(func => func.function_name === 'Обзор');
+  // redirect(isDashboardAllowed ? '/ru/dashboard' : '/ru/');
+  redirect('/ru/dashboard');
 }
 
 export async function logout() {
-  // Отримуємо токен з куків для авторизації запиту на бекенд
   const cookieStore = await cookies();
   const authToken = cookieStore.get('access_token');
   if (!authToken?.value) {
