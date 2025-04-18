@@ -12,6 +12,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
+import { useRouter } from 'next/navigation';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '../ModalComponent/ModalComponent';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
@@ -21,6 +22,7 @@ import UploadAccountsAutoFarm from '../ModalComponent/UploadAccountsAutoFarm/Upl
 import ReplenishmentAccountsFarm from '../ModalComponent/ReplenishmentAccountsFarm/ReplenishmentAccountsFarm';
 import EditServerFarmModal from '../ModalComponent/EditServerFarmModal/EditServerFarmModal';
 import { useAutofarmStore } from '@/store/autofarmStore';
+import { useUsersStore } from '@/store/usersStore';
 import { AutofarmStats, AutofarmMissing } from '@/types/autofarmTypes';
 import Loader from '../Loader/Loader';
 import { UploadResponse } from '../UploadSection/UploadSection';
@@ -39,8 +41,11 @@ const MODE_NAME_MAP = {
 
 export default function AutoFarmSection() {
   const t = useTranslations();
+  const router = useRouter();
   const { stats, missing, error, fetchStatistics, fetchMissing } =
     useAutofarmStore();
+  const { currentUser, fetchCurrentUser, loading } = useUsersStore();
+
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenError, setIsOpenError] = useState(false);
   const [responseData, setResponseData] = useState<UploadResponse | null>(null);
@@ -65,6 +70,44 @@ export default function AutoFarmSection() {
     string[]
   >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [hasFetchedUser, setHasFetchedUser] = useState(false);
+
+  // Перевірка доступу
+  useEffect(() => {
+    if (!currentUser && !loading && !hasFetchedUser) {
+      setHasFetchedUser(true);
+      fetchCurrentUser().catch(error => {
+        console.error('Failed to fetch current user:', error);
+        toast.error(t('Errors.fetchUserFailed'));
+        router.push('/ru');
+      });
+    }
+  }, [currentUser, loading, hasFetchedUser, fetchCurrentUser, router, t]);
+
+  const autofarmAccess = useMemo(() => {
+    if (!currentUser) return { hasAccess: false, hasUpdate: false };
+
+    // Якщо користувач є адміном, надаємо повний доступ
+    if (currentUser.is_admin) {
+      return { hasAccess: true, hasUpdate: true };
+    }
+
+    // Інакше перевіряємо функції
+    const autofarmFunction = currentUser.functions.find(
+      func => func.function_name === 'Управление автофармом'
+    );
+    if (!autofarmFunction) return { hasAccess: false, hasUpdate: false };
+    const hasRead = autofarmFunction.operations.includes('READ');
+    const hasUpdate = autofarmFunction.operations.includes('UPDATE');
+    return { hasAccess: hasRead, hasUpdate };
+  }, [currentUser]);
+
+  // Перенаправлення, якщо немає доступу
+  useEffect(() => {
+    if (!loading && !autofarmAccess.hasAccess && currentUser) {
+      router.push('/ru');
+    }
+  }, [autofarmAccess, loading, router, currentUser]);
 
   const toggleEditTypeModal = useCallback((geo?: string, mode?: string) => {
     setSelectedRow(geo && mode ? { geo, mode } : null);
@@ -90,6 +133,7 @@ export default function AutoFarmSection() {
   );
 
   const fetchData = useCallback(() => {
+    if (!autofarmAccess.hasAccess) return;
     fetchStatistics({
       geo: selectGeoAcc.length ? selectGeoAcc : undefined,
       activity_mode: selectTypeAcc.length ? selectTypeAcc : undefined,
@@ -101,6 +145,7 @@ export default function AutoFarmSection() {
         : undefined,
     });
   }, [
+    autofarmAccess,
     selectGeoAcc,
     selectTypeAcc,
     selectGeoReplenishment,
@@ -114,12 +159,12 @@ export default function AutoFarmSection() {
   }, [stats]);
 
   useEffect(() => {
+    if (!autofarmAccess.hasAccess) return;
     const timeout = setTimeout(() => {
       fetchData();
     }, 300);
-
     return () => clearTimeout(timeout);
-  }, [fetchData]);
+  }, [fetchData, autofarmAccess]);
 
   const filteredStats = useMemo(
     () =>
@@ -235,7 +280,11 @@ export default function AutoFarmSection() {
       accessorKey: 'ready_2_fp',
       header: t('AutoFarmSection.tableAcc.with2FP'),
     },
-    {
+  ];
+
+  // Умовно додаємо колонку дій, якщо є права на UPDATE або is_admin: true
+  if (autofarmAccess.hasUpdate) {
+    mainColumns.push({
       id: 'actions',
       header: t('AutoFarmSection.actions'),
       cell: ({ row }) => (
@@ -259,8 +308,8 @@ export default function AutoFarmSection() {
           />
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   const shortageColumns: ColumnDef<AutofarmMissing>[] = [
     {
@@ -324,6 +373,10 @@ export default function AutoFarmSection() {
     () => filteredMissing.reduce((sum, item) => sum + item.total_missing, 0),
     [filteredMissing]
   );
+
+  if (loading || !currentUser) {
+    return <Loader />;
+  }
 
   return (
     <section className={styles.section}>
@@ -450,18 +503,21 @@ export default function AutoFarmSection() {
           {t('AutoFarmSection.tableReplenishment.amount')}{' '}
           <span>{totalMissing}</span>
         </p>
-        <div className={styles.table_add_btn}>
-          <WhiteBtn
-            onClick={downloadTemplate}
-            text={'AutoFarmSection.downloadTemplate'}
-            icon="icon-cloud-download"
-            iconFill="icon-cloud-download-fill"
-          />
-          <AddBtn
-            onClick={toggleReplenishmentAccountsModal}
-            text={'AutoFarmSection.tableReplenishment.btn'}
-          />
-        </div>
+        {/* Умовно відображаємо кнопки для додавання/завантаження */}
+        {autofarmAccess.hasUpdate && (
+          <div className={styles.table_add_btn}>
+            <WhiteBtn
+              onClick={downloadTemplate}
+              text={'AutoFarmSection.downloadTemplate'}
+              icon="icon-cloud-download"
+              iconFill="icon-cloud-download-fill"
+            />
+            <AddBtn
+              onClick={toggleReplenishmentAccountsModal}
+              text={'AutoFarmSection.tableReplenishment.btn'}
+            />
+          </div>
+        )}
       </div>
       <ModalComponent
         isOpen={isOpenEditType}

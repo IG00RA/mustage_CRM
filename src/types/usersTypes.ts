@@ -45,7 +45,7 @@ export interface CreateUserRequest {
   telegram_id: number;
   telegram_username: string;
   role_id: number;
-  is_seller?: boolean;
+  create_seller?: boolean;
   functions?: {
     function_id: number;
     operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];
@@ -65,7 +65,7 @@ export interface UpdateUserRequest {
   is_referral?: boolean;
   telegram_id?: number;
   telegram_username?: string;
-  is_seller?: boolean;
+  create_seller?: boolean;
   functions?: {
     function_id: number;
     operations: ('READ' | 'CREATE' | 'UPDATE' | 'DELETE')[];

@@ -12,21 +12,22 @@ import LoadAccountsConfirm from '../ModalComponent/LoadAccountsConfirm/LoadAccou
 import { toast } from 'react-toastify';
 import ExcelJS from 'exceljs';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
 import {
   AccountDataWrapper,
   SellAccountsResponse,
 } from '@/types/accountsTypes';
+import { useUsersStore } from '@/store/usersStore';
 
 type FormData = {
-  nameField: string; // Total available accounts (read-only)
-  accQuantity: string; // Quantity to sell
-  price: string; // Seller (selected from CustomSelect)
-  cost: string; // Cost price (auto-filled from subcategory)
-  nameDescription: string; // Selling price per account
-  tgNick: string; // Telegram nickname
-  dolphinMail?: string; // Dolphin email (optional, visible if checkbox is checked)
+  nameField: string;
+  accQuantity: string;
+  price: string;
+  cost: string;
+  seller_name: string;
+  nameDescription: string;
+  tgNick: string;
+  dolphinMail?: string;
   settings: string[];
 };
 
@@ -36,9 +37,8 @@ export default function LoadSection() {
   const t = useTranslations();
   const { categories, fetchCategories, subcategories, fetchSubcategories } =
     useCategoriesStore();
-  const { sellers, fetchSellers } = useSellersStore();
   const { fetchAccounts, sellAccounts } = useAccountsStore();
-
+  const { currentUser, fetchCurrentUser } = useUsersStore();
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
   const [isLoadComplete, setIsLoadComplete] = useState(false);
@@ -55,14 +55,30 @@ export default function LoadSection() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
     reset,
   } = useForm<FormData>();
 
   useEffect(() => {
-    fetchCategories();
-    fetchSellers(true); // Fetch only visible sellers
-  }, [fetchCategories, fetchSellers]);
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        await fetchCategories();
+        await fetchCurrentUser();
+        if (isMounted && currentUser?.seller?.seller_name) {
+          setValue('seller_name', currentUser.seller.seller_name);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchCategories, fetchCurrentUser, setValue]);
 
   useEffect(() => {
     if (
@@ -83,6 +99,7 @@ export default function LoadSection() {
         nameDescription: '',
         tgNick: '',
         dolphinMail: '',
+        seller_name: '',
       });
     }
   }, [selectedCategory, categories, fetchSubcategories, t, reset]);
@@ -103,6 +120,7 @@ export default function LoadSection() {
         }).then(data => {
           setTotalAvailableAccounts(data.total_rows);
           setValue('nameField', data.total_rows.toString());
+          setValue('seller_name', currentUser?.seller?.seller_name || '');
         });
       }
     } else {
@@ -114,6 +132,7 @@ export default function LoadSection() {
         nameDescription: '',
         tgNick: '',
         dolphinMail: '',
+        seller_name: '',
       });
     }
   }, [selectedSubcategory, subcategories, fetchAccounts, setValue, t, reset]);
@@ -139,10 +158,6 @@ export default function LoadSection() {
       );
       return;
     }
-    if (!data.price || data.price === t('Load.sellers')) {
-      toast.error(t('Load.errorSellerNotSelected'));
-      return;
-    }
     setFormData(data);
     toggleConfirmModal();
   };
@@ -152,11 +167,10 @@ export default function LoadSection() {
     const subcategory = subcategories.find(
       sub => sub.account_subcategory_name === selectedSubcategory[0]
     );
-    const seller = sellers.find(sel => sel.seller_name === formData?.price);
 
     const requestBody = {
       subcategory_id: subcategory?.account_subcategory_id || 0,
-      seller_id: seller?.seller_id || 0,
+      seller_id: currentUser?.seller?.seller_id || 0,
       quantity: parseInt(formData?.accQuantity || '0'),
       price: parseFloat(formData?.nameDescription || '0'),
       client_name: formData?.tgNick || '',
@@ -164,14 +178,12 @@ export default function LoadSection() {
         ? formData?.dolphinMail
         : undefined,
     };
-
     try {
       const data = await sellAccounts(requestBody);
       if (data.success) {
         generateFiles(data);
         toast.success(t('Load.successMessage'));
         setIsLoadComplete(true);
-        // Очищення форми після успішного вивантаження
         reset({
           nameField: '',
           accQuantity: '',
@@ -179,6 +191,7 @@ export default function LoadSection() {
           nameDescription: '',
           tgNick: '',
           dolphinMail: '',
+          seller_name: '',
         });
         setCheckedSettings({});
       } else {
@@ -349,6 +362,7 @@ export default function LoadSection() {
         nameDescription: '',
         tgNick: '',
         dolphinMail: '',
+        seller_name: '',
       });
     }
   };
@@ -365,13 +379,9 @@ export default function LoadSection() {
         nameDescription: '',
         tgNick: '',
         dolphinMail: '',
+        seller_name: '',
       });
     }
-  };
-
-  const handleSellerSelect = (values: string[]) => {
-    const value = values[0] || '';
-    setValue('price', value === t('Load.sellers') ? '' : value);
   };
 
   return (
@@ -454,17 +464,21 @@ export default function LoadSection() {
                 )}
               </div>
               <div className={styles.field}>
-                <CustomSelect
-                  label={t('Load.seller')}
-                  options={[
-                    t('Load.sellers'),
-                    ...(sellers || []).map(sel => sel.seller_name || ''),
-                  ]}
-                  selected={watch('price') ? [watch('price')] : []}
-                  onSelect={handleSellerSelect}
-                  width={602}
-                  multiSelections={false}
-                />
+                <div className={styles.label_wrap}>
+                  <label className={styles.label}>{t('Load.seller')}</label>
+                  <input
+                    className={`${styles.input} ${
+                      errors.seller_name ? styles.input_error : ''
+                    }`}
+                    readOnly
+                    {...register('seller_name', {
+                      required: t('DBSettings.form.errorMessage'),
+                    })}
+                  />
+                </div>
+                {errors.seller_name && (
+                  <p className={styles.error}>{errors.seller_name.message}</p>
+                )}
               </div>
               <div className={styles.field}>
                 <div className={styles.label_wrap}>

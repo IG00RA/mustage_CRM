@@ -119,7 +119,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       last_name: data.secondName,
       is_admin: false,
       is_referral: false,
-      is_seller: isSeller,
+      create_seller: isSeller,
       telegram_id: data.tgId,
       telegram_username: data.tgNick,
       role_id: selectedRoleId,

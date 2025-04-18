@@ -147,7 +147,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       login: data.login,
       ...(data.pass && { password: data.pass }),
       first_name: data.name,
-      is_seller: isSeller,
+      create_seller: isSeller,
       last_name: data.secondName,
       telegram_id: Number(data.tgId),
       telegram_username: data.tgNick,
@@ -484,13 +484,15 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             multiSelections={false}
           />
         </div>
-        <div className={styles.field}>
-          <CustomCheckbox
-            checked={isSeller}
-            onChange={handleSellerToggle}
-            label={t('UserSection.modalCreate.isSeller')}
-          />
-        </div>
+        {!user.seller && (
+          <div className={styles.field}>
+            <CustomCheckbox
+              checked={isSeller}
+              onChange={handleSellerToggle}
+              label={t('UserSection.modalCreate.isSeller')}
+            />
+          </div>
+        )}
         <div className={styles.field}>
           <label className={styles.label}>
             {t('UserSection.modalCreate.tgId')}

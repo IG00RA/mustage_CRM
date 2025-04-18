@@ -7,11 +7,10 @@ import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect } from 'react';
-import { useSellersStore } from '@/store/sellersStore';
 import { useAccountsStore } from '@/store/accountsStore';
+import { useUsersStore } from '@/store/usersStore';
 import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
 import {
   ReplaceRequest,
@@ -31,6 +30,7 @@ type FormData = {
   reason: string;
   newPrice: number;
   dolphinMail?: string;
+  seller_name: string;
 };
 
 const settingsOptions = ['ReplacementSection.check'];
@@ -41,19 +41,19 @@ export default function ResultReplace({
 }: ResultReplaceProps) {
   const t = useTranslations();
   const [settings] = useState(settingsOptions);
-  const [selectSeller, setSelectSeller] = useState<string[]>([]);
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { sellers, fetchSellers } = useSellersStore();
   const { replaceAccounts } = useAccountsStore();
+  const { currentUser, fetchCurrentUser } = useUsersStore();
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormData>();
 
@@ -91,8 +91,25 @@ export default function ResultReplace({
     ) || [];
 
   useEffect(() => {
-    fetchSellers();
-  }, [fetchSellers]);
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        await fetchCurrentUser();
+        if (isMounted && currentUser?.seller?.seller_name) {
+          setValue('seller_name', currentUser.seller.seller_name);
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchCurrentUser, setValue]);
 
   const toggleCheckbox = (id: string) => {
     setCheckedSettings(prev => ({
@@ -110,7 +127,6 @@ export default function ResultReplace({
       date.getMonth() + 1
     }_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
 
-    // Generate XLSX file with ExcelJS
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('ReplacedAccounts');
 
@@ -212,7 +228,6 @@ export default function ResultReplace({
     link.download = `${fileName}.xlsx`;
     link.click();
 
-    // Generate TXT file based on server response
     const txtContent = accounts
       .map((acc: AccountDataWrapper) => {
         const formatFields = acc.account.subcategory.output_format_field || [
@@ -245,21 +260,15 @@ export default function ResultReplace({
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!filteredAccounts.length || !selectSeller[0]) {
+    if (!filteredAccounts.length || !currentUser?.seller?.seller_id) {
       toast.error(t('ReplacementSection.modalReplace.validationError'));
-      return;
-    }
-
-    const selectedSeller = sellers.find(s => s.seller_name === selectSeller[0]);
-    if (!selectedSeller) {
-      toast.error(t('ReplacementSection.modalReplace.sellerError'));
       return;
     }
 
     const requestBody: ReplaceRequest = {
       account_ids: filteredAccounts.map(acc => acc.account_id),
       subcategory_id: majoritySubcategory!.account_subcategory_id,
-      seller_id: selectedSeller.seller_id,
+      seller_id: currentUser.seller.seller_id,
       replace_reason: data.reason,
       new_price: data.newPrice,
       client_name: data.nick,
@@ -267,7 +276,6 @@ export default function ResultReplace({
         client_dolphin_email: data.dolphinMail,
       }),
     };
-
     try {
       setIsSubmitting(true);
       const response = await replaceAccounts(requestBody);
@@ -335,19 +343,23 @@ export default function ResultReplace({
         </div>
       </div>
       <div className={styles.field}>
-        <label className={styles.label}>
-          {t('ReplacementSection.modalReplace.seller')}
-        </label>
-        <CustomSelect
-          options={[
-            t('ReplacementSection.modalReplace.sellerSelect'),
-            ...sellers.map(seller => seller.seller_name || ''),
-          ]}
-          selected={selectSeller}
-          onSelect={setSelectSeller}
-          width={'100%'}
-          multiSelections={false}
-        />
+        <div className={ownStyles.label_wrap}>
+          <label className={styles.label}>
+            {t('ReplacementSection.modalReplace.seller')}
+          </label>
+          <input
+            className={`${styles.input} ${
+              errors.seller_name ? styles.input_error : ''
+            }`}
+            readOnly
+            {...register('seller_name', {
+              required: t('DBSettings.form.errorMessage'),
+            })}
+          />
+        </div>
+        {errors.seller_name && (
+          <p className={styles.error}>{errors.seller_name.message}</p>
+        )}
       </div>
       <div className={styles.field}>
         <div className={ownStyles.label_wrap}>

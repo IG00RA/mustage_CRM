@@ -11,6 +11,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
+import { useRouter } from 'next/navigation';
 import styles from './ServersProxiesSection.module.css';
 import CustomSelect from '../Buttons/CustomSelect/CustomSelect';
 import ModalComponent from '../ModalComponent/ModalComponent';
@@ -18,6 +19,7 @@ import EditProxyModal from '../ModalComponent/EditProxyModal/EditProxyModal';
 import WhiteBtn from '../Buttons/WhiteBtn/WhiteBtn';
 import Loader from '../Loader/Loader';
 import { useAutofarmStore } from '@/store/autofarmStore';
+import { useUsersStore } from '@/store/usersStore';
 import { Server, Proxy } from '@/types/autofarmTypes';
 import AddBtn from '../Buttons/AddBtn/AddBtn';
 import ReplenishmentProxyFarm from '../ModalComponent/ReplenishmentProxyFarm/ReplenishmentProxyFarm';
@@ -36,6 +38,7 @@ interface PaginationState {
 
 export default function ServersProxiesSection() {
   const t = useTranslations();
+  const router = useRouter();
   const {
     servers,
     proxies,
@@ -48,6 +51,7 @@ export default function ServersProxiesSection() {
     fetchProxies,
     deleteProxy,
   } = useAutofarmStore();
+  const { currentUser, fetchCurrentUser, loading } = useUsersStore();
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectGeo, setSelectGeo] = useState<string[]>([]);
@@ -62,6 +66,8 @@ export default function ServersProxiesSection() {
     useState(false);
   const [isOpenError, setIsOpenError] = useState(false);
   const [responseData, setResponseData] = useState<UploadResponse | null>(null);
+  const [hasFetchedUser, setHasFetchedUser] = useState(false);
+
   const [serversPagination, setServersPagination] = useState<PaginationState>(
     () => {
       if (typeof window !== 'undefined') {
@@ -81,14 +87,47 @@ export default function ServersProxiesSection() {
     }
   );
 
+  // Перевірка доступу
+  useEffect(() => {
+    if (!currentUser && !loading && !hasFetchedUser) {
+      setHasFetchedUser(true);
+      fetchCurrentUser().catch(error => {
+        console.error('Failed to fetch current user:', error);
+        toast.error(t('Errors.fetchUserFailed'));
+        router.push('/ru');
+      });
+    }
+  }, [currentUser, loading, hasFetchedUser, fetchCurrentUser, router, t]);
+
+  const autofarmAccess = useMemo(() => {
+    if (!currentUser) return { hasAccess: false, hasUpdate: false };
+
+    // Якщо користувач є адміном, надаємо повний доступ
+    if (currentUser.is_admin) {
+      return { hasAccess: true, hasUpdate: true };
+    }
+
+    // Інакше перевіряємо функції
+    const autofarmFunction = currentUser.functions.find(
+      func => func.function_name === 'Управление автофармом'
+    );
+    if (!autofarmFunction) return { hasAccess: false, hasUpdate: false };
+    const hasRead = autofarmFunction.operations.includes('READ');
+    const hasUpdate = autofarmFunction.operations.includes('UPDATE');
+    return { hasAccess: hasRead, hasUpdate };
+  }, [currentUser]);
+
+  // Перенаправлення, якщо немає доступу
+  useEffect(() => {
+    if (!loading && !autofarmAccess.hasAccess && currentUser) {
+      router.push('/ru');
+    }
+  }, [autofarmAccess, loading, router, currentUser]);
+
   const toggleEditProxyModal = useCallback((proxy?: Proxy) => {
     setSelectedProxy(proxy || null);
     setIsOpenEditProxy(previous => !previous);
   }, []);
-
-  useEffect(() => {
-    fetchGeosModesStatuses();
-  }, [fetchGeosModesStatuses]);
 
   useEffect(() => {
     if (servers.length > 0) {
@@ -119,6 +158,7 @@ export default function ServersProxiesSection() {
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (!autofarmAccess.hasAccess) return;
     const serverParams = {
       geo: selectGeo.length > 0 ? selectGeo : undefined,
       activity_mode: selectMode.length > 0 ? selectMode : undefined,
@@ -133,8 +173,13 @@ export default function ServersProxiesSection() {
       limit: proxiesPagination.pageSize,
       offset: proxiesPagination.pageIndex * proxiesPagination.pageSize,
     };
-    await Promise.all([fetchServers(serverParams), fetchProxies(proxyParams)]);
+    await Promise.all([
+      fetchGeosModesStatuses(),
+      fetchServers(serverParams),
+      fetchProxies(proxyParams),
+    ]);
   }, [
+    autofarmAccess,
     selectGeo,
     selectMode,
     selectStatus,
@@ -142,16 +187,18 @@ export default function ServersProxiesSection() {
     selectProxyMode,
     serversPagination,
     proxiesPagination,
+    fetchGeosModesStatuses,
     fetchServers,
     fetchProxies,
   ]);
 
   useEffect(() => {
+    if (!autofarmAccess.hasAccess) return;
     const timeout = setTimeout(() => {
       fetchData();
     }, 300);
     return () => clearTimeout(timeout);
-  }, [fetchData]);
+  }, [fetchData, autofarmAccess]);
 
   const downloadTemplate = () => {
     const link = document.createElement('a');
@@ -282,7 +329,10 @@ export default function ServersProxiesSection() {
           ? new Date(row.original.server.update_datetime).toLocaleString()
           : '-',
     },
-    {
+  ];
+
+  if (autofarmAccess.hasUpdate) {
+    proxyColumns.push({
       id: 'actions',
       header: t('ServersProxiesSection.actions'),
       cell: ({ row }) => (
@@ -309,8 +359,8 @@ export default function ServersProxiesSection() {
           />
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   const downloadErrorFile = async () => {
     if (!responseData?.file) {
@@ -385,6 +435,10 @@ export default function ServersProxiesSection() {
     manualPagination: true,
     pageCount: Math.ceil(totalProxies / proxiesPagination.pageSize),
   });
+
+  if (loading || !currentUser) {
+    return <Loader />;
+  }
 
   return (
     <section className={styles.section}>
@@ -679,18 +733,20 @@ export default function ServersProxiesSection() {
             </button>
           </div>
         </div>
-        <div className={styles.table_add_btn}>
-          <WhiteBtn
-            onClick={downloadTemplate}
-            text={'AutoFarmSection.downloadTemplate'}
-            icon="icon-cloud-download"
-            iconFill="icon-cloud-download-fill"
-          />
-          <AddBtn
-            onClick={toggleReplenishmentProxyFarmModal}
-            text={'AutoFarmSection.tableReplenishment.btn'}
-          />
-        </div>
+        {autofarmAccess.hasUpdate && (
+          <div className={styles.table_add_btn}>
+            <WhiteBtn
+              onClick={downloadTemplate}
+              text={'AutoFarmSection.downloadTemplate'}
+              icon="icon-cloud-download"
+              iconFill="icon-cloud-download-fill"
+            />
+            <AddBtn
+              onClick={toggleReplenishmentProxyFarmModal}
+              text={'AutoFarmSection.tableReplenishment.btn'}
+            />
+          </div>
+        )}
       </div>
 
       <ModalComponent

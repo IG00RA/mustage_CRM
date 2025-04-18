@@ -340,12 +340,12 @@ export default function NamesSection() {
             {hasCreateSubcategories && (
               <>
                 <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
-                <WhiteBtn
+                {/* <WhiteBtn
                   onClick={toggleCreateNamesSet}
                   text={'Names.addSetBtn'}
                   icon="icon-add-color"
                   iconFill="icon-add-color"
-                />
+                /> */}
               </>
             )}
             {hasReadCategories && (
