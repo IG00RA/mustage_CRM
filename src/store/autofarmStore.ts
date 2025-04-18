@@ -43,6 +43,8 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
   lastStatsParams: undefined,
   lastMissingParams: undefined,
   lastStatsByDayParams: undefined,
+  totalServers: 0,
+  totalProxies: 0,
 
   setStats: (newStats: AutofarmStats[]) => set({ stats: newStats }),
 
@@ -291,7 +293,6 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       throw error;
     }
   },
-
   fetchServers: async (params: AutofarmRequestParams = {}) => {
     set({ loading: true, error: null });
     const queryParams = new URLSearchParams();
@@ -314,7 +315,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
         queryParams.append('server_status', status)
       );
     }
-    queryParams.append('limit', params.limit?.toString() || '100');
+    queryParams.append('limit', params.limit?.toString() || '10');
     queryParams.append('offset', params.offset?.toString() || '0');
 
     const url = `${ENDPOINTS.AUTO_FARM_SERVERS}?${queryParams.toString()}`;
@@ -332,7 +333,12 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
         },
         () => {}
       );
-      set({ servers: data.items, loading: false });
+      set({
+        servers: data.items,
+        totalServers: data.total_rows,
+        loading: false,
+      });
+      return { total_rows: data.total_rows };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -358,7 +364,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
         queryParams.append('server_activity_mode', mode)
       );
     }
-    queryParams.append('limit', params.limit?.toString() || '100');
+    queryParams.append('limit', params.limit?.toString() || '10');
     queryParams.append('offset', params.offset?.toString() || '0');
 
     const url = `${ENDPOINTS.AUTO_FARM_PROXIES}?${queryParams.toString()}`;
@@ -376,7 +382,12 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
         },
         () => {}
       );
-      set({ proxies: data.items, loading: false });
+      set({
+        proxies: data.items,
+        totalProxies: data.total_rows,
+        loading: false,
+      });
+      return { total_rows: data.total_rows };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

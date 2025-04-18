@@ -24,12 +24,23 @@ import ReplenishmentProxyFarm from '../ModalComponent/ReplenishmentProxyFarm/Rep
 import { UploadResponse } from '../UploadSection/UploadSection';
 import { toast } from 'react-toastify';
 import { getAuthHeaders } from '@/utils/apiUtils';
+import Icon from '@/helpers/Icon';
+
+const SERVERS_PAGINATION_KEY = 'serversPaginationSettings';
+const PROXIES_PAGINATION_KEY = 'proxiesPaginationSettings';
+
+interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+}
 
 export default function ServersProxiesSection() {
   const t = useTranslations();
   const {
     servers,
     proxies,
+    totalServers,
+    totalProxies,
     geosModesStatuses,
     error,
     fetchGeosModesStatuses,
@@ -51,6 +62,24 @@ export default function ServersProxiesSection() {
     useState(false);
   const [isOpenError, setIsOpenError] = useState(false);
   const [responseData, setResponseData] = useState<UploadResponse | null>(null);
+  const [serversPagination, setServersPagination] = useState<PaginationState>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(SERVERS_PAGINATION_KEY);
+        return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 10 };
+      }
+      return { pageIndex: 0, pageSize: 10 };
+    }
+  );
+  const [proxiesPagination, setProxiesPagination] = useState<PaginationState>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(PROXIES_PAGINATION_KEY);
+        return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 10 };
+      }
+      return { pageIndex: 0, pageSize: 10 };
+    }
+  );
 
   const toggleEditProxyModal = useCallback((proxy?: Proxy) => {
     setSelectedProxy(proxy || null);
@@ -67,27 +96,52 @@ export default function ServersProxiesSection() {
     }
   }, [servers]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        SERVERS_PAGINATION_KEY,
+        JSON.stringify(serversPagination)
+      );
+    }
+  }, [serversPagination]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        PROXIES_PAGINATION_KEY,
+        JSON.stringify(proxiesPagination)
+      );
+    }
+  }, [proxiesPagination]);
+
   const toggleReplenishmentProxyFarmModal = useCallback(() => {
     setIsOpenReplenishmentProxyFarm(prev => !prev);
   }, []);
 
-  const fetchData = useCallback(() => {
-    fetchServers({
+  const fetchData = useCallback(async () => {
+    const serverParams = {
       geo: selectGeo.length > 0 ? selectGeo : undefined,
       activity_mode: selectMode.length > 0 ? selectMode : undefined,
       server_status: selectStatus.length > 0 ? selectStatus : undefined,
-    });
-    fetchProxies({
+      limit: serversPagination.pageSize,
+      offset: serversPagination.pageIndex * serversPagination.pageSize,
+    };
+    const proxyParams = {
       geo: selectProxyGeo.length > 0 ? selectProxyGeo : undefined,
       server_activity_mode:
         selectProxyMode.length > 0 ? selectProxyMode : undefined,
-    });
+      limit: proxiesPagination.pageSize,
+      offset: proxiesPagination.pageIndex * proxiesPagination.pageSize,
+    };
+    await Promise.all([fetchServers(serverParams), fetchProxies(proxyParams)]);
   }, [
     selectGeo,
     selectMode,
     selectStatus,
     selectProxyGeo,
     selectProxyMode,
+    serversPagination,
+    proxiesPagination,
     fetchServers,
     fetchProxies,
   ]);
@@ -314,6 +368,10 @@ export default function ServersProxiesSection() {
     columns: serverColumns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    state: { pagination: serversPagination },
+    onPaginationChange: setServersPagination,
+    manualPagination: true,
+    pageCount: Math.ceil(totalServers / serversPagination.pageSize),
   });
 
   const proxiesTable = useReactTable({
@@ -321,8 +379,11 @@ export default function ServersProxiesSection() {
     columns: proxyColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: { sorting },
+    state: { sorting, pagination: proxiesPagination },
     onSortingChange: setSorting,
+    onPaginationChange: setProxiesPagination,
+    manualPagination: true,
+    pageCount: Math.ceil(totalProxies / proxiesPagination.pageSize),
   });
 
   return (
@@ -394,6 +455,84 @@ export default function ServersProxiesSection() {
             </tbody>
           </table>
         </div>
+        <div className={styles.pagination}>
+          <span className={styles.pagination_text}>
+            {t('Category.table.pagination')}
+          </span>
+          <select
+            className={styles.pagination_select}
+            value={serversPagination.pageSize}
+            onChange={e => {
+              const newPageSize = Number(e.target.value);
+              const newPagination = {
+                ...serversPagination,
+                pageSize: newPageSize,
+                pageIndex: 0,
+              };
+              setServersPagination(newPagination);
+              fetchData();
+            }}
+          >
+            {[5, 10, 20, 50, 100].map(size => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+          <span className={styles.pagination_text}>
+            {serversPagination.pageIndex * serversPagination.pageSize + 1}-
+            {Math.min(
+              (serversPagination.pageIndex + 1) * serversPagination.pageSize,
+              totalServers
+            )}
+            {t('Category.table.pages')}
+            {totalServers}
+          </span>
+          <div className={styles.pagination_btn_wrap}>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => {
+                const newPagination = {
+                  ...serversPagination,
+                  pageIndex: serversPagination.pageIndex - 1,
+                };
+                setServersPagination(newPagination);
+                fetchData();
+              }}
+              disabled={serversPagination.pageIndex === 0}
+            >
+              <Icon
+                className={styles.icon_back}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => {
+                const newPagination = {
+                  ...serversPagination,
+                  pageIndex: serversPagination.pageIndex + 1,
+                };
+                setServersPagination(newPagination);
+                fetchData();
+              }}
+              disabled={
+                (serversPagination.pageIndex + 1) *
+                  serversPagination.pageSize >=
+                totalServers
+              }
+            >
+              <Icon
+                className={styles.icon_forward}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={styles.table_container}>
@@ -461,6 +600,84 @@ export default function ServersProxiesSection() {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className={styles.pagination}>
+          <span className={styles.pagination_text}>
+            {t('Category.table.pagination')}
+          </span>
+          <select
+            className={styles.pagination_select}
+            value={proxiesPagination.pageSize}
+            onChange={e => {
+              const newPageSize = Number(e.target.value);
+              const newPagination = {
+                ...proxiesPagination,
+                pageSize: newPageSize,
+                pageIndex: 0,
+              };
+              setProxiesPagination(newPagination);
+              fetchData();
+            }}
+          >
+            {[5, 10, 20, 50, 100].map(size => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+          <span className={styles.pagination_text}>
+            {proxiesPagination.pageIndex * proxiesPagination.pageSize + 1}-
+            {Math.min(
+              (proxiesPagination.pageIndex + 1) * proxiesPagination.pageSize,
+              totalProxies
+            )}
+            {t('Category.table.pages')}
+            {totalProxies}
+          </span>
+          <div className={styles.pagination_btn_wrap}>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => {
+                const newPagination = {
+                  ...proxiesPagination,
+                  pageIndex: proxiesPagination.pageIndex - 1,
+                };
+                setProxiesPagination(newPagination);
+                fetchData();
+              }}
+              disabled={proxiesPagination.pageIndex === 0}
+            >
+              <Icon
+                className={styles.icon_back}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+            <button
+              className={styles.pagination_btn}
+              onClick={() => {
+                const newPagination = {
+                  ...proxiesPagination,
+                  pageIndex: proxiesPagination.pageIndex + 1,
+                };
+                setProxiesPagination(newPagination);
+                fetchData();
+              }}
+              disabled={
+                (proxiesPagination.pageIndex + 1) *
+                  proxiesPagination.pageSize >=
+                totalProxies
+              }
+            >
+              <Icon
+                className={styles.icon_forward}
+                name="icon-table_arrow"
+                width={20}
+                height={20}
+              />
+            </button>
+          </div>
         </div>
         <div className={styles.table_add_btn}>
           <WhiteBtn

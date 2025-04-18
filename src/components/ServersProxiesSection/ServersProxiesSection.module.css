@@ -228,3 +228,84 @@
 .table_add_btn {
   gap: 10px;
 }
+
+.table_buttons {
+  display: flex;
+  gap: 8px;
+  & button {
+    font-size: 14px;
+    padding: 8px 12px;
+    height: 36px;
+    gap: 6px;
+
+    & svg {
+      top: 9px;
+      left: 12px;
+    }
+  }
+}
+
+.bottom_wrap {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px 24px;
+}
+
+.download_wrap {
+  display: flex;
+  gap: 16px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 16px 24px 24px;
+  gap: 24px;
+}
+
+.pagination_text {
+  color: var(--text_dark);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.58;
+}
+
+.pagination_btn_wrap {
+  display: flex;
+  gap: 8px;
+}
+
+.pagination_btn {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+}
+
+.icon_back {
+  transform: rotate(180deg);
+}
+
+.pagination_btn:disabled .icon_back,
+.pagination_btn:disabled .icon_forward {
+  fill: var(--disabled_grey);
+}
+
+.pagination_select {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: var(--text_dark);
+  font-family: var(--font_sans);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+
+  &:hover,
+  &:focus {
+    border: none;
+    outline: none;
+  }
+}

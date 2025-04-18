@@ -5,17 +5,12 @@ import ownStyles from './ReplenishmentProxyFarm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { toast } from 'react-toastify';
-import { useState, useMemo, useEffect } from 'react';
-import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
+import { useEffect, useState } from 'react';
 import CustomDragDropFile from '@/components/Buttons/CustomDragDropFile/CustomDragDropFile';
 import { useTranslations } from 'next-intl';
 import ExcelJS from 'exceljs';
-import { useAutofarmStore } from '@/store/autofarmStore';
 import { ENDPOINTS } from '@/constants/api';
 import { UploadResponse } from '@/components/UploadSection/UploadSection';
-
-const GEO_OPTIONS = ['Україна', 'Польша', 'США'];
-const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней'];
 
 interface ReplenishmentProxyFarmProps {
   setResponseData: (data: UploadResponse) => void;
@@ -29,49 +24,15 @@ export default function ReplenishmentProxyFarm({
   onClose,
 }: ReplenishmentProxyFarmProps) {
   const t = useTranslations('');
-  const { missing } = useAutofarmStore();
-
-  const [selectGeo, setSelectGeo] = useState<string[]>([
-    t('AutoFarmSection.geoSelect'),
-  ]);
-  const [selectMode, setSelectMode] = useState<string[]>([
-    t('AutoFarmSection.typeSelect'),
-  ]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [accountCount, setAccountCount] = useState<number>(0);
   const [file, setFile] = useState<File | null>(null);
-
-  const MODE_MAPPING: { [key: string]: string } = {
-    '7 дней': 'SEVEN_DAYS',
-    '14 дней': 'FOURTEEN_DAYS',
-    '20 дней': 'TWENTY_DAYS',
-    '30 дней': 'THIRTY_DAYS',
-  };
 
   useEffect(() => {
     if (!file) {
       setAccountCount(0);
     }
   }, [file]);
-
-  const totalMissing = useMemo(() => {
-    const selectedGeo =
-      selectGeo[0] !== t('AutoFarmSection.geoSelect') ? selectGeo[0] : '';
-    const selectedMode =
-      selectMode[0] !== t('AutoFarmSection.typeSelect') ? selectMode[0] : '';
-
-    if (!selectedGeo || !selectedMode) {
-      return 0;
-    }
-
-    const mappedMode = MODE_MAPPING[selectedMode];
-
-    const matchedRow = missing.find(
-      item => item.geo === selectedGeo && item.mode_name === mappedMode
-    );
-
-    return matchedRow?.total_missing || 0;
-  }, [selectGeo, selectMode, missing, t]);
 
   const handleFileUpload = async (file: File) => {
     setUploadedFile(file);
@@ -92,16 +53,14 @@ export default function ReplenishmentProxyFarm({
       }
 
       const expectedHeaders = [
-        'Название аккаунта',
-        'Логин ФБ',
-        'Пароль ФБ',
-        'Имя',
-        'Фамилия',
-        'Дата рождения',
-        'Почта',
-        'Пароль от почты',
-        'Cookies',
-        'Ссылка на Facebook',
+        'host',
+        'port',
+        'modem',
+        'password',
+        'change_ip_link',
+        'geo',
+        'provider',
+        'operator',
       ];
       const firstRow = worksheet.getRow(1);
       const headers = firstRow.values as string[];
@@ -132,23 +91,10 @@ export default function ReplenishmentProxyFarm({
       return;
     }
 
-    if (
-      selectGeo[0] === t('AutoFarmSection.geoSelect') ||
-      selectMode[0] === t('AutoFarmSection.typeSelect')
-    ) {
-      toast.error(t('Upload.modalUpload.noSubcategory'));
-      return;
-    }
-
-    const queryParams = new URLSearchParams({
-      desired_geo: selectGeo[0],
-      desired_mode: selectMode[0],
-    });
-
-    const url = `${ENDPOINTS.AUTO_FARM_REPLENISH}?${queryParams.toString()}`;
+    const url = ENDPOINTS.AUTO_FARM_PROXIES;
 
     const formData = new FormData();
-    formData.append('accounts_file', uploadedFile);
+    formData.append('proxies_file', uploadedFile);
 
     try {
       const response = await fetch(url, {
@@ -176,8 +122,6 @@ export default function ReplenishmentProxyFarm({
         setUploadedFile(null);
         setFile(null);
         setAccountCount(0);
-        setSelectGeo([t('AutoFarmSection.geoSelect')]);
-        setSelectMode([t('AutoFarmSection.typeSelect')]);
         onClose();
       }
     } catch (error) {
@@ -193,48 +137,11 @@ export default function ReplenishmentProxyFarm({
     setFile(null);
     setUploadedFile(null);
     setAccountCount(0);
-    setSelectGeo([t('AutoFarmSection.geoSelect')]);
-    setSelectMode([t('AutoFarmSection.typeSelect')]);
     onClose();
   };
 
   return (
     <form onSubmit={onSubmit} className={styles.form}>
-      <div className={styles.field}>
-        <CustomSelect
-          label={`${t('AutoFarmSection.geo')}:`}
-          options={[t('AutoFarmSection.geoSelect'), ...GEO_OPTIONS]}
-          selected={selectGeo}
-          onSelect={setSelectGeo}
-          multiSelections={false}
-          width={508}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <CustomSelect
-          label={`${t('AutoFarmSection.type')}:`}
-          options={[t('AutoFarmSection.typeSelect'), ...ACTIVITY_MODES]}
-          selected={selectMode}
-          onSelect={setSelectMode}
-          multiSelections={false}
-          width={508}
-        />
-      </div>
-
-      <div className={styles.field}>
-        <label className={styles.label}>
-          {t('AutoFarmSection.modalReplenishmentAcc.lack')}
-        </label>
-        <input
-          className={styles.input}
-          value={totalMissing}
-          readOnly
-          disabled
-          placeholder={t('DBSettings.form.placeholder')}
-        />
-      </div>
-
       <div className={styles.field}>
         <CustomDragDropFile
           setFile={setFile}

@@ -149,6 +149,8 @@ export interface AutofarmState {
   geosModesStatuses: GeosModesStatusesResponse | null;
   servers: Server[];
   proxies: Proxy[];
+  totalServers: number;
+  totalProxies: number;
   loading: boolean;
   error: string | null;
   fetchStatistics: (params?: AutofarmRequestParams) => Promise<void>;
@@ -161,8 +163,12 @@ export interface AutofarmState {
     params: AutofarmDumpParams
   ) => Promise<AutofarmDumpResponse>;
   fetchGeosModesStatuses: () => Promise<void>;
-  fetchServers: (params?: AutofarmRequestParams) => Promise<void>;
-  fetchProxies: (params?: AutofarmRequestParams) => Promise<void>;
+  fetchServers: (
+    params?: AutofarmRequestParams
+  ) => Promise<{ total_rows: number }>;
+  fetchProxies: (
+    params?: AutofarmRequestParams
+  ) => Promise<{ total_rows: number }>;
   updateProxy: (proxyId: number, data: UpdateProxyRequest) => Promise<Proxy>;
   deleteProxy: (proxyId: number) => Promise<void>;
 }
