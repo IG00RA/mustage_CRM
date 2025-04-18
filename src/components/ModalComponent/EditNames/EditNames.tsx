@@ -145,6 +145,7 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify({
             account_subcategory_name: data.nameField,
             price: data.price,

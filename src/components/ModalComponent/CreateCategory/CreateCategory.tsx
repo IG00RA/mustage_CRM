@@ -35,6 +35,7 @@ export default function CreateCategory({ onClose }: { onClose: () => void }) {
         {
           method: 'POST',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify({
             account_category_name: data.name,
             description: data.description,

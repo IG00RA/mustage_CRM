@@ -162,6 +162,7 @@ export default function PromoCodeSection() {
           {
             method: 'PATCH',
             headers: getAuthHeaders(),
+            credentials: 'include',
             body: JSON.stringify({ promocode_status: 'DEACTIVATED' }),
           },
           () => {}

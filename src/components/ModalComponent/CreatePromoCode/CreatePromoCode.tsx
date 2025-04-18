@@ -205,6 +205,7 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
         {
           method: 'POST',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(requestBody),
         },
         () => {}

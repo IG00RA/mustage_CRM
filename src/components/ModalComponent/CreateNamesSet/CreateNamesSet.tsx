@@ -209,6 +209,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
         {
           method: 'POST',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(requestBody),
         },
         () => {}

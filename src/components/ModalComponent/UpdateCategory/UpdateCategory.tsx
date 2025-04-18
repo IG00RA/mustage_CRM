@@ -55,6 +55,7 @@ export default function UpdateCategory({
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify({
             account_category_name: data.account_category_name,
             description: data.description,

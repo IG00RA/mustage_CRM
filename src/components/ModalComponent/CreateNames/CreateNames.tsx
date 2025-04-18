@@ -127,6 +127,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
         {
           method: 'POST',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify({
             account_subcategory_name: data.nameField,
             account_category_id: data.account_category_id,

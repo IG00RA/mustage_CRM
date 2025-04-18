@@ -279,6 +279,7 @@ export default function EditPromoCode({
         {
           method: 'PATCH',
           headers: getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(requestBody),
         },
         () => {}
