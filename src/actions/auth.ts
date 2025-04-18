@@ -63,8 +63,11 @@ export async function login(formData: FormData) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
     }
   );
+
+  console.log("userResponse", userResponse);
 
   if (!userResponse.ok) {
     return { error: 'Failed to fetch user data' };
@@ -97,6 +100,7 @@ export async function logout() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       }
     );
 
