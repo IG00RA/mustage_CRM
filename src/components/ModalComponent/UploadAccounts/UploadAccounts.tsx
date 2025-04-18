@@ -47,6 +47,12 @@ export default function UploadAccounts({
   }, [fetchCategories]);
 
   useEffect(() => {
+    if (!file) {
+      setAccountCount(0);
+    }
+  }, [file]);
+
+  useEffect(() => {
     if (
       selectedCategory.length > 0 &&
       selectedCategory[0] !== t('Load.category')
@@ -155,10 +161,8 @@ export default function UploadAccounts({
 
     try {
       const headers = {
-        // ...getAuthHeaders(),
         accept: 'application/json',
       };
-      console.log('Request headers:', headers);
 
       const response = await fetch(ENDPOINTS.ACCOUNTS_UPLOAD, {
         method: 'POST',
@@ -178,12 +182,9 @@ export default function UploadAccounts({
       }
 
       const data: UploadResponse = await response.json();
-      console.log('Server success response:', data);
 
-      // Передаємо відповідь у батьківський компонент
       setResponseData(data);
 
-      // Якщо статус "failed", відкриваємо модалку з помилками
       if (data.status === 'failed') {
         toggleErrorModal();
       } else {
@@ -207,9 +208,7 @@ export default function UploadAccounts({
   const handleCategorySelect = (values: string[]) => {
     const value = values[0] || '';
     setSelectedCategory([value]);
-    if (value === t('Load.category')) {
-      setSelectedSubcategory([]);
-    }
+    setSelectedSubcategory([]);
   };
 
   const handleSubcategorySelect = (values: string[]) => {
