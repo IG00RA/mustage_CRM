@@ -1,14 +1,12 @@
-// components/UserSection/UserSection.tsx
 'use client';
 
 import styles from './UserSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
@@ -23,16 +21,17 @@ import { useUsersStore } from '@/store/usersStore';
 import Loader from '../Loader/Loader';
 import { User } from '@/types/usersTypes';
 import { PaginationState } from '@/types/componentsTypes';
+import { debounce } from 'lodash';
 
 const PAGINATION_KEY = 'userSectionPaginationSettings';
 
 export default function UserSection() {
   const t = useTranslations();
-  const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const { users, totalRows, error, fetchUsers } = useUsersStore();
 
   const [pagination, setPagination] = useState<PaginationState>(() => {
@@ -45,12 +44,56 @@ export default function UserSection() {
     return { pageIndex: 0, pageSize: 5 };
   });
 
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      setSearchQuery(query);
+      setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    }, 500),
+    []
+  );
+
   useEffect(() => {
-    fetchUsers({
-      limit: pagination.pageSize,
-      offset: pagination.pageIndex * pagination.pageSize,
-    }).catch(() => setShowLoader(false));
-  }, [pagination.pageIndex, pagination.pageSize, fetchUsers]);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setShowLoader(true);
+      try {
+        const response = await fetchUsers({
+          limit: pagination.pageSize,
+          offset: pagination.pageIndex * pagination.pageSize,
+          like_query: searchQuery.length >= 2 ? searchQuery : undefined,
+        });
+
+        if (isMounted) {
+          if (
+            response.items.length === 0 &&
+            response.total_rows > 0 &&
+            pagination.pageIndex > 0
+          ) {
+            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+          } else {
+            setShowLoader(false);
+          }
+        }
+      } catch {
+        if (isMounted) {
+          setShowLoader(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pagination.pageIndex, pagination.pageSize, searchQuery, fetchUsers]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -75,17 +118,17 @@ export default function UserSection() {
       cell: ({ row }) => `${row.original.first_name} ${row.original.last_name}`,
     },
     { accessorKey: 'telegram_id', header: t('UserSection.table.tgId') },
-    // Додаємо нову колонку "Должность" (role.name)
     {
       accessorKey: 'role.name',
-      header: 'Должность', // Можна використати t('UserSection.table.roleName') для локалізації
-      cell: ({ row }) => row.original.role?.name || '—', // Якщо role відсутнє, показуємо "—"
+      header: 'Должность',
+      cell: ({ row }) =>
+        row.original.is_admin ? 'Admin' : row.original.role?.name || '—',
     },
-    // Додаємо нову колонку "Описание должности" (role.description)
     {
       accessorKey: 'role.description',
-      header: 'Описание должности', // Можна використати t('UserSection.table.roleDescription') для локалізації
-      cell: ({ row }) => row.original.role?.description || '—', // Якщо role відсутнє, показуємо "—"
+      header: 'Описание должности',
+      cell: ({ row }) =>
+        row.original.is_admin ? 'Admin' : row.original.role?.description || '—',
     },
     {
       id: 'actions',
@@ -110,9 +153,7 @@ export default function UserSection() {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: { globalFilter, pagination },
-    onGlobalFilterChange: setGlobalFilter,
+    state: { pagination },
     onPaginationChange: setPagination,
     manualPagination: true,
     pageCount: Math.ceil(totalRows / pagination.pageSize),
@@ -130,7 +171,7 @@ export default function UserSection() {
         <div className={styles.buttons_wrap}>
           <AddBtn onClick={toggleCreateModal} text={'UserSection.addBtn'} />
           <SearchInput
-            onSearch={query => setGlobalFilter(query)}
+            onSearch={debouncedSearch}
             text={'UserSection.searchBtn'}
             options={userNames}
           />

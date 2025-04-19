@@ -16,12 +16,15 @@ export const useUsersStore = create<UsersState>(set => ({
   loading: false,
   error: null,
 
-  fetchUsers: async ({ limit = 5, offset = 0 }) => {
+  fetchUsers: async ({ limit = 5, offset = 0, like_query }) => {
     set({ loading: true, error: null });
     try {
       const url = new URL(ENDPOINTS.USERS);
       url.searchParams.append('limit', limit.toString());
       url.searchParams.append('offset', offset.toString());
+      if (like_query) {
+        url.searchParams.append('like_query', like_query);
+      }
 
       const data = await fetchWithErrorHandling<{
         total_rows: number;

@@ -9,6 +9,7 @@ export interface Response<T> {
 export interface BaseRequest {
   limit?: number;
   offset?: number;
+  like_query?: string;
 }
 
 export interface BaseResponse {

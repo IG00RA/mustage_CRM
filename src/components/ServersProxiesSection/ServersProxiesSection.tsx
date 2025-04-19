@@ -88,7 +88,6 @@ export default function ServersProxiesSection() {
     }
   );
 
-  // Перевірка доступу
   useEffect(() => {
     if (!currentUser && !loading && !hasFetchedUser) {
       setHasFetchedUser(true);
@@ -103,12 +102,10 @@ export default function ServersProxiesSection() {
   const autofarmAccess = useMemo(() => {
     if (!currentUser) return { hasAccess: false, hasUpdate: false };
 
-    // Якщо користувач є адміном, надаємо повний доступ
     if (currentUser.is_admin) {
       return { hasAccess: true, hasUpdate: true };
     }
 
-    // Інакше перевіряємо функції
     const autofarmFunction = currentUser.functions.find(
       func => func.function_name === 'Управление автофармом'
     );
@@ -118,7 +115,6 @@ export default function ServersProxiesSection() {
     return { hasAccess: hasRead, hasUpdate };
   }, [currentUser]);
 
-  // Перенаправлення, якщо немає доступу
   useEffect(() => {
     if (!loading && !autofarmAccess.hasAccess && currentUser) {
       router.push('/ru');
@@ -157,6 +153,40 @@ export default function ServersProxiesSection() {
   const toggleReplenishmentProxyFarmModal = useCallback(() => {
     setIsOpenReplenishmentProxyFarm(prev => !prev);
   }, []);
+
+  const handleDeleteProxy = useCallback(
+    async (proxyId: number) => {
+      const confirmDelete = window.confirm(
+        t('ServersProxiesSection.confirmDelete', { proxyId })
+      );
+
+      if (!confirmDelete) return;
+
+      try {
+        await deleteProxy(proxyId);
+        toast.success(t('ServersProxiesSection.deleteSuccess'));
+        const proxyParams = {
+          geo: selectProxyGeo.length > 0 ? selectProxyGeo : undefined,
+          server_activity_mode:
+            selectProxyMode.length > 0 ? selectProxyMode : undefined,
+          limit: proxiesPagination.pageSize,
+          offset: proxiesPagination.pageIndex * proxiesPagination.pageSize,
+        };
+        await fetchProxies(proxyParams);
+      } catch (error) {
+        toast.error(t('ServersProxiesSection.deleteError'));
+        console.error('Delete proxy error:', error);
+      }
+    },
+    [
+      t,
+      deleteProxy,
+      fetchProxies,
+      selectProxyGeo,
+      selectProxyMode,
+      proxiesPagination,
+    ]
+  );
 
   const fetchData = useCallback(async () => {
     if (!autofarmAccess.hasAccess) return;
@@ -343,17 +373,7 @@ export default function ServersProxiesSection() {
             text={'ServersProxiesSection.edit'}
           />
           <WhiteBtn
-            onClick={() => {
-              if (
-                window.confirm(
-                  t('ServersProxiesSection.confirmDelete', {
-                    proxyId: row.original.proxy_id,
-                  })
-                )
-              ) {
-                deleteProxy(row.original.proxy_id);
-              }
-            }}
+            onClick={() => handleDeleteProxy(row.original.proxy_id)}
             text={'ServersProxiesSection.delete'}
             icon="icon-trash"
             iconFill="icon-fill_trash"

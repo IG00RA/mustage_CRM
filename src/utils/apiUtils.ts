@@ -35,6 +35,12 @@ export const fetchWithErrorHandling = async <T>(
       const errorData = await response.json();
       throw new Error(errorData.detail || `Failed to fetch data from ${url}`);
     }
+
+    if (response.status === 204) {
+      set({ loading: false });
+      return {} as T;
+    }
+
     const data: T = await response.json();
     set({ loading: false });
     return data;

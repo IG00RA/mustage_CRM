@@ -540,6 +540,8 @@
     }
   },
   "ServersProxiesSection": {
+    "deleteSuccess": "Прокси успешно удалено",
+    "deleteError": "Не удалось удалить прокси",
     "title": "Серверы и Прокси",
     "servers": "Серверы",
     "updateSuccess": "Успешно обновлено",
