@@ -3,6 +3,7 @@ import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import ViewSettings from '@/components/ModalComponent/ViewSettings/ViewSettings';
 import styles from '../AllAccountsSection.module.css';
 import { useState } from 'react';
+import AccHistory from '@/components/ModalComponent/AccHistory/AccHistory';
 
 interface ModalsSectionProps {
   isOpenEdit: boolean;
@@ -10,6 +11,12 @@ interface ModalsSectionProps {
   onToggleEditModal: () => void;
   onToggleDownload: () => void;
   selectedColumns: string[];
+  isOpenAccHistory: boolean;
+  selectedAccount: {
+    id: number;
+    name: string;
+  } | null;
+  onToggleAccHistoryModal: () => void;
   onSaveSettings: (newSelectedColumns: string[]) => void;
   onExportFilteredToExcel: () => Promise<void>;
   onExportAllToExcel: () => Promise<void>;
@@ -32,6 +39,9 @@ export const ModalsSection = ({
   onToggleEditModal,
   onToggleDownload,
   selectedColumns,
+  isOpenAccHistory,
+  selectedAccount,
+  onToggleAccHistoryModal,
   onSaveSettings,
   onExportFilteredToExcel,
   onExportAllToExcel,
@@ -59,6 +69,18 @@ export const ModalsSection = ({
 
   return (
     <>
+      <ModalComponent
+        isOpen={isOpenAccHistory}
+        onClose={onToggleAccHistoryModal}
+        title="AllAccounts.historyTitle"
+        editedTitle={selectedAccount?.name}
+        maxWidth="440px"
+      >
+        <AccHistory
+          onClose={onToggleAccHistoryModal}
+          accountId={selectedAccount?.id}
+        />
+      </ModalComponent>
       <ModalComponent
         isOpen={isOpenEdit}
         onClose={onToggleEditModal}

@@ -35,6 +35,19 @@ export interface Account {
   destination?: DestinationResponse | null;
 }
 
+export interface HistoryEvent {
+  event_id: number;
+  event_message: string;
+  event_datetime: string;
+  account_id: number;
+  user_id: number;
+}
+
+export interface AccountHistoryResponse {
+  account: Account;
+  history: HistoryEvent[];
+}
+
 export interface FetchAllAccountsParams extends BaseRequest {
   category_ids?: number[];
   subcategory_ids?: number[];
@@ -135,4 +148,5 @@ export interface AccountsState {
   replaceAccounts: (data: ReplaceRequest) => Promise<ReplaceResponse>;
   stopSellingAccounts: (accountIds: number[]) => Promise<StopSellingResponse>;
   sellAccounts: (request: SellAccountsRequest) => Promise<SellAccountsResponse>;
+  fetchAccountHistory: (accountId: number) => Promise<AccountHistoryResponse>;
 }

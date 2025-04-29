@@ -1,0 +1,125 @@
+.account_info {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.info_text {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  color: var(--text_dark);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--grey);
+}
+
+.info_text_data {
+  color: var(--main_blue);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.57;
+  border-radius: 100px;
+  background: #e8ecff;
+  padding: 2px 12px;
+}
+
+.history_section {
+  margin-bottom: 32px;
+}
+
+.history_title {
+  color: var(--text_dark);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.37;
+  margin-bottom: 24px;
+}
+
+.history_item {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--grey);
+}
+
+.history_time {
+  color: #707579;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0px;
+  max-width: 82px;
+}
+
+.history_text {
+  color: var(--text-Dark);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 510;
+  line-height: normal;
+  letter-spacing: 0px;
+}
+
+.buttons_wrap {
+  display: flex;
+  & button {
+    flex: 1;
+  }
+}
+
+.no_data_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.no_data_text {
+  color: #b3b3b3;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.22;
+}
+
+.logo {
+  width: 144px;
+  height: 144px;
+}
+
+.error_wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #fff0f0;
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+  margin: 20px;
+  text-align: center;
+}
+
+.error_icon {
+  font-size: 40px;
+  color: #d32f2f;
+  margin-bottom: 10px;
+}
+
+.error_text {
+  font-size: 16px;
+  color: #d32f2f;
+  margin-bottom: 20px;
+}

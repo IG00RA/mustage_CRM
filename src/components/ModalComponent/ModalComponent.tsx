@@ -20,6 +20,7 @@ interface ModalProps {
   editedTitleSecond?: string;
   children: ReactNode;
   icon?: string;
+  maxWidth?: string;
 }
 
 export default function ModalComponent({
@@ -32,6 +33,7 @@ export default function ModalComponent({
   editedTitle = '',
   children,
   icon,
+  maxWidth,
 }: ModalProps) {
   const t = useTranslations('');
 
@@ -56,6 +58,7 @@ export default function ModalComponent({
       onRequestClose={onClose}
       className={styles.modal}
       overlayClassName={styles.overlay}
+      style={{ content: { width: maxWidth } }}
     >
       <div className={styles.header_wrap}>
         {icon && (

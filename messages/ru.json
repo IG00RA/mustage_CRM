@@ -203,6 +203,7 @@
   "AllAccounts": {
     "headerText": "Здесь вы можете просматривать все записи об аккаунтах в базе данных.",
     "addBtn": "Добавить наименование",
+    "historyTitle": "История аккаунта ",
     "addSetBtn": "Добавить набор",
     "searchBtn": "Найти аккаунт",
     "selectBtn": "Выберите категорию",
@@ -211,6 +212,7 @@
     "downloadBtnAll": "Скачать xlsx-файл за весь период",
     "downloadBtLoad": "Загрузка...",
     "editBtn": "Настроить внешний вид таблички",
+    "historyBtn": "История",
     "loadDate": "Дата загрузки ",
     "sellDate": "Дата продажи ",
     "selects": {
@@ -247,6 +249,23 @@
         "data": "Данные аккаунта",
         "mega": "Ссылка на мегу"
       }
+    },
+    "modalHistory": {
+      "accId": "ID аккаунта",
+      "error": "Ошибка загрузки: ",
+      "dataLoad": "Дата загрузки",
+      "dataSell": "Дата продажи",
+      "worker": "Сотрудник",
+      "teamlead": "Тимлид",
+      "sell": "Продан",
+      "noSell": "Не продан",
+      "transfer": "Передан",
+      "noTransfer": "Не передан",
+      "statusSell": "Статус продажи",
+      "statusTransfer": "Статус передачи",
+      "history": "История действий",
+      "noHistory": "Нет истории",
+      "noData": "Для этого аккаунта нет записей в истории"
     }
   },
   "Upload": {
@@ -458,7 +477,7 @@
     "title": "Управление аккаунтамии автофарма",
     "titleServers": "Сервера и прокси автофарма",
     "type": "Тип",
-    "downloadTemplate": "Скачать XSLX tamplate",
+    "downloadTemplate": "Скачать XLSX tamplate",
     "geoTable": "ГЕО",
     "geo": "Гео",
     "geoSelect": "Выберите гео",

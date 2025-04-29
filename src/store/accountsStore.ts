@@ -9,6 +9,7 @@ import {
   SellAccountsResponse,
   Account,
   ReplaceRequest,
+  AccountHistoryResponse,
 } from '../types/accountsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -197,6 +198,35 @@ export const useAccountsStore = create<AccountsState>(set => ({
           },
           credentials: 'include',
           body: JSON.stringify(request),
+        },
+        () => {}
+      );
+
+      set({ loading: false });
+      return data;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+
+  fetchAccountHistory: async (accountId: number) => {
+    set({ loading: true, error: null });
+
+    try {
+      const url = `${ENDPOINTS.ACCOUNTS}/history/${accountId}`;
+      const data = await fetchWithErrorHandling<AccountHistoryResponse>(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
         },
         () => {}
       );

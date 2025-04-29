@@ -24,6 +24,7 @@ import { TableSection } from './TableSection/TableSection';
 import { ModalsSection } from './ModalsSection/ModalsSection';
 import { PaginationState } from '@/types/componentsTypes';
 import { RangeType } from '@/types/salesTypes';
+import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 
 const LOCAL_STORAGE_KEY = 'allAccountsTableSettings';
 const ACCOUNTS_PAGINATION_KEY = 'accountsPaginationSettings';
@@ -74,6 +75,11 @@ export default function AllAccountsSection() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpenDownload, setIsOpenDownload] = useState(false);
+  const [isOpenAccHistory, setIsOpenAccHistory] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<
     string[]
@@ -322,6 +328,18 @@ export default function AllAccountsSection() {
     () => setIsOpenDownload(prev => !prev),
     []
   );
+  const toggleAccHistoryModal = useCallback(() => {
+    setIsOpenAccHistory(prev => !prev);
+    if (isOpenAccHistory) setSelectedAccount(null);
+  }, [isOpenAccHistory]);
+
+  const handleEditButtonClick = useCallback(
+    (accountId: number, accountName: string) => {
+      setSelectedAccount({ id: accountId, name: accountName });
+      setIsOpenAccHistory(true);
+    },
+    []
+  );
 
   const categoryMap = useMemo(
     () =>
@@ -378,7 +396,7 @@ export default function AllAccountsSection() {
   };
 
   const columns: ColumnDef<Account>[] = useMemo(() => {
-    return selectedColumns.map(colId => {
+    const dynamicColumns = selectedColumns.map(colId => {
       const field = fieldMap[colId];
       const column: ColumnDef<Account> = {
         accessorKey: field,
@@ -420,7 +438,34 @@ export default function AllAccountsSection() {
       }
       return column;
     });
-  }, [selectedColumns, t, columnDataMap, fieldMap, categoryMap]);
+
+    const editColumn: ColumnDef<Account> = {
+      id: 'edit',
+      header: t('Names.table.actions'),
+      cell: ({ row }) => (
+        <WhiteBtn
+          onClick={() =>
+            handleEditButtonClick(
+              row.original.account_id,
+              row.original.account_name
+            )
+          }
+          text={'AllAccounts.historyBtn'}
+          icon="icon-history"
+        />
+      ),
+      enableSorting: false,
+    };
+
+    return [...dynamicColumns, editColumn];
+  }, [
+    selectedColumns,
+    t,
+    columnDataMap,
+    fieldMap,
+    categoryMap,
+    handleEditButtonClick,
+  ]);
 
   const exportFilteredToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
@@ -786,8 +831,11 @@ export default function AllAccountsSection() {
       <ModalsSection
         isOpenEdit={isOpenEdit}
         isOpenDownload={isOpenDownload}
+        isOpenAccHistory={isOpenAccHistory}
+        selectedAccount={selectedAccount}
         onToggleEditModal={toggleEditModal}
         onToggleDownload={toggleDownload}
+        onToggleAccHistoryModal={toggleAccHistoryModal}
         selectedColumns={selectedColumns}
         onSaveSettings={handleSaveSettings}
         onExportFilteredToExcel={exportFilteredToExcel}
