@@ -19,7 +19,6 @@ import {
 } from '@/data/sidebar';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
-// Тип для стану відкритих меню
 type OpenMenusState = {
   distribution: boolean;
   referrals: boolean;
@@ -27,7 +26,6 @@ type OpenMenusState = {
   autoFarm: boolean;
 };
 
-// Тип для зіставлення пунктів меню з функціями
 type MenuFunctionMap = {
   [key: string]: string;
   dashboard: string;
@@ -49,7 +47,6 @@ type MenuFunctionMap = {
   referrals_stat: string;
 };
 
-// Відповідність між пунктами меню та іменами функцій
 const menuFunctionMap: MenuFunctionMap = {
   dashboard: 'Обзор',
   category: 'Категории',

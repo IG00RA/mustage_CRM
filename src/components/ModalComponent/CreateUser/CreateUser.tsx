@@ -21,7 +21,6 @@ import Icon from '@/helpers/Icon';
 import CreateRole from '../CreateRole/CreateRole';
 import { PaginationState } from '@/types/componentsTypes';
 
-// Define interfaces
 interface FormData {
   login: string;
   pass: string;
@@ -37,9 +36,14 @@ interface FormData {
 interface CreateUserProps {
   onClose: () => void;
   pagination: PaginationState;
+  isAdmin: boolean;
 }
 
-export default function CreateUser({ onClose, pagination }: CreateUserProps) {
+export default function CreateUser({
+  onClose,
+  pagination,
+  isAdmin,
+}: CreateUserProps) {
   const t = useTranslations('');
   const { fetchCategories, fetchSubcategories, categories, subcategories } =
     useCategoriesStore();
@@ -60,6 +64,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(
     undefined
   );
+  const [isAdminRoleSelected, setIsAdminRoleSelected] = useState(false);
   const hasLoadedRef = useRef(false);
 
   const {
@@ -101,7 +106,7 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
   ]);
 
   const onSubmit: SubmitHandler<FormData> = async data => {
-    if (!selectedRoleId) {
+    if (!isAdminRoleSelected && !selectedRoleId) {
       toast.error(
         t('UserSection.modalCreate.roleRequired') || 'Please select a role'
       );
@@ -117,12 +122,12 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
       password: data.pass,
       first_name: data.name,
       last_name: data.secondName,
-      is_admin: false,
+      is_admin: isAdminRoleSelected,
       is_referral: false,
       create_seller: isSeller,
       telegram_id: data.tgId,
       telegram_username: data.tgNick,
-      role_id: selectedRoleId,
+      role_id: isAdminRoleSelected ? undefined : selectedRoleId,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
 
@@ -260,6 +265,21 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
 
   const roleOptions = roles.map(role => role.name);
 
+  const getRoleOptions = () => {
+    const baseOptions =
+      roleOptions.length > 0
+        ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
+        : [t('UserSection.modalCreate.jobSelect')];
+
+    // Додаємо опцію "Admin", якщо поточний користувач є адміном
+    if (isAdmin) {
+      baseOptions.push(t('UserSection.modalCreate.adminRole'));
+    }
+
+    baseOptions.push(t('RoleSection.addBtn'));
+    return baseOptions;
+  };
+
   const handleCategorySelect = (values: string[]) => {
     if (values.includes(t('UserSection.modalCreate.categoryAll'))) {
       setSelectedCategories([t('UserSection.modalCreate.categoryAll')]);
@@ -273,11 +293,17 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
     const selectedValue = values[0];
     if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
       setSelectedRoleId(undefined);
+      setIsAdminRoleSelected(false);
     } else if (selectedValue === t('RoleSection.addBtn')) {
-      toggleCreateRoleModal(); // Open the CreateRole modal
+      toggleCreateRoleModal();
+      setIsAdminRoleSelected(false);
+    } else if (selectedValue === t('UserSection.modalCreate.adminRole')) {
+      setSelectedRoleId(undefined);
+      setIsAdminRoleSelected(true);
     } else {
       const selectedRole = roles.find(role => role.name === selectedValue);
       setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
+      setIsAdminRoleSelected(false);
     }
   };
 
@@ -439,20 +465,11 @@ export default function CreateUser({ onClose, pagination }: CreateUserProps) {
             {t('UserSection.modalCreate.job')}
           </label>
           <CustomSelect
-            options={
-              roleOptions.length > 0
-                ? [
-                    t('UserSection.modalCreate.jobSelect'),
-                    ...roleOptions,
-                    t('RoleSection.addBtn'),
-                  ]
-                : [
-                    t('UserSection.modalCreate.jobSelect'),
-                    t('RoleSection.addBtn'),
-                  ]
-            }
+            options={getRoleOptions()}
             selected={
-              selectedRoleId
+              isAdminRoleSelected
+                ? [t('UserSection.modalCreate.adminRole')]
+                : selectedRoleId
                 ? [roles.find(r => r.role_id === selectedRoleId)!.name]
                 : []
             }

@@ -38,9 +38,15 @@ interface EditUserProps {
   onClose: () => void;
   user: User;
   pagination: PaginationState;
+  isAdmin: boolean;
 }
 
-export default function EditUser({ onClose, user, pagination }: EditUserProps) {
+export default function EditUser({
+  onClose,
+  user,
+  pagination,
+  isAdmin,
+}: EditUserProps) {
   const t = useTranslations('');
   const { fetchCategories, fetchSubcategories, categories, subcategories } =
     useCategoriesStore();
@@ -69,6 +75,9 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(
     user?.role?.role_id
+  );
+  const [isAdminRoleSelected, setIsAdminRoleSelected] = useState<boolean>(
+    user.is_admin || false
   );
   const hasLoadedRef = useRef(false);
 
@@ -131,7 +140,7 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
   ]);
 
   const onSubmit: SubmitHandler<FormData> = async data => {
-    if (!selectedRoleId) {
+    if (!isAdminRoleSelected && !selectedRoleId) {
       toast.error(
         t('UserSection.modalCreate.roleRequired') || 'Please select a role'
       );
@@ -152,7 +161,8 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
       telegram_id: Number(data.tgId),
       telegram_username: data.tgNick,
       email: data.email,
-      role_id: selectedRoleId,
+      is_admin: isAdminRoleSelected,
+      role_id: isAdminRoleSelected ? undefined : selectedRoleId,
       notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
     };
 
@@ -292,6 +302,21 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
 
   const roleOptions = roles.map(role => role.name);
 
+  const getRoleOptions = () => {
+    const baseOptions =
+      roleOptions.length > 0
+        ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
+        : [t('UserSection.modalCreate.jobSelect')];
+
+    // Додаємо опцію "Admin", якщо поточний користувач є адміном
+    if (isAdmin) {
+      baseOptions.push(t('UserSection.modalCreate.adminRole'));
+    }
+
+    baseOptions.push(t('RoleSection.addBtn'));
+    return baseOptions;
+  };
+
   const handleCategorySelect = (values: string[]) => {
     if (values.includes(t('UserSection.modalCreate.categoryAll'))) {
       setSelectedCategories([t('UserSection.modalCreate.categoryAll')]);
@@ -305,11 +330,17 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
     const selectedValue = values[0];
     if (selectedValue === t('UserSection.modalCreate.jobSelect')) {
       setSelectedRoleId(undefined);
+      setIsAdminRoleSelected(false);
     } else if (selectedValue === t('RoleSection.addBtn')) {
       toggleCreateRoleModal();
+      setIsAdminRoleSelected(false);
+    } else if (selectedValue === t('UserSection.modalCreate.adminRole')) {
+      setSelectedRoleId(undefined);
+      setIsAdminRoleSelected(true);
     } else {
       const selectedRole = roles.find(role => role.name === selectedValue);
       setSelectedRoleId(selectedRole ? selectedRole.role_id : undefined);
+      setIsAdminRoleSelected(false);
     }
   };
 
@@ -463,20 +494,11 @@ export default function EditUser({ onClose, user, pagination }: EditUserProps) {
             {t('UserSection.modalCreate.job')}
           </label>
           <CustomSelect
-            options={
-              roleOptions.length > 0
-                ? [
-                    t('UserSection.modalCreate.jobSelect'),
-                    ...roleOptions,
-                    t('RoleSection.addBtn'),
-                  ]
-                : [
-                    t('UserSection.modalCreate.jobSelect'),
-                    t('RoleSection.addBtn'),
-                  ]
-            }
+            options={getRoleOptions()}
             selected={
-              selectedRoleId
+              isAdminRoleSelected
+                ? [t('UserSection.modalCreate.adminRole')]
+                : selectedRoleId
                 ? [roles.find(r => r.role_id === selectedRoleId)?.name || '']
                 : []
             }

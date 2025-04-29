@@ -117,7 +117,7 @@ export default function ServersProxiesSection() {
 
   useEffect(() => {
     if (!loading && !autofarmAccess.hasAccess && currentUser) {
-      router.push('/ru');
+      router.push('/ru/dashboard');
     }
   }, [autofarmAccess, loading, router, currentUser]);
 

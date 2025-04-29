@@ -40,11 +40,11 @@ export interface CreateUserRequest {
   first_name: string;
   last_name: string;
   email?: string;
-  is_admin: boolean;
+  is_admin?: boolean;
   is_referral: boolean;
   telegram_id: number;
   telegram_username: string;
-  role_id: number;
+  role_id: number | undefined;
   create_seller?: boolean;
   functions?: {
     function_id: number;

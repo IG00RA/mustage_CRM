@@ -2,7 +2,7 @@
 
 import styles from './UserSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -22,32 +22,66 @@ import Loader from '../Loader/Loader';
 import { User } from '@/types/usersTypes';
 import { PaginationState } from '@/types/componentsTypes';
 import { debounce } from 'lodash';
+import { useRouter } from 'next/navigation';
 
 const PAGINATION_KEY = 'userSectionPaginationSettings';
 
 export default function UserSection() {
   const t = useTranslations();
+  const router = useRouter();
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const { users, totalRows, error, fetchUsers } = useUsersStore();
+  const { users, totalRows, error, fetchUsers, currentUser } = useUsersStore();
 
   const [pagination, setPagination] = useState<PaginationState>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(PAGINATION_KEY);
-      return saved
+      const initialPagination = saved
         ? (JSON.parse(saved) as PaginationState)
         : { pageIndex: 0, pageSize: 5 };
+
+      return initialPagination;
     }
     return { pageIndex: 0, pageSize: 5 };
   });
 
+  const userAccess = useMemo(() => {
+    if (!currentUser) return { hasAccess: false, hasUpdate: false };
+
+    if (currentUser.is_admin) {
+      return { hasAccess: true, hasUpdate: true };
+    }
+
+    const userFunction = currentUser.functions.find(
+      func => func.function_name === 'Пользователи'
+    );
+    if (!userFunction) return { hasAccess: false, hasUpdate: false };
+    const hasRead = userFunction.operations.includes('READ');
+    const hasUpdate = userFunction.operations.includes('UPDATE');
+    return { hasAccess: hasRead, hasUpdate };
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!userAccess.hasAccess && currentUser) {
+      router.push('/ru/dashboard');
+    }
+  }, [userAccess, router, currentUser]);
+
   const debouncedSearch = useCallback(
     debounce((query: string) => {
-      setSearchQuery(query);
-      setPagination(prev => ({ ...prev, pageIndex: 0 }));
+      setSearchQuery(prev => {
+        if (prev !== query) {
+          setPagination(prevPagination => ({
+            ...prevPagination,
+            pageIndex: 0,
+          }));
+          return query;
+        }
+        return prev;
+      });
     }, 500),
     []
   );
@@ -60,7 +94,6 @@ export default function UserSection() {
 
   useEffect(() => {
     let isMounted = true;
-
     const fetchData = async () => {
       setShowLoader(true);
       try {
@@ -71,12 +104,33 @@ export default function UserSection() {
         });
 
         if (isMounted) {
-          if (
+          const maxPageIndex = Math.max(
+            0,
+            Math.ceil(response.total_rows / pagination.pageSize) - 1
+          );
+
+          if (pagination.pageIndex > maxPageIndex && response.total_rows > 0) {
+            setPagination(prev => {
+              const newPagination = { ...prev, pageIndex: 0 };
+              localStorage.setItem(
+                PAGINATION_KEY,
+                JSON.stringify(newPagination)
+              );
+              return newPagination;
+            });
+          } else if (
             response.items.length === 0 &&
             response.total_rows > 0 &&
             pagination.pageIndex > 0
           ) {
-            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+            setPagination(prev => {
+              const newPagination = { ...prev, pageIndex: 0 };
+              localStorage.setItem(
+                PAGINATION_KEY,
+                JSON.stringify(newPagination)
+              );
+              return newPagination;
+            });
           } else {
             setShowLoader(false);
           }
@@ -269,7 +323,11 @@ export default function UserSection() {
         onClose={toggleCreateModal}
         title="UserSection.modalCreate.title"
       >
-        <CreateUser pagination={pagination} onClose={toggleCreateModal} />
+        <CreateUser
+          isAdmin={currentUser?.is_admin || false}
+          pagination={pagination}
+          onClose={toggleCreateModal}
+        />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenUpdate}
@@ -278,6 +336,7 @@ export default function UserSection() {
       >
         {selectedUser && (
           <EditUser
+            isAdmin={currentUser?.is_admin || false}
             onClose={toggleUpdateModal}
             pagination={pagination}
             user={selectedUser}
