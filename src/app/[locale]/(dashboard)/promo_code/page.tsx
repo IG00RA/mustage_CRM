@@ -1,4 +1,4 @@
-import PromoCodeSection from '@/components/PromoCodeSection/PromoCodeSection';
+import PromoCodeSection from '@/components/Pages/PromoCodeSection/PromoCodeSection';
 
 export default function PromoCode() {
   return <PromoCodeSection />;

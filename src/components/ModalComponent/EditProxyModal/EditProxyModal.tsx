@@ -7,8 +7,8 @@ import { toast } from 'react-toastify';
 import styles from '../ModalComponent.module.css';
 import { useAutofarmStore } from '@/store/autofarmStore';
 import { Proxy } from '@/types/autofarmTypes';
-import CustomSelect from '../../Buttons/CustomSelect/CustomSelect';
-import SubmitBtn from '../../Buttons/SubmitBtn/SubmitBtn';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
+import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import CancelBtn from '../../Buttons/CancelBtn/CancelBtn';
 
 interface EditProxyModalProps {

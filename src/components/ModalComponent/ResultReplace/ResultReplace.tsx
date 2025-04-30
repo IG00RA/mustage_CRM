@@ -11,7 +11,7 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { useState, useEffect } from 'react';
 import { useAccountsStore } from '@/store/accountsStore';
 import { useUsersStore } from '@/store/usersStore';
-import { SearchResults } from '@/components/ReplacementSection/ReplacementSection';
+import { SearchResults } from '@/components/Pages/ReplacementSection/ReplacementSection';
 import {
   ReplaceRequest,
   AccountDataWrapper,

@@ -1,4 +1,4 @@
-import LoadSection from '@/components/LoadSection/LoadSection';
+import LoadSection from '@/components/Pages/LoadSection/LoadSection';
 
 export default function Load() {
   return <LoadSection />;

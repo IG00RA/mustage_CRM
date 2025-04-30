@@ -1,4 +1,4 @@
-import LoginForm from '@/components/Auth/LoginForm';
+import LoginForm from '@/components/Auth/LoginForm/LoginForm';
 
 export const generateMetadata = async () => {
   return {

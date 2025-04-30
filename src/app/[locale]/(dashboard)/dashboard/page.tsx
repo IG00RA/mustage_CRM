@@ -1,4 +1,4 @@
-import Statistics from '@/components/Statistics/Statistics';
+import Statistics from '@/components/Pages/Dashboard/Statistics';
 
 export default function Dashboard() {
   return <Statistics />;

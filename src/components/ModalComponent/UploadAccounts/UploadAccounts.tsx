@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import ExcelJS from 'exceljs';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
-import { UploadResponse } from '@/components/UploadSection/UploadSection';
+import { UploadResponse } from '@/components/Pages/UploadSection/UploadSection';
 
 const settingsOptions = ['Upload.modalUpload.check'];
 

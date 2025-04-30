@@ -1,4 +1,4 @@
-import ServersProxiesSection from '@/components/ServersProxiesSection/ServersProxiesSection';
+import ServersProxiesSection from '@/components/Pages/ServersProxiesSection/ServersProxiesSection';
 
 export default function AutoFarmServers() {
   return <ServersProxiesSection />;

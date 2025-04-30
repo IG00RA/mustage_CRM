@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 import ExcelJS from 'exceljs';
 import { useAutofarmStore } from '@/store/autofarmStore';
 import { ENDPOINTS } from '@/constants/api';
-import { UploadResponse } from '@/components/UploadSection/UploadSection';
+import { UploadResponse } from '@/components/Pages/UploadSection/UploadSection';
 
 const GEO_OPTIONS = ['Україна', 'Польша', 'США'];
 const ACTIVITY_MODES = ['7 дней', '14 дней', '20 дней', '30 дней'];

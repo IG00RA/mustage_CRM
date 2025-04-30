@@ -1,5 +1,5 @@
-import RoleSection from '@/components/RolesSection/RolesSection';
+import RoleSection from '@/components/Pages/RolesSection/RolesSection';
 
-export default function Users() {
+export default function Roles() {
   return <RoleSection />;
 }

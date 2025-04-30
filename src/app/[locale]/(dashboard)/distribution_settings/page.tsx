@@ -1,4 +1,4 @@
-import DistributionSettings from '@/components/DistributionSettings/DistributionSettings';
+import DistributionSettings from '@/components/Pages/DistributionSettings/DistributionSettings';
 
 export default function Distribution() {
   return <DistributionSettings />;

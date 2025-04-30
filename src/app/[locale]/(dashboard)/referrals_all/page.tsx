@@ -1,4 +1,4 @@
-import ReferralsAllSection from '@/components/ReferralsAllSection/ReferralsAllSection';
+import ReferralsAllSection from '@/components/Pages/ReferralsAllSection/ReferralsAllSection';
 
 export default function ReferralsAll() {
   return <ReferralsAllSection />;
