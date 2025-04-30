@@ -23,8 +23,8 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     useState<string>(initialStartDate);
   const [customEndDate, setCustomEndDate] = useState<string>(initialEndDate);
 
-  const today = new Date().toISOString().split('T')[0]; // Максимальна дата - сьогодні
-  const defaultMinDate = '2023-03-01'; // Значення за замовчуванням, якщо minDate === null
+  const today = new Date().toISOString().split('T')[0];
+  const defaultMinDate = '2023-03-01';
 
   const dateRangeOptions = [
     { value: 'all' as const, label: 'togglerDataAll' },
@@ -40,9 +40,9 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     const numbers = value.replace(/\D/g, '').slice(0, 8);
     let formatted = '';
     if (numbers.length > 0) {
-      formatted = numbers.slice(0, 4); // Рік
-      if (numbers.length > 4) formatted += `-${numbers.slice(4, 6)}`; // Місяць
-      if (numbers.length > 6) formatted += `-${numbers.slice(6, 8)}`; // День
+      formatted = numbers.slice(0, 4);
+      if (numbers.length > 4) formatted += `-${numbers.slice(4, 6)}`;
+      if (numbers.length > 6) formatted += `-${numbers.slice(6, 8)}`;
     }
     return formatted;
   };
@@ -125,11 +125,10 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     if (isValidDate(start) && isValidDate(end)) {
       const startDateObj = new Date(start);
       const endDateObj = new Date(end);
-      const effectiveMinDate = minDate || defaultMinDate; // Використовуємо значення за замовчуванням
+      const effectiveMinDate = minDate || defaultMinDate;
       const minDateObj = new Date(effectiveMinDate);
       const todayObj = new Date(today);
 
-      // Перевірка меж
       const adjustedStart =
         startDateObj < minDateObj ? effectiveMinDate : start;
       const adjustedEnd = endDateObj > todayObj ? today : end;
@@ -196,7 +195,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 onChange={e => handleCustomDateInput('start', e.target.value)}
                 placeholder="yyyy-mm-dd"
                 maxLength={10}
-                min={minDate || defaultMinDate} // Використовуємо значення за замовчуванням
+                min={minDate || defaultMinDate}
                 max={today}
               />
               -
@@ -207,7 +206,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 onChange={e => handleCustomDateInput('end', e.target.value)}
                 placeholder="yyyy-mm-dd"
                 maxLength={10}
-                min={minDate || defaultMinDate} // Використовуємо значення за замовчуванням
+                min={minDate || defaultMinDate}
                 max={today}
               />
             </div>

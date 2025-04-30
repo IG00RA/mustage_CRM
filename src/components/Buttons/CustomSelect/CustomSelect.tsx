@@ -46,22 +46,19 @@ export default function CustomSelect({
 
   const handleOptionClick = (option: string, index: number) => {
     if (multiSelections) {
-      // Логіка для множинного вибору
       if (index === 0) {
-        // Перший елемент скидає вибір
         onSelect([]);
         setIsOpen(false);
       } else {
         const newSelected = selected.includes(option)
-          ? selected.filter(item => item !== option) // Видаляємо, якщо вже вибрано
-          : [...selected, option]; // Додаємо, якщо не вибрано
+          ? selected.filter(item => item !== option)
+          : [...selected, option];
         onSelect(newSelected);
       }
     } else {
-      // Логіка для одинарного вибору
-      const newSelected = selected.includes(option) ? [] : [option]; // Якщо елемент уже вибраний, очищаємо, інакше вибираємо його
+      const newSelected = selected.includes(option) ? [] : [option];
       onSelect(newSelected);
-      setIsOpen(false); // Закриваємо селект після вибору
+      setIsOpen(false);
     }
   };
 

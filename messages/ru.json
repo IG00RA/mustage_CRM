@@ -510,7 +510,12 @@
       "statusDate": "Статус обновлен"
     },
     "modalEditType": {
+      "noComparison": "Без сравнения",
+      "accountsCurrent": "Количество аккаунтов",
+      "accountsHistorical": "за {date}",
       "category": "Категория:",
+      "selectDate": "Выберите дату",
+      "currentData": "Сегодня",
       "names": "Наименование:",
       "mode": "Режим автофарма",
       "btn": "Изменить наименование",

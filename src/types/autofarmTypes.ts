@@ -31,6 +31,10 @@ export interface AutofarmStatsByDay {
   accounts: number;
 }
 
+export interface AutofarmHistoryByDay {
+  [date: string]: AutofarmStatsByDay[];
+}
+
 export interface AutofarmDumpResponse {
   subcategory_id: number;
   quantity: number;
@@ -50,6 +54,7 @@ export interface AutofarmRequestParams extends BaseRequest {
   limit?: number;
   offset?: number;
 }
+
 export interface AutofarmDumpParams {
   geo: string;
   activity_mode: string;
@@ -72,6 +77,7 @@ export interface ServerStatusOption {
   name: string;
   user_friendly_name: string;
 }
+
 export interface GeosModesStatusesResponse {
   geos: GeoOption[];
   activity_modes: ActivityModeOption[];
@@ -146,6 +152,7 @@ export interface AutofarmState {
   stats: AutofarmStats[];
   missing: AutofarmMissing[];
   statsByDay: AutofarmStatsByDay[];
+  historyByDay: AutofarmHistoryByDay;
   geosModesStatuses: GeosModesStatusesResponse | null;
   servers: Server[];
   proxies: Proxy[];
@@ -159,6 +166,7 @@ export interface AutofarmState {
   fetchStatisticsByDayDirect: (
     params: AutofarmRequestParams
   ) => Promise<AutofarmStatsByDay[]>;
+  fetchHistoryByDay: (params: AutofarmRequestParams) => Promise<void>;
   dumpReadyAccounts: (
     params: AutofarmDumpParams
   ) => Promise<AutofarmDumpResponse>;

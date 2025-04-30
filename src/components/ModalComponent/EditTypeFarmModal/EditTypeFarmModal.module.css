@@ -2,13 +2,15 @@
   width: 100%;
   background: var(--background);
   border-collapse: collapse;
-  border-bottom: 1px solid var(--grey);
-  border-top: 1px solid var(--grey);
-  margin-bottom: 20px;
 }
 
-.table tbody {
-  border-top: 1px solid var(--grey) !important;
+.table_top {
+  width: 100%;
+  background: var(--background);
+  border-collapse: collapse;
+  border-bottom: 1px solid var(--grey);
+  border-top: 1px solid var(--grey);
+  margin-bottom: 5px;
 }
 
 .th,
@@ -55,8 +57,90 @@
 }
 
 .buttons_wrap {
+  border-top: 1px solid var(--grey);
+  padding-top: 32px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 400px;
+}
+
+.dropdown_wrapper {
+  position: relative;
+}
+
+.select {
+  cursor: pointer;
+  height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--grey);
+  background: var(--background);
+  color: var(--text_light);
+  font-size: var(--fs_small);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.57;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  transition: border 0.3s ease;
+  white-space: nowrap;
+  min-width: 180px;
+
+  &:hover {
+    border-radius: 12px;
+    border: 1px solid var(--main_light);
+  }
+}
+
+.dropdown_list {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  max-height: 350px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: 0px 7px 10px 0px rgba(109, 100, 197, 0.1);
+  padding: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.select_open.dropdown_list {
+  z-index: 2;
+  opacity: 1;
+  max-height: 215px;
+  overflow-y: auto;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown_item {
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  &:hover,
+  &:focus {
+    background: var(--grey_light);
+
+    & .list_icon {
+      opacity: 1;
+    }
+  }
+}
+
+.modal_content {
+  max-height: 190px;
+  overflow-y: auto;
 }

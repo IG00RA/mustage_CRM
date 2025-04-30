@@ -14,6 +14,7 @@ import {
   ProxiesResponse,
   Proxy,
   UpdateProxyRequest,
+  AutofarmHistoryByDay,
 } from '../types/autofarmTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -22,6 +23,7 @@ interface AutofarmStore extends AutofarmState {
   lastStatsParams?: string;
   lastMissingParams?: string;
   lastStatsByDayParams?: string;
+  lastHistoryByDayParams?: string;
   setStats: (newStats: AutofarmStats[]) => void;
 }
 
@@ -35,6 +37,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
   stats: [],
   missing: [],
   statsByDay: [],
+  historyByDay: {},
   geosModesStatuses: null,
   servers: [],
   proxies: [],
@@ -43,6 +46,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
   lastStatsParams: undefined,
   lastMissingParams: undefined,
   lastStatsByDayParams: undefined,
+  lastHistoryByDayParams: undefined,
   totalServers: 0,
   totalProxies: 0,
 
@@ -225,6 +229,54 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
         error instanceof Error ? error.message : String(error);
       set({ loading: false, error: errorMessage });
       console.error('Fetch statistics by day error:', error);
+      throw error;
+    }
+  },
+
+  fetchHistoryByDay: async (params: AutofarmRequestParams = {}) => {
+    const paramsStr = JSON.stringify(params);
+    if (paramsStr === get().lastHistoryByDayParams) {
+      return;
+    }
+
+    set({ loading: true, error: null, lastHistoryByDayParams: paramsStr });
+
+    const queryParams = new URLSearchParams();
+    if (params.geo) {
+      const geoArray = Array.isArray(params.geo) ? params.geo : [params.geo];
+      geoArray.forEach(geo => queryParams.append('geo', geo));
+    }
+    if (params.activity_mode) {
+      const modeArray = Array.isArray(params.activity_mode)
+        ? params.activity_mode
+        : [params.activity_mode];
+      modeArray.forEach(mode => queryParams.append('activity_mode', mode));
+    }
+
+    const url = `${ENDPOINTS.AUTO_FARM_HISTORY_BY_DAY}${
+      queryParams.toString() ? `?${queryParams.toString()}` : ''
+    }`;
+
+    try {
+      const data = await fetchWithErrorHandling<AutofarmHistoryByDay>(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+        () => {}
+      );
+
+      set({ historyByDay: data, loading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      set({ loading: false, error: errorMessage });
+      console.error('Fetch history by day error:', error);
       throw error;
     }
   },
