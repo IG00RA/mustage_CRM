@@ -8,6 +8,21 @@
   /* @media (min-width: 1408px) {
   } */
 }
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #f1f1f6,
+    #f1f1f6 3px,
+    transparent 3px,
+    transparent 5px
+  );
+}
 
 .loader {
   display: flex;

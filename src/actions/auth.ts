@@ -44,11 +44,9 @@ export async function login(formData: FormData) {
   const data = await response.json();
   const token = data.access_token;
 
-  // Збереження токену в HTTP-only куках на 30 днів
   const cookieStore = await cookies();
   cookieStore.set('access_token', token, {
     httpOnly: process.env.NEXT_PUBLIC_LOCAL !== 'local',
-    // secure: process.env.NODE_ENV === 'production',
     secure: true,
     sameSite: 'lax',
     path: '/',
@@ -106,17 +104,8 @@ export async function logout() {
 
     if (response.ok) {
       await response.json();
-      // Перевіряємо успішність логауту
-      // if (data.message === 'Logged out') {
-      // Видаляємо токен на клієнтській стороні тільки після успішного логауту на бекенді
       cookieStore.delete('access_token');
-      // Переміщуємо редирект поза блок try/catch
-      // } else {
-      // Якщо повідомлення не відповідає очікуваному, повертаємо помилку
-      // return { error: 'Unexpected response from server' };
-      // }
     } else {
-      // Якщо статус відповіді не 200, повертаємо помилку
       return { error: 'Logout failed on server' };
     }
   } catch (error) {
