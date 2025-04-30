@@ -6,22 +6,21 @@ import {
   DateRangeResult,
   RangeType,
   ReportParams,
-  ReportPeriod,
   ReportResponse,
   ReportType,
   Sale,
-  SalesAllTimeResponse,
   SalesState,
   SalesSummaryResponse,
 } from '@/types/salesTypes';
+import { useUsersStore } from '@/store/usersStore';
 
-const getDateRangeParams = (
+const getDateRangeParameters = (
   range: RangeType,
-  customStart?: string,
-  customEnd?: string
+  customStartDate?: string,
+  customEndDate?: string
 ): DateRangeResult => {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayString = today.toISOString().split('T')[0];
   const yesterday = new Date(today.setDate(today.getDate() - 1))
     .toISOString()
     .split('T')[0];
@@ -45,8 +44,8 @@ const getDateRangeParams = (
   const ranges: Record<RangeType, DateRangeResult> = {
     today: {
       reportType: 'hourly',
-      current: { date: todayStr },
-      lastYear: { date: shiftYear(todayStr) },
+      current: { date: todayString },
+      lastYear: { date: shiftYear(todayString) },
     },
     yesterday: {
       reportType: 'hourly',
@@ -55,42 +54,42 @@ const getDateRangeParams = (
     },
     week: {
       reportType: 'daily',
-      current: { start_date: last7DaysStart, end_date: todayStr },
+      current: { start_date: last7DaysStart, end_date: todayString },
       lastYear: {
         start_date: shiftYear(last7DaysStart),
-        end_date: shiftYear(todayStr),
+        end_date: shiftYear(todayString),
       },
     },
     month: {
       reportType: 'daily',
-      current: { start_date: startOfMonth, end_date: todayStr },
+      current: { start_date: startOfMonth, end_date: todayString },
       lastYear: {
         start_date: shiftYear(startOfMonth),
-        end_date: shiftYear(todayStr),
+        end_date: shiftYear(todayString),
       },
     },
     quarter: {
       reportType: 'daily',
-      current: { start_date: startOfQuarter, end_date: todayStr },
+      current: { start_date: startOfQuarter, end_date: todayString },
       lastYear: {
         start_date: shiftYear(startOfQuarter),
-        end_date: shiftYear(todayStr),
+        end_date: shiftYear(todayString),
       },
     },
     year: {
       reportType: 'monthly',
-      current: { start_date: startOfYear, end_date: todayStr },
+      current: { start_date: startOfYear, end_date: todayString },
       lastYear: {
         start_date: shiftYear(startOfYear),
-        end_date: shiftYear(todayStr),
+        end_date: shiftYear(todayString),
       },
     },
     custom: {
       reportType: 'custom',
-      current: { start_date: customStart, end_date: customEnd },
+      current: { start_date: customStartDate, end_date: customEndDate },
       lastYear: {
-        start_date: shiftYear(customStart!),
-        end_date: shiftYear(customEnd!),
+        start_date: shiftYear(customStartDate!),
+        end_date: shiftYear(customEndDate!),
       },
     },
     all: {
@@ -103,8 +102,9 @@ const getDateRangeParams = (
 };
 
 const shiftYear = (date: string): string => {
-  if (!date || !isValidDateFormat(date))
+  if (!date || !isValidDateFormat(date)) {
     return new Date().toISOString().split('T')[0];
+  }
   return new Date(new Date(date).setFullYear(new Date(date).getFullYear() - 1))
     .toISOString()
     .split('T')[0];
@@ -112,21 +112,23 @@ const shiftYear = (date: string): string => {
 
 const isValidDateFormat = (date: string): boolean => {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(date)) return false;
+  if (!regex.test(date)) {
+    return false;
+  }
   const [year, month, day] = date.split('-').map(Number);
-  const dateObj = new Date(year, month - 1, day);
+  const dateObject = new Date(year, month - 1, day);
   return (
-    dateObj.getFullYear() === year &&
-    dateObj.getMonth() === month - 1 &&
-    dateObj.getDate() === day
+    dateObject.getFullYear() === year &&
+    dateObject.getMonth() === month - 1 &&
+    dateObject.getDate() === day
   );
 };
 
 const getDaysDifference = (start: string, end: string): number => {
   const startDate = new Date(start);
   const endDate = new Date(end);
-  const diffInMs = endDate.getTime() - startDate.getTime();
-  return Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+  const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
+  return Math.ceil(differenceInMilliseconds / (1000 * 60 * 60 * 24));
 };
 
 const aggregateToWeekly = (sales: Sale[]): Sale[] => {
@@ -194,133 +196,255 @@ export const useSalesStore = create<SalesState>(set => ({
   minDate: '2023-03-01',
   yearlyChange: null,
   customPeriodLabel: '',
-  setDateRange: range => set({ dateRange: range }),
-  setYearlyChange: change => set({ yearlyChange: change }),
-  setCustomPeriodLabel: period => set({ customPeriodLabel: period }),
+  setDateRange: (range: RangeType) => set({ dateRange: range }),
+  setYearlyChange: (change: number) => set({ yearlyChange: change }),
+  setCustomPeriodLabel: (period: string) => set({ customPeriodLabel: period }),
 
   fetchSalesSummary: async () => {
-    const summaryData = await fetchWithErrorHandling<SalesSummaryResponse>(
-      ENDPOINTS.SALES_SUMMARY,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      },
-      () => {}
-    );
+    const usersStore = useUsersStore.getState();
+    let { currentUser } = usersStore;
 
-    const allTimeData = await fetchWithErrorHandling<SalesAllTimeResponse>(
-      ENDPOINTS.SALES_ALL_TIME,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      },
-      () => {}
-    );
-
-    let allTimeQuantity = 0;
-    let allTimeAmount = 0;
-    Object.values(allTimeData).forEach(yearData => {
-      if (yearData.total) {
-        allTimeQuantity += yearData.total.sales_count || 0;
-        allTimeAmount += yearData.total.total_amount || 0;
+    if (!currentUser) {
+      try {
+        currentUser = await usersStore.fetchCurrentUser();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        set({ loading: false, error: errorMessage, sales: [] });
+        return;
       }
-    });
+    }
 
-    const sales: Sale[] = [
-      {
-        period: 'Today',
-        amount: summaryData.today.total_amount,
-        quantity: summaryData.today.sales_count,
-      },
-      {
-        period: 'Week',
-        amount: summaryData.week.total_amount,
-        quantity: summaryData.week.sales_count,
-      },
-      {
-        period: 'Month',
-        amount: summaryData.month.total_amount,
-        quantity: summaryData.month.sales_count,
-      },
-      {
-        period: 'AllTime',
-        amount: allTimeAmount,
-        quantity: allTimeQuantity,
-      },
-    ];
+    if (
+      !currentUser.is_admin &&
+      (!currentUser.seller || !currentUser.seller.seller_id)
+    ) {
+      set({ sales: [], loading: false });
+      return;
+    }
 
-    set({ sales });
+    set({ loading: true, error: null });
+    try {
+      const queryParameters = new URLSearchParams();
+      if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+        queryParameters.append(
+          'seller_id',
+          String(currentUser.seller.seller_id)
+        );
+      }
+
+      const summaryEndpoint = `${ENDPOINTS.SALES_SUMMARY}${
+        queryParameters.toString() ? `?${queryParameters.toString()}` : ''
+      }`;
+
+      const summaryData = await fetchWithErrorHandling<SalesSummaryResponse>(
+        summaryEndpoint,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+        () => {}
+      );
+
+      const allTimeQueryParameters = new URLSearchParams();
+      if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+        allTimeQueryParameters.append(
+          'seller_id',
+          String(currentUser.seller.seller_id)
+        );
+      }
+
+      const allTimeEndpoint = `${ENDPOINTS.SALES_ALL_TIME}${
+        allTimeQueryParameters.toString()
+          ? `?${allTimeQueryParameters.toString()}`
+          : ''
+      }`;
+
+      const allTimeData = await fetchWithErrorHandling<AllTimeReportResponse>(
+        allTimeEndpoint,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+        () => {}
+      );
+
+      let allTimeQuantity = 0;
+      let allTimeAmount = 0;
+      Object.entries(allTimeData).forEach(([, months]) => {
+        Object.entries(months).forEach(([, report]) => {
+          allTimeQuantity += report.solo_accounts.sales_count || 0;
+          allTimeAmount += report.solo_accounts.total_profit || 0;
+        });
+      });
+
+      const sales: Sale[] = [
+        {
+          period: 'Today',
+          amount: summaryData.today.solo_accounts.total_profit,
+          quantity: summaryData.today.solo_accounts.sales_count,
+        },
+        {
+          period: 'Week',
+          amount: summaryData.week.solo_accounts.total_profit,
+          quantity: summaryData.week.solo_accounts.sales_count,
+        },
+        {
+          period: 'Month',
+          amount: summaryData.month.solo_accounts.total_profit,
+          quantity: summaryData.month.solo_accounts.sales_count,
+        },
+        {
+          period: 'AllTime',
+          amount: allTimeAmount,
+          quantity: allTimeQuantity,
+        },
+      ];
+
+      set({ sales, loading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      set({ loading: false, error: errorMessage });
+    }
   },
 
   fetchReport: async (
     reportType: ReportType,
-    params: ReportParams
+    parameters: ReportParams
   ): Promise<Sale[]> => {
-    const queryParams = new URLSearchParams();
+    const usersStore = useUsersStore.getState();
+    let { currentUser } = usersStore;
 
-    Object.entries(params).forEach(([key, value]) => {
+    if (!currentUser) {
+      try {
+        currentUser = await usersStore.fetchCurrentUser();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        set({ loading: false, error: errorMessage });
+        return [];
+      }
+    }
+
+    if (
+      !currentUser.is_admin &&
+      (!currentUser.seller || !currentUser.seller.seller_id)
+    ) {
+      return [];
+    }
+
+    const queryParameters = new URLSearchParams();
+
+    if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+      queryParameters.append('seller_id', String(currentUser.seller.seller_id));
+    }
+
+    Object.entries(parameters).forEach(([key, value]) => {
       if (
         key !== 'category_id' &&
         key !== 'subcategory_id' &&
         value !== undefined
       ) {
-        queryParams.append(key, String(value));
+        queryParameters.append(key, String(value));
       }
     });
 
-    if (params.category_id) {
-      if (Array.isArray(params.category_id)) {
-        params.category_id.forEach(id => {
-          queryParams.append('category_id', String(id));
+    if (parameters.category_id) {
+      if (Array.isArray(parameters.category_id)) {
+        parameters.category_id.forEach(id => {
+          queryParameters.append('category_id', String(id));
         });
       } else {
-        queryParams.append('category_id', String(params.category_id));
+        queryParameters.append('category_id', String(parameters.category_id));
       }
     }
 
-    if (params.subcategory_id) {
-      if (Array.isArray(params.subcategory_id)) {
-        params.subcategory_id.forEach(id => {
-          queryParams.append('subcategory_id', String(id));
+    if (parameters.subcategory_id) {
+      if (Array.isArray(parameters.subcategory_id)) {
+        parameters.subcategory_id.forEach(id => {
+          queryParameters.append('subcategory_id', String(id));
         });
       } else {
-        queryParams.append('subcategory_id', String(params.subcategory_id));
+        queryParameters.append(
+          'subcategory_id',
+          String(parameters.subcategory_id)
+        );
       }
     }
 
-    const query = queryParams.toString();
+    const queryString = queryParameters.toString();
     let endpoint: string;
 
     switch (reportType) {
       case 'hourly':
-        endpoint = `${ENDPOINTS.SALES_HOURLY}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_HOURLY}${
+          queryString ? `?${queryString}` : ''
+        }`;
         break;
       case 'daily':
-        endpoint = `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_DAILY}${
+          queryString ? `?${queryString}` : ''
+        }`;
         break;
       case 'monthly':
-        endpoint = `${ENDPOINTS.SALES_MONTHLY}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_MONTHLY}${
+          queryString ? `?${queryString}` : ''
+        }`;
         break;
       case 'yearly':
-        endpoint = `${ENDPOINTS.SALES_YEARLY}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_YEARLY}${
+          queryString ? `?${queryString}` : ''
+        }`;
         break;
       case 'all':
-        endpoint = `${ENDPOINTS.SALES_ALL_TIME}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_ALL_TIME}${
+          queryString ? `?${queryString}` : ''
+        }`;
         break;
       default:
-        endpoint = `${ENDPOINTS.SALES_DAILY}${query ? `?${query}` : ''}`;
+        endpoint = `${ENDPOINTS.SALES_DAILY}${
+          queryString ? `?${queryString}` : ''
+        }`;
     }
 
-    if (reportType === 'all') {
-      const data = await fetchWithErrorHandling<AllTimeReportResponse>(
+    try {
+      if (reportType === 'all') {
+        const data = await fetchWithErrorHandling<AllTimeReportResponse>(
+          endpoint,
+          {
+            method: 'GET',
+            headers: {
+              ...getAuthHeaders(),
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+          () => {}
+        );
+
+        const sales: Sale[] = [];
+        Object.entries(data).forEach(([year, months]) => {
+          Object.entries(months).forEach(([month, report]) => {
+            sales.push({
+              period: `${year}-${month}`,
+              amount: report.solo_accounts.total_profit || 0,
+              quantity: report.solo_accounts.sales_count || 0,
+            });
+          });
+        });
+        return sales;
+      }
+
+      const data = await fetchWithErrorHandling<ReportResponse>(
         endpoint,
         {
           method: 'GET',
@@ -333,170 +457,185 @@ export const useSalesStore = create<SalesState>(set => ({
         () => {}
       );
 
-      const sales: Sale[] = [];
-      Object.entries(data).forEach(
-        ([year, months]: [string, AllTimeReportResponse[string]]) => {
-          Object.entries(months).forEach(
-            ([month, report]: [string, ReportPeriod]) => {
-              if (month !== 'total') {
-                sales.push({
-                  period: `${year}-${month}`,
-                  amount: report.total_amount || 0,
-                  quantity: report.sales_count || 0,
-                });
-              }
-            }
-          );
-        }
-      );
-      return sales;
-    }
-
-    const data = await fetchWithErrorHandling<ReportResponse>(
-      endpoint,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      },
-      () => {}
-    );
-
-    return Object.entries(data).map(
-      ([period, report]: [string, ReportPeriod]) => ({
+      return Object.entries(data).map(([period, report]) => ({
         period,
-        amount: report.total_amount || 0,
-        quantity: report.sales_count || 0,
-      })
-    );
+        amount: report.solo_accounts.total_profit || 0,
+        quantity: report.solo_accounts.sales_count || 0,
+      }));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      set({ loading: false, error: errorMessage });
+      return [];
+    }
   },
 
   fetchSalesAndYearlyChange: async (
     range: RangeType,
-    customStart?: string,
-    customEnd?: string,
+    customStartDate?: string,
+    customEndDate?: string,
     categoryId?: number | number[],
     subcategoryId?: number | number[]
   ): Promise<void> => {
-    let reportType: ReportType;
-    let currentParams: ReportParams = {};
-    let lastYearParams: ReportParams = {};
+    const usersStore = useUsersStore.getState();
+    let { currentUser } = usersStore;
 
-    if (range === 'custom') {
-      let effectiveStart = customStart;
-      let effectiveEnd = customEnd;
-
-      if (
-        !effectiveStart ||
-        !effectiveEnd ||
-        !isValidDateFormat(effectiveStart) ||
-        !isValidDateFormat(effectiveEnd)
-      ) {
-        const label = useSalesStore.getState().customPeriodLabel;
-        const dates = label.split(' - ');
-        if (
-          dates.length === 2 &&
-          isValidDateFormat(dates[0]) &&
-          isValidDateFormat(dates[1])
-        ) {
-          effectiveStart = dates[0];
-          effectiveEnd = dates[1];
-        } else {
-          set({ chartSales: [], yearlyChange: null });
-          return;
-        }
+    if (!currentUser) {
+      try {
+        currentUser = await usersStore.fetchCurrentUser();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        set({
+          loading: false,
+          error: errorMessage,
+          chartSales: [],
+          yearlyChange: null,
+        });
+        return;
       }
-
-      const daysDiff = getDaysDifference(effectiveStart, effectiveEnd);
-      if (daysDiff <= 1) {
-        reportType = 'hourly';
-        currentParams = { date: effectiveStart };
-        lastYearParams = { date: shiftYear(effectiveStart) };
-      } else {
-        reportType = 'daily';
-        currentParams = { start_date: effectiveStart, end_date: effectiveEnd };
-        lastYearParams = {
-          start_date: shiftYear(effectiveStart),
-          end_date: shiftYear(effectiveEnd),
-        };
-      }
-    } else {
-      const {
-        reportType: predefinedReportType,
-        current,
-        lastYear,
-      } = getDateRangeParams(range, customStart, customEnd);
-      reportType = predefinedReportType;
-      currentParams = current;
-      lastYearParams = lastYear;
     }
 
-    if (categoryId !== undefined) {
-      currentParams.category_id = categoryId;
-      lastYearParams.category_id = categoryId;
+    if (
+      !currentUser.is_admin &&
+      (!currentUser.seller || !currentUser.seller.seller_id)
+    ) {
+      set({ chartSales: [], yearlyChange: null, loading: false });
+      return;
     }
 
-    if (subcategoryId !== undefined) {
-      currentParams.subcategory_id = subcategoryId;
-      lastYearParams.subcategory_id = subcategoryId;
-    }
-
-    const currentSales = await useSalesStore
-      .getState()
-      .fetchReport(reportType, currentParams);
-
-    let yearlyChange: number | null = null;
-    let chartSales = currentSales;
-
-    if (range !== 'all') {
-      const lastYearSales = await useSalesStore
-        .getState()
-        .fetchReport(reportType, lastYearParams);
+    set({ loading: true, error: null });
+    try {
+      let reportType: ReportType;
+      let currentParameters: ReportParams = {};
+      let lastYearParameters: ReportParams = {};
 
       if (range === 'custom') {
-        const daysDiff = getDaysDifference(
-          currentParams.start_date || currentParams.date || '',
-          currentParams.end_date || currentParams.date || ''
+        let effectiveStartDate = customStartDate;
+        let effectiveEndDate = customEndDate;
+
+        if (
+          !effectiveStartDate ||
+          !effectiveEndDate ||
+          !isValidDateFormat(effectiveStartDate) ||
+          !isValidDateFormat(effectiveEndDate)
+        ) {
+          const customPeriodLabel = useSalesStore.getState().customPeriodLabel;
+          const dates = customPeriodLabel.split(' - ');
+          if (
+            dates.length === 2 &&
+            isValidDateFormat(dates[0]) &&
+            isValidDateFormat(dates[1])
+          ) {
+            effectiveStartDate = dates[0];
+            effectiveEndDate = dates[1];
+          } else {
+            set({ chartSales: [], yearlyChange: null, loading: false });
+            return;
+          }
+        }
+
+        const daysDifference = getDaysDifference(
+          effectiveStartDate,
+          effectiveEndDate
         );
-        if (daysDiff <= 1) {
-          chartSales = currentSales;
-        } else if (daysDiff <= 31) {
-          chartSales = currentSales;
-        } else if (daysDiff <= 180) {
-          chartSales = aggregateToWeekly(currentSales);
-        } else if (daysDiff <= 6 * 365) {
-          chartSales = aggregateToMonthly(currentSales);
+        if (daysDifference <= 1) {
+          reportType = 'hourly';
+          currentParameters = { date: effectiveStartDate };
+          lastYearParameters = { date: shiftYear(effectiveStartDate) };
         } else {
-          chartSales = aggregateToYearly(currentSales);
+          reportType = 'daily';
+          currentParameters = {
+            start_date: effectiveStartDate,
+            end_date: effectiveEndDate,
+          };
+          lastYearParameters = {
+            start_date: shiftYear(effectiveStartDate),
+            end_date: shiftYear(effectiveEndDate),
+          };
         }
       } else {
-        chartSales =
-          range === 'quarter' ? aggregateToWeekly(currentSales) : currentSales;
+        const {
+          reportType: predefinedReportType,
+          current,
+          lastYear,
+        } = getDateRangeParameters(range, customStartDate, customEndDate);
+        reportType = predefinedReportType;
+        currentParameters = current;
+        lastYearParameters = lastYear;
       }
 
-      const currentTotal = currentSales.reduce(
-        (sum, sale) => sum + sale.amount,
-        0
-      );
-      const lastYearTotal = lastYearSales.reduce(
-        (sum, sale) => sum + sale.amount,
-        0
-      );
-      yearlyChange =
-        lastYearTotal === 0
-          ? currentTotal > 0
-            ? 100
-            : 0
-          : ((currentTotal - lastYearTotal) / lastYearTotal) * 100;
-    }
+      if (categoryId !== undefined) {
+        currentParameters.category_id = categoryId;
+        lastYearParameters.category_id = categoryId;
+      }
 
-    set({
-      chartSales,
-      yearlyChange:
-        yearlyChange !== null ? Number(yearlyChange.toFixed(1)) : null,
-    });
+      if (subcategoryId !== undefined) {
+        currentParameters.subcategory_id = subcategoryId;
+        lastYearParameters.subcategory_id = subcategoryId;
+      }
+
+      const currentSales = await useSalesStore
+        .getState()
+        .fetchReport(reportType, currentParameters);
+
+      let yearlyChange: number | null = null;
+      let chartSales = currentSales;
+
+      if (range !== 'all') {
+        const lastYearSales = await useSalesStore
+          .getState()
+          .fetchReport(reportType, lastYearParameters);
+
+        if (range === 'custom') {
+          const daysDifference = getDaysDifference(
+            currentParameters.start_date || currentParameters.date || '',
+            currentParameters.end_date || currentParameters.date || ''
+          );
+          if (daysDifference <= 1) {
+            chartSales = currentSales;
+          } else if (daysDifference <= 31) {
+            chartSales = currentSales;
+          } else if (daysDifference <= 180) {
+            chartSales = aggregateToWeekly(currentSales);
+          } else if (daysDifference <= 6 * 365) {
+            chartSales = aggregateToMonthly(currentSales);
+          } else {
+            chartSales = aggregateToYearly(currentSales);
+          }
+        } else {
+          chartSales =
+            range === 'quarter'
+              ? aggregateToWeekly(currentSales)
+              : currentSales;
+        }
+
+        const currentTotal = currentSales.reduce(
+          (sum, sale) => sum + sale.amount,
+          0
+        );
+        const lastYearTotal = lastYearSales.reduce(
+          (sum, sale) => sum + sale.amount,
+          0
+        );
+        yearlyChange =
+          lastYearTotal === 0
+            ? currentTotal > 0
+              ? 100
+              : 0
+            : ((currentTotal - lastYearTotal) / lastYearTotal) * 100;
+      }
+
+      set({
+        chartSales,
+        yearlyChange:
+          yearlyChange !== null ? Number(yearlyChange.toFixed(1)) : null,
+        loading: false,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      set({ loading: false, error: errorMessage });
+    }
   },
 }));

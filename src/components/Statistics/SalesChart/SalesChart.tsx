@@ -47,8 +47,7 @@ const SalesChart: React.FC = () => {
     error: categoriesError,
   } = useCategoriesStore();
 
-  // Логіка прав доступу
-  const isFunctionsEmpty = currentUser?.functions.length === 0; // Перевіряємо, чи порожній масив functions
+  const isFunctionsEmpty = currentUser?.functions.length === 0;
   const categoryPermissions =
     currentUser?.functions.find(
       func => func.function_id === 2 && func.function_name === 'Категории'

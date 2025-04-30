@@ -36,9 +36,20 @@ export interface DateRangeResult {
   lastYear: ReportParams;
 }
 
-export interface SummaryPeriod {
-  total_amount: number;
+export interface AccountSales {
   sales_count: number;
+  total_profit: number;
+}
+
+export interface SetSales {
+  accounts_sales_count: number;
+  sets_sales_count: number;
+  total_profit: number;
+}
+
+export interface SummaryPeriod {
+  solo_accounts: AccountSales;
+  sets: SetSales;
 }
 
 export interface SalesSummaryResponse {
@@ -47,20 +58,9 @@ export interface SalesSummaryResponse {
   month: SummaryPeriod;
 }
 
-export interface YearlyTotal {
-  total_amount: number;
-  sales_count: number;
-}
-
-export interface SalesAllTimeResponse {
-  [year: string]: {
-    total: YearlyTotal;
-  };
-}
-
 export interface ReportPeriod {
-  total_amount: number;
-  sales_count: number;
+  solo_accounts: AccountSales;
+  sets: SetSales;
 }
 
 export interface ReportResponse {
@@ -69,9 +69,7 @@ export interface ReportResponse {
 
 export interface AllTimeReportResponse {
   [year: string]: {
-    [month: string]:
-      | ReportPeriod
-      | { total_amount: number; sales_count: number };
+    [month: string]: ReportPeriod;
   };
 }
 

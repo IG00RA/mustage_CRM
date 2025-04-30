@@ -12,7 +12,7 @@ interface SalesSummaryProps {
 const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
   const t = useTranslations();
 
-  const formatAmount = (amount: number) => `$${amount.toFixed(2)}`;
+  const formatAmount = (amount: number) => `$${amount?.toFixed(2)}`;
 
   const getByPeriod = (period: string, field: 'quantity' | 'amount') => {
     const sale = salesData.find(sale => sale.period === period);
