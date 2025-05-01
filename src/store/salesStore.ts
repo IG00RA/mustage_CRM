@@ -3,7 +3,6 @@ import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
 import {
   AllTimeReportResponse,
-  DateRangeResult,
   RangeType,
   ReportParams,
   ReportResponse,
@@ -13,179 +12,15 @@ import {
   SalesSummaryResponse,
 } from '@/types/salesTypes';
 import { useUsersStore } from '@/store/usersStore';
-
-const getDateRangeParameters = (
-  range: RangeType,
-  customStartDate?: string,
-  customEndDate?: string
-): DateRangeResult => {
-  const today = new Date();
-  const todayString = today.toISOString().split('T')[0];
-  const yesterday = new Date(today.setDate(today.getDate() - 1))
-    .toISOString()
-    .split('T')[0];
-  const last7DaysStart = new Date(today.setDate(today.getDate() - 6))
-    .toISOString()
-    .split('T')[0];
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-    .toISOString()
-    .split('T')[0];
-  const startOfQuarter = new Date(
-    today.getFullYear(),
-    Math.floor(today.getMonth() / 3) * 3,
-    1
-  )
-    .toISOString()
-    .split('T')[0];
-  const startOfYear = new Date(today.getFullYear(), 0, 1)
-    .toISOString()
-    .split('T')[0];
-
-  const ranges: Record<RangeType, DateRangeResult> = {
-    today: {
-      reportType: 'hourly',
-      current: { date: todayString },
-      lastYear: { date: shiftYear(todayString) },
-    },
-    yesterday: {
-      reportType: 'hourly',
-      current: { date: yesterday },
-      lastYear: { date: shiftYear(yesterday) },
-    },
-    week: {
-      reportType: 'daily',
-      current: { start_date: last7DaysStart, end_date: todayString },
-      lastYear: {
-        start_date: shiftYear(last7DaysStart),
-        end_date: shiftYear(todayString),
-      },
-    },
-    month: {
-      reportType: 'daily',
-      current: { start_date: startOfMonth, end_date: todayString },
-      lastYear: {
-        start_date: shiftYear(startOfMonth),
-        end_date: shiftYear(todayString),
-      },
-    },
-    quarter: {
-      reportType: 'daily',
-      current: { start_date: startOfQuarter, end_date: todayString },
-      lastYear: {
-        start_date: shiftYear(startOfQuarter),
-        end_date: shiftYear(todayString),
-      },
-    },
-    year: {
-      reportType: 'monthly',
-      current: { start_date: startOfYear, end_date: todayString },
-      lastYear: {
-        start_date: shiftYear(startOfYear),
-        end_date: shiftYear(todayString),
-      },
-    },
-    custom: {
-      reportType: 'custom',
-      current: { start_date: customStartDate, end_date: customEndDate },
-      lastYear: {
-        start_date: shiftYear(customStartDate!),
-        end_date: shiftYear(customEndDate!),
-      },
-    },
-    all: {
-      reportType: 'all',
-      current: {},
-      lastYear: {},
-    },
-  };
-  return ranges[range];
-};
-
-const shiftYear = (date: string): string => {
-  if (!date || !isValidDateFormat(date)) {
-    return new Date().toISOString().split('T')[0];
-  }
-  return new Date(new Date(date).setFullYear(new Date(date).getFullYear() - 1))
-    .toISOString()
-    .split('T')[0];
-};
-
-const isValidDateFormat = (date: string): boolean => {
-  const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(date)) {
-    return false;
-  }
-  const [year, month, day] = date.split('-').map(Number);
-  const dateObject = new Date(year, month - 1, day);
-  return (
-    dateObject.getFullYear() === year &&
-    dateObject.getMonth() === month - 1 &&
-    dateObject.getDate() === day
-  );
-};
-
-const getDaysDifference = (start: string, end: string): number => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const differenceInMilliseconds = endDate.getTime() - startDate.getTime();
-  return Math.ceil(differenceInMilliseconds / (1000 * 60 * 60 * 24));
-};
-
-const aggregateToWeekly = (sales: Sale[]): Sale[] => {
-  const weeklyData: { [week: string]: { amount: number; quantity: number } } =
-    {};
-  sales.forEach(sale => {
-    const date = new Date(sale.period);
-    const year = date.getFullYear();
-    const weekNumber =
-      Math.floor((date.getDate() - 1 + ((date.getDay() + 6) % 7)) / 7) + 1;
-    const weekKey = `${year}-W${weekNumber.toString().padStart(2, '0')}`;
-    weeklyData[weekKey] = weeklyData[weekKey] || { amount: 0, quantity: 0 };
-    weeklyData[weekKey].amount += sale.amount;
-    weeklyData[weekKey].quantity += sale.quantity;
-  });
-  return Object.entries(weeklyData).map(([period, data]) => ({
-    period,
-    amount: data.amount,
-    quantity: data.quantity,
-  }));
-};
-
-const aggregateToMonthly = (sales: Sale[]): Sale[] => {
-  const monthlyData: { [month: string]: { amount: number; quantity: number } } =
-    {};
-  sales.forEach(sale => {
-    const date = new Date(sale.period);
-    const monthKey = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, '0')}`;
-    monthlyData[monthKey] = monthlyData[monthKey] || { amount: 0, quantity: 0 };
-    monthlyData[monthKey].amount += sale.amount;
-    monthlyData[monthKey].quantity += sale.quantity;
-  });
-  return Object.entries(monthlyData).map(([period, data]) => ({
-    period,
-    amount: data.amount,
-    quantity: data.quantity,
-  }));
-};
-
-const aggregateToYearly = (sales: Sale[]): Sale[] => {
-  const yearlyData: { [year: string]: { amount: number; quantity: number } } =
-    {};
-  sales.forEach(sale => {
-    const date = new Date(sale.period);
-    const yearKey = `${date.getFullYear()}`;
-    yearlyData[yearKey] = yearlyData[yearKey] || { amount: 0, quantity: 0 };
-    yearlyData[yearKey].amount += sale.amount;
-    yearlyData[yearKey].quantity += sale.quantity;
-  });
-  return Object.entries(yearlyData).map(([period, data]) => ({
-    period,
-    amount: data.amount,
-    quantity: data.quantity,
-  }));
-};
+import {
+  aggregateToMonthly,
+  aggregateToWeekly,
+  aggregateToYearly,
+  getDateRangeParameters,
+  getDaysDifference,
+  isValidDateFormat,
+  shiftYear,
+} from '@/helpers/filterData';
 
 export const useSalesStore = create<SalesState>(set => ({
   sales: [],
@@ -200,7 +35,7 @@ export const useSalesStore = create<SalesState>(set => ({
   setYearlyChange: (change: number) => set({ yearlyChange: change }),
   setCustomPeriodLabel: (period: string) => set({ customPeriodLabel: period }),
 
-  fetchSalesSummary: async () => {
+  fetchSalesSummary: async (sellerIds?: string[]) => {
     const usersStore = useUsersStore.getState();
     let { currentUser } = usersStore;
 
@@ -226,7 +61,10 @@ export const useSalesStore = create<SalesState>(set => ({
     set({ loading: true, error: null });
     try {
       const queryParameters = new URLSearchParams();
-      if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+      // Додаємо seller_id: спочатку перевіряємо sellerIds (для адміна), потім currentUser (для неадмінів)
+      if (sellerIds && sellerIds.length > 0) {
+        queryParameters.append('seller_id', String(sellerIds[0]));
+      } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
         queryParameters.append(
           'seller_id',
           String(currentUser.seller.seller_id)
@@ -251,7 +89,9 @@ export const useSalesStore = create<SalesState>(set => ({
       );
 
       const allTimeQueryParameters = new URLSearchParams();
-      if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+      if (sellerIds && sellerIds.length > 0) {
+        allTimeQueryParameters.append('seller_id', String(sellerIds[0]));
+      } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
         allTimeQueryParameters.append(
           'seller_id',
           String(currentUser.seller.seller_id)
@@ -344,7 +184,9 @@ export const useSalesStore = create<SalesState>(set => ({
 
     const queryParameters = new URLSearchParams();
 
-    if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+    if (parameters.seller_id) {
+      queryParameters.append('seller_id', String(parameters.seller_id));
+    } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
       queryParameters.append('seller_id', String(currentUser.seller.seller_id));
     }
 
@@ -352,6 +194,7 @@ export const useSalesStore = create<SalesState>(set => ({
       if (
         key !== 'category_id' &&
         key !== 'subcategory_id' &&
+        key !== 'seller_id' &&
         value !== undefined
       ) {
         queryParameters.append(key, String(value));
@@ -475,7 +318,8 @@ export const useSalesStore = create<SalesState>(set => ({
     customStartDate?: string,
     customEndDate?: string,
     categoryId?: number | number[],
-    subcategoryId?: number | number[]
+    subcategoryId?: number | number[],
+    sellerIds?: string[]
   ): Promise<void> => {
     const usersStore = useUsersStore.getState();
     let { currentUser } = usersStore;
@@ -573,6 +417,11 @@ export const useSalesStore = create<SalesState>(set => ({
       if (subcategoryId !== undefined) {
         currentParameters.subcategory_id = subcategoryId;
         lastYearParameters.subcategory_id = subcategoryId;
+      }
+
+      if (sellerIds && sellerIds.length > 0) {
+        currentParameters.seller_id = sellerIds[0];
+        lastYearParameters.seller_id = sellerIds[0];
       }
 
       const currentSales = await useSalesStore

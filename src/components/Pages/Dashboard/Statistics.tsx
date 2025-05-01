@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSalesStore } from '@/store/salesStore';
 import { useUsersStore } from '@/store/usersStore';
 import styles from './Statistics.module.css';
@@ -10,6 +10,7 @@ import SalesChart from './SalesChart/SalesChart';
 export default function Statistics() {
   const { sales, fetchSalesSummary } = useSalesStore();
   const { currentUser, fetchCurrentUser } = useUsersStore();
+  const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
 
   useEffect(() => {
     const initialize = async () => {
@@ -21,16 +22,23 @@ export default function Statistics() {
           return;
         }
       }
-      fetchSalesSummary();
+      fetchSalesSummary(
+        currentUser?.is_admin && selectedSellerIds.length > 0
+          ? selectedSellerIds
+          : undefined
+      );
     };
 
     initialize();
-  }, [fetchSalesSummary, fetchCurrentUser, currentUser]);
+  }, [fetchSalesSummary, fetchCurrentUser, currentUser, selectedSellerIds]);
 
   return (
     <section className={styles.section}>
       <SalesSummary salesData={sales} />
-      <SalesChart />
+      <SalesChart
+        selectedSellerIds={selectedSellerIds}
+        setSelectedSellerIds={setSelectedSellerIds}
+      />
     </section>
   );
 }

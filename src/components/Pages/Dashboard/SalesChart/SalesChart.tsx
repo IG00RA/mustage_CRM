@@ -14,8 +14,17 @@ import { useUsersStore } from '@/store/usersStore';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import DateRangeSelector from '@/components/Buttons/DateRangeSelector/DateRangeSelector';
 import { RangeType } from '@/types/salesTypes';
+import { useSellersStore } from '@/store/sellersStore';
 
-const SalesChart: React.FC = () => {
+interface SalesChartProps {
+  selectedSellerIds: string[];
+  setSelectedSellerIds: (ids: string[]) => void;
+}
+
+const SalesChart: React.FC<SalesChartProps> = ({
+  selectedSellerIds,
+  setSelectedSellerIds,
+}) => {
   const t = useTranslations();
   const { currentUser } = useUsersStore();
   const [isOpenDownload, setIsOpenDownload] = useState(false);
@@ -28,6 +37,8 @@ const SalesChart: React.FC = () => {
     number[]
   >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+
+  const { sellers, fetchSellers, error: sellersError } = useSellersStore();
 
   const {
     chartSales,
@@ -74,6 +85,12 @@ const SalesChart: React.FC = () => {
   }, [categories, fetchCategories, hasReadCategories]);
 
   useEffect(() => {
+    if (currentUser?.is_admin && sellers.length === 0) {
+      fetchSellers();
+    }
+  }, [sellers, fetchSellers, currentUser]);
+
+  useEffect(() => {
     if (hasReadSubcategories) {
       if (selectedCategoryIds.length > 0) {
         fetchSubcategories(selectedCategoryIds[0]);
@@ -108,6 +125,9 @@ const SalesChart: React.FC = () => {
             ? selectedSubcategoryIds.length === 1
               ? selectedSubcategoryIds[0]
               : selectedSubcategoryIds
+            : undefined,
+          currentUser?.is_admin && selectedSellerIds.length > 0
+            ? selectedSellerIds
             : undefined
         );
     }
@@ -116,8 +136,10 @@ const SalesChart: React.FC = () => {
     customPeriodLabel,
     selectedCategoryIds,
     selectedSubcategoryIds,
+    selectedSellerIds,
     hasReadCategories,
     hasReadSubcategories,
+    currentUser,
   ]);
 
   const toggleDownload = useCallback(
@@ -205,7 +227,41 @@ const SalesChart: React.FC = () => {
     }
   };
 
-  const error = salesError || categoriesError;
+  const error = salesError || categoriesError || sellersError;
+
+  const handleSellerSelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.sellerAll')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedSellerIds([]);
+      } else {
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const seller = sellers.find(seller => seller.seller_name === value);
+            return seller ? String(seller.seller_id) : null;
+          })
+          .filter((id): id is string => id !== null);
+        setSelectedSellerIds(newSelectedIds);
+      }
+    },
+    [sellers, t]
+  );
+
+  const sellerOptions = useMemo(
+    () => [
+      t('AllAccounts.selects.sellerAll'),
+      ...sellers.map(seller => String(seller.seller_name)),
+    ],
+    [sellers, t]
+  );
+
+  const sellerMap = useMemo(
+    () =>
+      new Map(sellers.map(seller => [seller.seller_id, seller.seller_name])),
+    [sellers]
+  );
 
   return (
     <>
@@ -252,48 +308,62 @@ const SalesChart: React.FC = () => {
           />
         </div>
 
-        {(hasReadCategories || hasReadSubcategories) && (
-          <div className={styles.chart_category_wrap}>
-            {hasReadCategories && (
-              <CustomSelect
-                label={t('Statistics.chart.toggler.togglerCategory')}
-                options={[
-                  t('Statistics.chart.toggler.togglerAllCategory'),
-                  ...(Array.isArray(categories)
-                    ? categories.map(cat => cat.account_category_name)
-                    : []),
-                ]}
-                selected={
-                  selectedCategoryIds.length > 0
-                    ? selectedCategoryIds.map(id => categoryMap.get(id) || '')
-                    : [t('Statistics.chart.toggler.togglerAllCategory')]
-                }
-                onSelect={handleCategorySelect}
-                minSelectWidth={150}
-              />
-            )}
-            {hasReadSubcategories && (
-              <CustomSelect
-                label={t('Statistics.chart.toggler.togglerName')}
-                options={[
-                  t('Statistics.chart.toggler.togglerAllName'),
-                  ...(Array.isArray(subcategories)
-                    ? subcategories.map(sub => sub.account_subcategory_name)
-                    : []),
-                ]}
-                selected={
-                  selectedSubcategoryIds.length > 0
-                    ? selectedSubcategoryIds.map(
-                        id => subcategoryMap.get(id) || ''
-                      )
-                    : [t('Statistics.chart.toggler.togglerAllName')]
-                }
-                onSelect={handleSubcategorySelect}
-                minSelectWidth={170}
-              />
-            )}
-          </div>
-        )}
+        <div className={styles.chart_category_wrap}>
+          {hasReadCategories && (
+            <CustomSelect
+              label={t('Statistics.chart.toggler.togglerCategory')}
+              options={[
+                t('Statistics.chart.toggler.togglerAllCategory'),
+                ...(Array.isArray(categories)
+                  ? categories.map(cat => cat.account_category_name)
+                  : []),
+              ]}
+              selected={
+                selectedCategoryIds.length > 0
+                  ? selectedCategoryIds.map(id => categoryMap.get(id) || '')
+                  : [t('Statistics.chart.toggler.togglerAllCategory')]
+              }
+              onSelect={handleCategorySelect}
+              minSelectWidth={150}
+            />
+          )}
+          {hasReadSubcategories && (
+            <CustomSelect
+              label={t('Statistics.chart.toggler.togglerName')}
+              options={[
+                t('Statistics.chart.toggler.togglerAllName'),
+                ...(Array.isArray(subcategories)
+                  ? subcategories.map(sub => sub.account_subcategory_name)
+                  : []),
+              ]}
+              selected={
+                selectedSubcategoryIds.length > 0
+                  ? selectedSubcategoryIds.map(
+                      id => subcategoryMap.get(id) || ''
+                    )
+                  : [t('Statistics.chart.toggler.togglerAllName')]
+              }
+              onSelect={handleSubcategorySelect}
+              minSelectWidth={170}
+            />
+          )}
+          {currentUser?.is_admin && (
+            <CustomSelect
+              label={t('AllAccounts.selects.seller')}
+              options={sellerOptions}
+              selected={
+                selectedSellerIds.length > 0
+                  ? selectedSellerIds.map(
+                      id => sellerMap.get(parseInt(id)) || ''
+                    )
+                  : [t('AllAccounts.selects.sellerAll')]
+              }
+              onSelect={handleSellerSelect}
+              multiSelections={false}
+              width={350}
+            />
+          )}
+        </div>
 
         <ChartDisplay
           chartSales={chartSales}

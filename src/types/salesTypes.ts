@@ -28,6 +28,7 @@ export interface ReportParams {
   end_date?: string;
   category_id?: number | number[];
   subcategory_id?: number | number[];
+  seller_id?: string;
 }
 
 export interface DateRangeResult {
@@ -85,7 +86,7 @@ export interface SalesState {
   setDateRange: (range: RangeType) => void;
   setYearlyChange: (change: number) => void;
   setCustomPeriodLabel: (period: string) => void;
-  fetchSalesSummary: () => Promise<void>;
+  fetchSalesSummary: (sellerIds?: string[]) => Promise<void>; // Додаємо sellerIds
   fetchReport: (
     reportType: ReportType,
     params: ReportParams
@@ -95,6 +96,7 @@ export interface SalesState {
     customStart?: string,
     customEnd?: string,
     categoryId?: number | number[],
-    subcategoryId?: number | number[]
+    subcategoryId?: number | number[],
+    sellerIds?: string[]
   ) => Promise<void>;
 }
