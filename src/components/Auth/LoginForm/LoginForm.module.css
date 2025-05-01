@@ -1,12 +1,8 @@
 .section {
-  width: 100vw;
-  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* @media (min-width: 1408px) {
-  } */
+  padding: 24px 16px;
 }
 
 .container {
@@ -20,25 +16,23 @@
   width: 80px;
   height: 57px;
   margin-bottom: 16px;
-  margin: 0 auto;
 }
 
 .header {
   color: var(--text_dark);
-  font-size: var(--fs_large);
+  font-size: 20px;
   font-style: normal;
   font-weight: 700;
   line-height: 1.5;
-  text-align: center;
+  margin-bottom: 8px;
 }
 
 .header_text {
   color: var(--text_light);
-  text-align: center;
-  font-size: var(--fs_xsmall);
+  font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 1.37;
+  line-height: 1.42;
   margin-bottom: 32px;
 }
 
@@ -60,7 +54,7 @@
   padding: 13px 14px;
   border-radius: 12px;
   border: 1px solid var(--grey);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--text_dark);
   font-size: var(--fs_xsmall);
   font-style: normal;
@@ -82,11 +76,6 @@
   border: 1px solid var(--main_light);
   outline: none;
 }
-
-/* .input:focus::placeholder,
-.input:hover::placeholder {
-  color: #b5bbe1;
-} */
 
 .button {
   display: flex;
@@ -127,5 +116,62 @@
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 768px) {
+  .section {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .logo {
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding: 0;
+  }
+
+  .logo {
+    width: 80px;
+    height: 57px;
+    margin-bottom: 16px;
+  }
+
+  .header {
+    color: var(--text_dark);
+    font-size: var(--fs_large);
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .header_text {
+    color: var(--text_light);
+    text-align: center;
+    font-size: var(--fs_xsmall);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.37;
+    margin-bottom: 32px;
+  }
+
+  .input {
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--grey);
+    margin-bottom: 16px;
+    color: var(--text_dark);
+    font-size: var(--fs_xsmall);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.37;
+    transition: border 0.3s ease;
   }
 }
