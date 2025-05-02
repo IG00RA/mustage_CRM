@@ -61,7 +61,6 @@ export const useSalesStore = create<SalesState>(set => ({
     set({ loading: true, error: null });
     try {
       const queryParameters = new URLSearchParams();
-      // Додаємо seller_id: спочатку перевіряємо sellerIds (для адміна), потім currentUser (для неадмінів)
       if (sellerIds && sellerIds.length > 0) {
         queryParameters.append('seller_id', String(sellerIds[0]));
       } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {

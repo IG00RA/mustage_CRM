@@ -21,7 +21,7 @@ export default function DashboardLayout({
     <div className={styles.main_wrap}>
       <Sidebar />
       <main className={styles.main}>
-        <div className={styles.main_container}>{children}</div>
+        {children}
       </main>
     </div>
   );

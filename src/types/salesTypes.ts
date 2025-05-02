@@ -86,7 +86,7 @@ export interface SalesState {
   setDateRange: (range: RangeType) => void;
   setYearlyChange: (change: number) => void;
   setCustomPeriodLabel: (period: string) => void;
-  fetchSalesSummary: (sellerIds?: string[]) => Promise<void>; // Додаємо sellerIds
+  fetchSalesSummary: (sellerIds?: string[]) => Promise<void>;
   fetchReport: (
     reportType: ReportType,
     params: ReportParams

@@ -114,7 +114,7 @@ export default function Sidebar() {
   }, [pathname]);
 
   const isMenuAllowed = (link: string) => {
-    if (!currentUser || currentUser.is_admin) return true; // Адміни мають доступ до всього
+    if (!currentUser || currentUser.is_admin) return true;
     if (!currentUser.functions || currentUser.functions.length === 0)
       return true;
 
@@ -158,7 +158,6 @@ export default function Sidebar() {
   const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles');
   const hasAutoFarmAccess = isMenuAllowed('auto_farm');
 
-  // Скелетон для відображення під час завантаження
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
       <aside className={styles.sidebar}>
@@ -225,7 +224,6 @@ export default function Sidebar() {
       </aside>
     );
   }
-
   return (
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.logo_wrap}>
