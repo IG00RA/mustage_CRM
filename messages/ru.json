@@ -48,7 +48,8 @@
       "periodDay": "за сегодня",
       "periodWeek": "за эту неделю",
       "periodMonth": "за этот месяц",
-      "periodAllTime": "за все время"
+      "periodAllTime": "за все время",
+      "periodSelected": "за выбранный период"
     },
     "chart": {
       "header": "График",
@@ -232,7 +233,10 @@
       "transferNot": "Не передан",
       "transferYes": "Передан",
       "seller": "Селлер:",
-      "sellerAll": "Все"
+      "sellerAll": "Все",
+      "setsDisplay": "Режим отображения наборов",
+      "setsDisplayAcc": "Аккаунты, входящие в набор",
+      "setsDisplaySets": "Отдельные наборы"
     },
     "modalUpdate": {
       "title": "Настройка внешнего вида таблицы:",

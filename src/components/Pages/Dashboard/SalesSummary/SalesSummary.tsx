@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from '../Statistics.module.css';
 import { Sale } from '@/types/salesTypes';
+import { useSalesStore } from '@/store/salesStore';
 
 interface SalesSummaryProps {
   salesData: Sale[];
@@ -11,6 +12,7 @@ interface SalesSummaryProps {
 
 const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
   const t = useTranslations();
+  const { chartSales } = useSalesStore();
 
   const formatAmount = (amount: number) => `$${amount?.toFixed(2)}`;
 
@@ -18,6 +20,11 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
     const sale = salesData.find(sale => sale.period === period);
     return sale ? sale[field] : 0;
   };
+
+  const totalSelectedPeriodAmount = chartSales.reduce(
+    (sum, sale) => sum + sale.amount,
+    0
+  );
 
   return (
     <div className={styles.stat_wrap}>
@@ -157,6 +164,23 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
           </span>
           <span className={styles.stat_quantity}>
             {formatAmount(getByPeriod('AllTime', 'amount'))}
+          </span>
+        </li>
+        <li className={styles.stat_item}>
+          <h3 className={styles.stat_header}>
+            {t('Statistics.stat.headerSum')}
+          </h3>
+          <span className={styles.stat_period}>
+            <Icon
+              className={styles.logo}
+              name="icon-stat_calendar"
+              width={14}
+              height={14}
+            />
+            {t('Statistics.stat.periodSelected')}
+          </span>
+          <span className={styles.stat_quantity}>
+            {formatAmount(totalSelectedPeriodAmount)}
           </span>
         </li>
       </ul>

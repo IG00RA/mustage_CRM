@@ -4,6 +4,10 @@ export default function filterSalesData(
   dateRange: string,
   salesData: Sale[]
 ): Sale[] {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+
   switch (dateRange) {
     case 'today':
       return salesData.filter(
@@ -16,12 +20,9 @@ export default function filterSalesData(
       return salesData.filter(sale => {
         if (/^\d{4}-\d{2}-\d{2}$/.test(sale.period)) {
           const d = new Date(sale.period);
-          return (
-            d.getFullYear() === 2025 &&
-            d.getMonth() === 1 &&
-            d.getDate() >= 1 &&
-            d.getDate() <= 7
-          );
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - 6); // 7 days including today
+          return d >= weekStart && d <= today;
         }
         return false;
       });
@@ -29,36 +30,43 @@ export default function filterSalesData(
       return salesData.filter(sale => {
         if (/^\d{4}-\d{2}-\d{2}$/.test(sale.period)) {
           const d = new Date(sale.period);
-          return d.getFullYear() === 2025 && d.getMonth() === 0;
+          const monthStart = new Date(today);
+          monthStart.setMonth(today.getMonth() - 1); // 1 month back
+          return d >= monthStart && d <= today;
         }
         return false;
       });
     case 'quarter': {
       const quarterData = salesData.filter(sale => {
-        if (/^\d{4}-\d{2}$/.test(sale.period)) {
-          const [year, month] = sale.period.split('-').map(Number);
-          return year === 2025 && month >= 1 && month <= 3;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(sale.period)) {
+          const d = new Date(sale.period);
+          const quarterStart = new Date(today);
+          quarterStart.setMonth(today.getMonth() - 3); // 3 months back
+          return d >= quarterStart && d <= today;
         }
         return false;
       });
-      const aggregated = quarterData.reduce((acc, sale) => {
-        if (!acc[sale.period]) {
-          acc[sale.period] = { ...sale };
-        } else {
-          acc[sale.period].amount += sale.amount;
-          acc[sale.period].quantity += sale.quantity;
-        }
-        return acc;
-      }, {} as Record<string, Sale>);
-      return Object.values(aggregated);
+      return aggregateToWeekly(quarterData);
     }
     case 'year':
-      return salesData.filter(sale => /^\d{4}-\d{2}$/.test(sale.period));
+      return salesData.filter(sale => {
+        if (/^\d{4}-\d{2}$/.test(sale.period)) {
+          const [year, month] = sale.period.split('-').map(Number);
+          const yearStart = new Date(today);
+          yearStart.setFullYear(today.getFullYear() - 1); // 1 year back
+          const startYear = yearStart.getFullYear();
+          const startMonth = yearStart.getMonth() + 1;
+          return (
+            (year === startYear && month >= startMonth) ||
+            (year === currentYear && month <= currentMonth + 1)
+          );
+        }
+        return false;
+      });
     default:
       return salesData;
   }
 }
-
 
 export const getDateRangeParameters = (
   range: RangeType,
@@ -67,25 +75,31 @@ export const getDateRangeParameters = (
 ): DateRangeResult => {
   const today = new Date();
   const todayString = today.toISOString().split('T')[0];
-  const yesterday = new Date(today.setDate(today.getDate() - 1))
-    .toISOString()
-    .split('T')[0];
-  const last7DaysStart = new Date(today.setDate(today.getDate() - 6))
-    .toISOString()
-    .split('T')[0];
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-    .toISOString()
-    .split('T')[0];
-  const startOfQuarter = new Date(
-    today.getFullYear(),
-    Math.floor(today.getMonth() / 3) * 3,
-    1
-  )
-    .toISOString()
-    .split('T')[0];
-  const startOfYear = new Date(today.getFullYear(), 0, 1)
-    .toISOString()
-    .split('T')[0];
+
+  // Yesterday
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const yesterdayString = yesterday.toISOString().split('T')[0];
+
+  // Week (last 7 days)
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - 6); // 7 days including today
+  const weekStartString = weekStart.toISOString().split('T')[0];
+
+  // Month (last 1 month)
+  const monthStart = new Date(today);
+  monthStart.setMonth(today.getMonth() - 1);
+  const monthStartString = monthStart.toISOString().split('T')[0];
+
+  // Quarter (last 3 months)
+  const quarterStart = new Date(today);
+  quarterStart.setMonth(today.getMonth() - 3);
+  const quarterStartString = quarterStart.toISOString().split('T')[0];
+
+  // Year (last 12 months)
+  const yearStart = new Date(today);
+  yearStart.setFullYear(today.getFullYear() - 1);
+  const yearStartString = yearStart.toISOString().split('T')[0];
 
   const ranges: Record<RangeType, DateRangeResult> = {
     today: {
@@ -95,38 +109,50 @@ export const getDateRangeParameters = (
     },
     yesterday: {
       reportType: 'hourly',
-      current: { date: yesterday },
-      lastYear: { date: shiftYear(yesterday) },
+      current: { date: yesterdayString },
+      lastYear: { date: shiftYear(yesterdayString) },
     },
     week: {
       reportType: 'daily',
-      current: { start_date: last7DaysStart, end_date: todayString },
+      current: {
+        start_date: weekStartString,
+        end_date: todayString,
+      },
       lastYear: {
-        start_date: shiftYear(last7DaysStart),
+        start_date: shiftYear(weekStartString),
         end_date: shiftYear(todayString),
       },
     },
     month: {
       reportType: 'daily',
-      current: { start_date: startOfMonth, end_date: todayString },
+      current: {
+        start_date: monthStartString,
+        end_date: todayString,
+      },
       lastYear: {
-        start_date: shiftYear(startOfMonth),
+        start_date: shiftYear(monthStartString),
         end_date: shiftYear(todayString),
       },
     },
     quarter: {
       reportType: 'daily',
-      current: { start_date: startOfQuarter, end_date: todayString },
+      current: {
+        start_date: quarterStartString,
+        end_date: todayString,
+      },
       lastYear: {
-        start_date: shiftYear(startOfQuarter),
+        start_date: shiftYear(quarterStartString),
         end_date: shiftYear(todayString),
       },
     },
     year: {
       reportType: 'monthly',
-      current: { start_date: startOfYear, end_date: todayString },
+      current: {
+        start_date: yearStartString,
+        end_date: todayString,
+      },
       lastYear: {
-        start_date: shiftYear(startOfYear),
+        start_date: shiftYear(yearStartString),
         end_date: shiftYear(todayString),
       },
     },

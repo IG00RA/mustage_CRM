@@ -363,6 +363,18 @@ const SalesChart: React.FC<SalesChartProps> = ({
               width={350}
             />
           )}
+
+          <CustomSelect
+            label={t('AllAccounts.selects.setsDisplay')}
+            options={sellerOptions}
+            selected={[
+              t('AllAccounts.selects.setsDisplayAcc'),
+              t('AllAccounts.selects.setsDisplaySets'),
+            ]}
+            onSelect={() => {}}
+            multiSelections={false}
+            width={350}
+          />
         </div>
 
         <ChartDisplay
