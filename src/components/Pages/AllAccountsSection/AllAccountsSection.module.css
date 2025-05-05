@@ -179,6 +179,14 @@
   }
 }
 
+.modal_btns_wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-direction: column;
+}
+
 .modal_btn_wrap {
   display: flex;
   justify-content: center;

@@ -553,6 +553,78 @@ export default function AllAccountsSection() {
     saveAs(blob, 'all_accounts_report.xlsx');
   };
 
+  const exportSalesReport = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Sales Report');
+    const columns = [
+      'Account ID',
+      'Upload DateTime',
+      'Sold DateTime',
+      'Worker Name',
+      'Teamlead Name',
+      'Client Name',
+      'Account Name',
+      'Price',
+      'Status',
+      'Seller Name',
+      'Replace Reason',
+      'Category Name',
+      'Subcategory Name',
+    ];
+    sheet.addRow(columns);
+
+    const fetchParams: FetchAllAccountsParams = {
+      status: ['SOLD', 'REPLACED'],
+      limit: totalAllRows,
+    };
+
+    if (
+      sellDateRange === 'custom' &&
+      sellCustomStartDate &&
+      sellCustomEndDate
+    ) {
+      fetchParams.sold_start_date = sellCustomStartDate;
+      fetchParams.sold_end_date = sellCustomEndDate;
+    } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
+      const { start, end } = getDateRange(sellDateRange);
+      fetchParams.sold_start_date = formatDate(start);
+      fetchParams.sold_end_date = formatDate(end);
+    }
+
+    const { items } = await fetchAccounts(fetchParams, false);
+    items.forEach(account => {
+      sheet.addRow([
+        account.account_id,
+        account.upload_datetime || 'N/A',
+        account.sold_datetime || 'N/A',
+        account.worker_name || 'N/A',
+        account.teamlead_name || 'N/A',
+        account.client_name || 'N/A',
+        account.account_name || 'N/A',
+        account.price !== null ? account.price : 'N/A',
+        account.status || 'N/A',
+        account.seller?.seller_name || 'N/A',
+        account.replace_reason || 'N/A',
+        account.subcategory?.category?.account_category_name || 'N/A',
+        account.subcategory?.account_subcategory_name || 'N/A',
+      ]);
+    });
+
+    const period =
+      sellDateRange === 'custom' && sellCustomStartDate && sellCustomEndDate
+        ? `${sellCustomStartDate}_to_${sellCustomEndDate}`
+        : sellDateRange !== 'all'
+        ? sellDateRange
+        : 'all_time';
+    const fileName = `sales_accounts_report_${period}.xlsx`;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, fileName);
+  };
+
   const categoryOptions = useMemo(
     () => [
       t('AllAccounts.selects.allCategories'),
@@ -840,6 +912,7 @@ export default function AllAccountsSection() {
         onSaveSettings={handleSaveSettings}
         onExportFilteredToExcel={exportFilteredToExcel}
         onExportAllToExcel={exportAllToExcel}
+        onExportSalesReport={exportSalesReport}
         t={t}
       />
     </section>

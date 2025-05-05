@@ -20,6 +20,7 @@ interface ModalsSectionProps {
   onSaveSettings: (newSelectedColumns: string[]) => void;
   onExportFilteredToExcel: () => Promise<void>;
   onExportAllToExcel: () => Promise<void>;
+  onExportSalesReport: () => Promise<void>;
   t?: (key: string) => string;
 }
 
@@ -45,9 +46,11 @@ export const ModalsSection = ({
   onSaveSettings,
   onExportFilteredToExcel,
   onExportAllToExcel,
+  onExportSalesReport,
 }: ModalsSectionProps) => {
   const [isExportFilteredLoading, setIsExportFilteredLoading] = useState(false);
   const [isExportAllLoading, setIsExportAllLoading] = useState(false);
+  const [isExportSalesLoading, setIsExportSalesLoading] = useState(false);
 
   const handleExportFiltered = async () => {
     setIsExportFilteredLoading(true);
@@ -64,6 +67,15 @@ export const ModalsSection = ({
       await onExportAllToExcel();
     } finally {
       setIsExportAllLoading(false);
+    }
+  };
+
+  const handleExportSales = async () => {
+    setIsExportSalesLoading(true);
+    try {
+      await onExportSalesReport();
+    } finally {
+      setIsExportSalesLoading(false);
     }
   };
 
@@ -99,25 +111,38 @@ export const ModalsSection = ({
         isOpen={isOpenDownload}
         onClose={onToggleDownload}
       >
-        <div className={styles.modal_btn_wrap}>
+        <div className={styles.modal_btns_wrap}>
+          <div className={styles.modal_btn_wrap}>
+            <WhiteBtn
+              onClick={handleExportFiltered}
+              disabled={isExportFilteredLoading}
+              text={
+                isExportFilteredLoading
+                  ? 'AllAccounts.downloadBtLoad'
+                  : 'AllAccounts.downloadBtn'
+              }
+              icon="icon-cloud-download"
+              iconFill="icon-cloud-download-fill"
+            />
+            <WhiteBtn
+              disabled={isExportAllLoading}
+              onClick={handleExportAll}
+              text={
+                isExportAllLoading
+                  ? 'AllAccounts.downloadBtLoad'
+                  : 'AllAccounts.downloadBtnAll'
+              }
+              icon="icon-cloud-download"
+              iconFill="icon-cloud-download-fill"
+            />
+          </div>
           <WhiteBtn
-            onClick={handleExportFiltered}
-            disabled={isExportFilteredLoading}
+            disabled={isExportSalesLoading}
+            onClick={handleExportSales}
             text={
-              isExportFilteredLoading
+              isExportSalesLoading
                 ? 'AllAccounts.downloadBtLoad'
-                : 'AllAccounts.downloadBtn'
-            }
-            icon="icon-cloud-download"
-            iconFill="icon-cloud-download-fill"
-          />
-          <WhiteBtn
-            disabled={isExportAllLoading}
-            onClick={handleExportAll}
-            text={
-              isExportAllLoading
-                ? 'AllAccounts.downloadBtLoad'
-                : 'AllAccounts.downloadBtnAll'
+                : 'AllAccounts.salesReportBtn'
             }
             icon="icon-cloud-download"
             iconFill="icon-cloud-download-fill"
