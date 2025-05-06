@@ -179,6 +179,16 @@
   }
 }
 
+.no_acc {
+      color: var(--text_dark);
+    font-size: var(--fs_large);
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
 .modal_btns_wrap {
   display: flex;
   justify-content: center;

@@ -46,8 +46,10 @@ const SalesChart: React.FC<SalesChartProps> = ({
     dateRange,
     yearlyChange,
     customPeriodLabel,
+    setsDisplay,
     setDateRange,
     setCustomPeriodLabel,
+    setSetsDisplay,
   } = useSalesStore();
 
   const {
@@ -140,6 +142,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
     hasReadCategories,
     hasReadSubcategories,
     currentUser,
+    setsDisplay,
   ]);
 
   const toggleDownload = useCallback(
@@ -227,6 +230,15 @@ const SalesChart: React.FC<SalesChartProps> = ({
     }
   };
 
+  const handleSetsDisplaySelect = (values: string[]) => {
+    const selectedValue = values[0]; // Single selection
+    if (selectedValue === t('AllAccounts.selects.setsDisplayAcc')) {
+      setSetsDisplay('setsDisplayAcc');
+    } else if (selectedValue === t('AllAccounts.selects.setsDisplaySets')) {
+      setSetsDisplay('setsDisplaySets');
+    }
+  };
+
   const error = salesError || categoriesError || sellersError;
 
   const handleSellerSelect = useCallback(
@@ -246,7 +258,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
         setSelectedSellerIds(newSelectedIds);
       }
     },
-    [sellers, t]
+    [sellers, t, setSelectedSellerIds]
   );
 
   const sellerOptions = useMemo(
@@ -363,15 +375,18 @@ const SalesChart: React.FC<SalesChartProps> = ({
               width={350}
             />
           )}
-
           <CustomSelect
             label={t('AllAccounts.selects.setsDisplay')}
-            options={sellerOptions}
-            selected={[
+            options={[
               t('AllAccounts.selects.setsDisplayAcc'),
               t('AllAccounts.selects.setsDisplaySets'),
             ]}
-            onSelect={() => {}}
+            selected={[
+              setsDisplay === 'setsDisplayAcc'
+                ? t('AllAccounts.selects.setsDisplayAcc')
+                : t('AllAccounts.selects.setsDisplaySets'),
+            ]}
+            onSelect={handleSetsDisplaySelect}
             multiSelections={false}
             width={350}
           />

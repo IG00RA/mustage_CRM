@@ -59,6 +59,9 @@ export const useAccountsStore = create<AccountsState>(set => ({
     if (params.like_query) requestBody.like_query = params.like_query;
     if (params.sort_by_upload)
       requestBody.sort_by_upload = params.sort_by_upload;
+    if (typeof params.in_set === 'boolean') {
+      requestBody.in_set = params.in_set;
+    }
 
     const url = ENDPOINTS.ACCOUNTS;
     const data = await fetchWithErrorHandling<{

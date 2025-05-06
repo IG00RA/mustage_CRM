@@ -87,6 +87,7 @@ export default function AllAccountsSection() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTransfers, setSelectedTransfers] = useState<string[]>([]);
   const [selectedSellerIds, setSelectedSellerIds] = useState<string[]>([]);
+  const [selectedInSet, setSelectedInSet] = useState<string[]>([]);
   const [totalRows, setTotalRows] = useState<number>(0);
   const [totalAllRows, setTotalAllRows] = useState<number>(0);
   const [pagination, setPagination] = useState<PaginationState>(() => {
@@ -149,6 +150,15 @@ export default function AllAccountsSection() {
         like_query: globalFilter.length >= 2 ? globalFilter : undefined,
       };
 
+      if (selectedInSet.length === 1) {
+        fetchParams.in_set =
+          selectedInSet[0] === t('AllAccounts.selects.inSetYes')
+            ? true
+            : selectedInSet[0] === t('AllAccounts.selects.inSetNo')
+            ? false
+            : undefined;
+      }
+
       if (
         sellDateRange === 'custom' &&
         sellCustomStartDate &&
@@ -188,6 +198,7 @@ export default function AllAccountsSection() {
       selectedSubcategoryIds,
       selectedStatuses,
       selectedTransfers,
+      selectedInSet,
       selectedSellerIds,
       sellDateRange,
       sellCustomStartDate,
@@ -263,6 +274,7 @@ export default function AllAccountsSection() {
     selectedSubcategoryIds,
     selectedStatuses,
     selectedTransfers,
+    selectedInSet,
     selectedSellerIds,
     sellDateRange,
     sellCustomStartDate,
@@ -492,35 +504,13 @@ export default function AllAccountsSection() {
       like_query: globalFilter.length >= 2 ? globalFilter : undefined,
     };
 
-    if (
-      sellDateRange === 'custom' &&
-      sellCustomStartDate &&
-      sellCustomEndDate
-    ) {
-      fetchParams.sold_start_date = sellCustomStartDate;
-      fetchParams.sold_end_date = sellCustomEndDate;
-    } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
-      const { start, end } = getDateRange(sellDateRange);
-      fetchParams.sold_start_date = formatDate(start);
-      fetchParams.sold_end_date = formatDate(end);
-    }
-
-    if (
-      loadDateRange === 'custom' &&
-      loadCustomStartDate &&
-      loadCustomEndDate
-    ) {
-      fetchParams.upload_start_date = loadCustomStartDate;
-      fetchParams.upload_end_date = loadCustomEndDate;
-    } else if (loadDateRange !== 'custom' && loadDateRange !== 'all') {
-      const { start, end } = getDateRange(loadDateRange);
-      fetchParams.upload_start_date = formatDate(start);
-      fetchParams.upload_end_date = formatDate(end);
-    }
-
-    if (selectedTransfers.length === 1) {
-      fetchParams.with_destination =
-        selectedTransfers[0] === t('AllAccounts.selects.transferYes');
+    if (selectedInSet.length === 1) {
+      fetchParams.in_set =
+        selectedInSet[0] === t('AllAccounts.selects.inSetYes')
+          ? true
+          : selectedInSet[0] === t('AllAccounts.selects.inSetNo')
+          ? false
+          : undefined;
     }
 
     const { items } = await fetchAccounts(fetchParams, false);
@@ -661,6 +651,14 @@ export default function AllAccountsSection() {
     ],
     [t]
   );
+  const inSetOptions = useMemo(
+    () => [
+      t('AllAccounts.selects.allInSet'),
+      t('AllAccounts.selects.inSetYes'),
+      t('AllAccounts.selects.inSetNo'),
+    ],
+    [t]
+  );
   const sellerOptions = useMemo(
     () => [
       t('AllAccounts.selects.sellerAll'),
@@ -708,8 +706,20 @@ export default function AllAccountsSection() {
       const matchesSeller =
         selectedSellerIds.length === 0 ||
         selectedSellerIds.includes(String(row.original.seller?.seller_id));
+      const matchesInSet =
+        selectedInSet.length === 0 ||
+        (selectedInSet.includes(t('AllAccounts.selects.inSetYes')) &&
+          row.original.in_set) ||
+        (selectedInSet.includes(t('AllAccounts.selects.inSetNo')) &&
+          !row.original.in_set);
 
-      return matchesSearch && matchesStatus && matchesTransfer && matchesSeller;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesTransfer &&
+        matchesSeller &&
+        matchesInSet
+      );
     },
   });
 
@@ -803,6 +813,16 @@ export default function AllAccountsSection() {
     [t]
   );
 
+  const handleInSetSelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allInSet')
+      );
+      setSelectedInSet(filteredValues);
+    },
+    [t]
+  );
+
   const handleSellerSelect = useCallback(
     (values: string[]) => {
       const filteredValues = values.filter(
@@ -857,11 +877,13 @@ export default function AllAccountsSection() {
           subcategoryOptions={subcategoryOptions}
           statusOptions={statusOptions}
           transferOptions={transferOptions}
+          inSetOptions={inSetOptions}
           sellerOptions={sellerOptions}
           selectedCategoryIds={selectedCategoryIds}
           selectedSubcategoryIds={selectedSubcategoryIds}
           selectedStatuses={selectedStatuses}
           selectedTransfers={selectedTransfers}
+          selectedInSet={selectedInSet}
           selectedSellerIds={selectedSellerIds}
           sellDateRange={sellDateRange}
           loadDateRange={loadDateRange}
@@ -873,6 +895,7 @@ export default function AllAccountsSection() {
           onSubcategorySelect={handleSubcategorySelect}
           onStatusSelect={handleStatusSelect}
           onTransferSelect={handleTransferSelect}
+          onInSetSelect={handleInSetSelect}
           onSellerSelect={handleSellerSelect}
           onSellDateRangeChange={handleSellDateRangeChange}
           onSellCustomDatesChange={handleSellCustomDatesChange}
@@ -888,18 +911,22 @@ export default function AllAccountsSection() {
           hasReadSubcategories={hasReadSubcategories}
         />
       </div>
-      <TableSection
-        table={table}
-        totalRows={totalRows}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        showLoader={showLoader}
-        error={error}
-        onToggleDownload={toggleDownload}
-        onToggleEditModal={toggleEditModal}
-        loadAccounts={loadAccounts}
-        t={t}
-      />
+      {accounts.length === 0 && !showLoader ? (
+        <p className={styles.no_acc}>{t('AllAccounts.noAcc')}</p>
+      ) : (
+        <TableSection
+          table={table}
+          totalRows={totalRows}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          showLoader={showLoader}
+          error={error}
+          onToggleDownload={toggleDownload}
+          onToggleEditModal={toggleEditModal}
+          loadAccounts={loadAccounts}
+          t={t}
+        />
+      )}
       <ModalsSection
         isOpenEdit={isOpenEdit}
         isOpenDownload={isOpenDownload}

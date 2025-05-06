@@ -22,7 +22,12 @@ import {
   shiftYear,
 } from '@/helpers/filterData';
 
-export const useSalesStore = create<SalesState>(set => ({
+interface ExtendedSalesState extends SalesState {
+  setsDisplay: 'setsDisplayAcc' | 'setsDisplaySets';
+  setSetsDisplay: (value: 'setsDisplayAcc' | 'setsDisplaySets') => void;
+}
+
+export const useSalesStore = create<ExtendedSalesState>(set => ({
   sales: [],
   chartSales: [],
   loading: false,
@@ -31,9 +36,12 @@ export const useSalesStore = create<SalesState>(set => ({
   minDate: '2023-03-01',
   yearlyChange: null,
   customPeriodLabel: '',
+  setsDisplay: 'setsDisplayAcc',
   setDateRange: (range: RangeType) => set({ dateRange: range }),
   setYearlyChange: (change: number) => set({ yearlyChange: change }),
   setCustomPeriodLabel: (period: string) => set({ customPeriodLabel: period }),
+  setSetsDisplay: (value: 'setsDisplayAcc' | 'setsDisplaySets') =>
+    set({ setsDisplay: value }),
 
   fetchSalesSummary: async (sellerIds?: string[]) => {
     const usersStore = useUsersStore.getState();
@@ -116,30 +124,62 @@ export const useSalesStore = create<SalesState>(set => ({
         () => {}
       );
 
+      const { setsDisplay } = useSalesStore.getState();
+
       let allTimeQuantity = 0;
       let allTimeAmount = 0;
       Object.entries(allTimeData).forEach(([, months]) => {
         Object.entries(months).forEach(([, report]) => {
-          allTimeQuantity += report.solo_accounts.sales_count || 0;
-          allTimeAmount += report.solo_accounts.total_profit || 0;
+          const quantity =
+            setsDisplay === 'setsDisplayAcc'
+              ? (report.solo_accounts.sales_count || 0) +
+                (report.sets.accounts_sales_count || 0)
+              : (report.solo_accounts.sales_count || 0) +
+                (report.sets.sets_sales_count || 0);
+          const amount =
+            (report.solo_accounts.total_profit || 0) +
+            (report.sets.total_profit || 0);
+          allTimeQuantity += quantity;
+          allTimeAmount += amount;
         });
       });
 
       const sales: Sale[] = [
         {
           period: 'Today',
-          amount: summaryData.today.solo_accounts.total_profit,
-          quantity: summaryData.today.solo_accounts.sales_count,
+          amount:
+            summaryData.today.solo_accounts.total_profit +
+            summaryData.today.sets.total_profit,
+          quantity:
+            setsDisplay === 'setsDisplayAcc'
+              ? summaryData.today.solo_accounts.sales_count +
+                summaryData.today.sets.accounts_sales_count
+              : summaryData.today.solo_accounts.sales_count +
+                summaryData.today.sets.sets_sales_count,
         },
         {
           period: 'Week',
-          amount: summaryData.week.solo_accounts.total_profit,
-          quantity: summaryData.week.solo_accounts.sales_count,
+          amount:
+            summaryData.week.solo_accounts.total_profit +
+            summaryData.week.sets.total_profit,
+          quantity:
+            setsDisplay === 'setsDisplayAcc'
+              ? summaryData.week.solo_accounts.sales_count +
+                summaryData.week.sets.accounts_sales_count
+              : summaryData.week.solo_accounts.sales_count +
+                summaryData.week.sets.sets_sales_count,
         },
         {
           period: 'Month',
-          amount: summaryData.month.solo_accounts.total_profit,
-          quantity: summaryData.month.solo_accounts.sales_count,
+          amount:
+            summaryData.month.solo_accounts.total_profit +
+            summaryData.month.sets.total_profit,
+          quantity:
+            setsDisplay === 'setsDisplayAcc'
+              ? summaryData.month.solo_accounts.sales_count +
+                summaryData.month.sets.accounts_sales_count
+              : summaryData.month.solo_accounts.sales_count +
+                summaryData.month.sets.sets_sales_count,
         },
         {
           period: 'AllTime',
@@ -259,6 +299,8 @@ export const useSalesStore = create<SalesState>(set => ({
     }
 
     try {
+      const { setsDisplay } = useSalesStore.getState();
+
       if (reportType === 'all') {
         const data = await fetchWithErrorHandling<AllTimeReportResponse>(
           endpoint,
@@ -276,10 +318,19 @@ export const useSalesStore = create<SalesState>(set => ({
         const sales: Sale[] = [];
         Object.entries(data).forEach(([year, months]) => {
           Object.entries(months).forEach(([month, report]) => {
+            const quantity =
+              setsDisplay === 'setsDisplayAcc'
+                ? (report.solo_accounts.sales_count || 0) +
+                  (report.sets.accounts_sales_count || 0)
+                : (report.solo_accounts.sales_count || 0) +
+                  (report.sets.sets_sales_count || 0);
+            const amount =
+              (report.solo_accounts.total_profit || 0) +
+              (report.sets.total_profit || 0);
             sales.push({
               period: `${year}-${month}`,
-              amount: report.solo_accounts.total_profit || 0,
-              quantity: report.solo_accounts.sales_count || 0,
+              amount,
+              quantity,
             });
           });
         });
@@ -299,11 +350,22 @@ export const useSalesStore = create<SalesState>(set => ({
         () => {}
       );
 
-      return Object.entries(data).map(([period, report]) => ({
-        period,
-        amount: report.solo_accounts.total_profit || 0,
-        quantity: report.solo_accounts.sales_count || 0,
-      }));
+      return Object.entries(data).map(([period, report]) => {
+        const quantity =
+          setsDisplay === 'setsDisplayAcc'
+            ? (report.solo_accounts.sales_count || 0) +
+              (report.sets.accounts_sales_count || 0)
+            : (report.solo_accounts.sales_count || 0) +
+              (report.sets.sets_sales_count || 0);
+        const amount =
+          (report.solo_accounts.total_profit || 0) +
+          (report.sets.total_profit || 0);
+        return {
+          period,
+          amount,
+          quantity,
+        };
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -455,6 +517,8 @@ export const useSalesStore = create<SalesState>(set => ({
           chartSales =
             range === 'quarter'
               ? aggregateToWeekly(currentSales)
+              : range === 'year'
+              ? aggregateToMonthly(currentSales)
               : currentSales;
         }
 

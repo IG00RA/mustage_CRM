@@ -22,6 +22,7 @@ export interface Account {
   teamlead_name?: string | null;
   client_name?: string | null;
   account_name: string;
+  in_set?: boolean;
   price?: number | null;
   status: 'SOLD' | 'NOT SOLD' | 'REPLACED' | 'EXCLUDED';
   frozen_at?: string | null;
@@ -56,6 +57,7 @@ export interface FetchAllAccountsParams extends BaseRequest {
   like_query?: string;
   sort_by_upload?: 'ASC' | 'DESC';
   with_destination?: boolean;
+  in_set?: boolean;
   sold_start_date?: string;
   sold_end_date?: string;
   upload_start_date?: string;
@@ -74,6 +76,7 @@ export interface FetchAccountsParams extends BaseRequest {
   sold_end_date?: string;
   upload_start_date?: string;
   upload_end_date?: string;
+  in_set?: boolean;
 }
 
 export interface SearchResponse {

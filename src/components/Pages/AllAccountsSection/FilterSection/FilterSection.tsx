@@ -10,11 +10,13 @@ interface FilterSectionProps {
   subcategoryOptions: string[];
   statusOptions: string[];
   transferOptions: string[];
+  inSetOptions: string[];
   sellerOptions: string[];
   selectedCategoryIds: string[];
   selectedSubcategoryIds: string[];
   selectedStatuses: string[];
   selectedTransfers: string[];
+  selectedInSet: string[];
   selectedSellerIds: string[];
   sellDateRange: RangeType;
   loadDateRange: RangeType;
@@ -26,6 +28,7 @@ interface FilterSectionProps {
   onSubcategorySelect: (values: string[]) => void;
   onStatusSelect: (values: string[]) => void;
   onTransferSelect: (values: string[]) => void;
+  onInSetSelect: (values: string[]) => void;
   onSellerSelect: (values: string[]) => void;
   onSellDateRangeChange: (newRange: RangeType) => void;
   onSellCustomDatesChange: (start: string, end: string) => void;
@@ -46,11 +49,13 @@ export const FilterSection = ({
   subcategoryOptions,
   statusOptions,
   transferOptions,
+  inSetOptions,
   sellerOptions,
   selectedCategoryIds,
   selectedSubcategoryIds,
   selectedStatuses,
   selectedTransfers,
+  selectedInSet,
   selectedSellerIds,
   sellDateRange,
   loadDateRange,
@@ -62,6 +67,7 @@ export const FilterSection = ({
   onSubcategorySelect,
   onStatusSelect,
   onTransferSelect,
+  onInSetSelect,
   onSellerSelect,
   onSellDateRangeChange,
   onSellCustomDatesChange,
@@ -101,6 +107,19 @@ export const FilterSection = ({
       }
       multiSelections={false}
       onSelect={onTransferSelect}
+      width={508}
+      selectWidth={383}
+    />
+    <CustomSelect
+      label={t('AllAccounts.selects.inSet')}
+      options={inSetOptions}
+      selected={
+        selectedInSet.length > 0
+          ? selectedInSet
+          : [t('AllAccounts.selects.allInSet')]
+      }
+      multiSelections={false}
+      onSelect={onInSetSelect}
       width={508}
       selectWidth={383}
     />
