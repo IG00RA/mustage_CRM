@@ -212,7 +212,6 @@ export default function SetsUploadSection() {
       date.getMonth() + 1
     }_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
 
-    // Group accounts by subcategory
     const accountsBySubcategory = accounts.reduce((acc, curr) => {
       const subcatName = curr.account.subcategory.account_subcategory_name;
       if (!acc[subcatName]) {
@@ -431,8 +430,8 @@ export default function SetsUploadSection() {
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.accParMenu.load')}</h2>
-        <p className={styles.header_text}>{t('Load.headerText')}</p>
+        <h2 className={styles.header}>{t('Sets.upload.header')}</h2>
+        <p className={styles.header_text}>{t('Sets.upload.headerText')}</p>
         <div className={styles.selects_wrap}>
           <CustomSelect
             label={t('Sets.createItem.categorySet')}

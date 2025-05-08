@@ -26,3 +26,18 @@ export type UpdateCategoryFormData = {
   account_category_name: string;
   description: string;
 };
+
+export interface MenuStateProps {
+  isMenuOpen: boolean;
+  closeMenu: () => void;
+  openMenu: () => void;
+}
+
+export type MobMenuProps = {
+  isMenuOpen: boolean;
+  closeMenu: () => void;
+};
+
+export type SidebarProps = {
+  closeMenu: () => void;
+};

@@ -1,9 +1,8 @@
 import '../../../styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-import Sidebar from '@/components/Sidebar/Sidebar';
-
 import styles from './Dashboard.module.css';
+import ResponsiveNav from '@/components/ResponsiveNav/ResponsiveNav';
 
 export const generateMetadata = async () => {
   return {
@@ -19,10 +18,8 @@ export default function DashboardLayout({
 }) {
   return (
     <div className={styles.main_wrap}>
-      <Sidebar />
-      <main className={styles.main}>
-        {children}
-      </main>
+      <ResponsiveNav />
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }

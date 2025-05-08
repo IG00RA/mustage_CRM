@@ -1,5 +1,12 @@
+.main_wrap {
+  position: relative;
+}
+
 .main {
   width: 100%;
+  padding-top: 64px;
+  max-width: var(--container);
+  margin: 0 auto;
 }
 
 @media (min-width: 1024px) {

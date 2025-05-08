@@ -9,7 +9,7 @@ import avatar from '@/img/sidebar/avatar.png';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import logo from '@/img/logo.svg';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUsersStore } from '@/store/usersStore';
 import {
   accParMenu,
@@ -18,13 +18,14 @@ import {
   otherParMenu,
 } from '@/data/sidebar';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import { SidebarProps } from '@/types/componentsTypes';
 
 type OpenMenusState = {
   distribution: boolean;
   referrals: boolean;
   users: boolean;
   autoFarm: boolean;
-  sets: boolean; // Added for sets menu
+  sets: boolean;
 };
 
 type MenuFunctionMap = {
@@ -46,8 +47,8 @@ type MenuFunctionMap = {
   roles: string;
   referrals_all: string;
   referrals_stat: string;
-  sets_create: string; // Added for sets_create
-  sets_create_item: string; // Added for sets_create_item
+  sets_create: string;
+  sets_create_item: string;
 };
 
 const menuFunctionMap: MenuFunctionMap = {
@@ -74,10 +75,11 @@ const menuFunctionMap: MenuFunctionMap = {
   sets_upload: 'Выгрузка наборов',
 };
 
-export default function Sidebar() {
+export default function Sidebar({ closeMenu }: SidebarProps) {
   const t = useTranslations();
   const pathname = usePathname();
 
+  const [isBarOpen, setIsBarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState<OpenMenusState>({
     distribution: false,
     referrals: false,
@@ -89,6 +91,30 @@ export default function Sidebar() {
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
     useUsersStore();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const barRef = useRef<HTMLDivElement>(null);
+
+  const barToggler = () => {
+    setIsBarOpen(!isBarOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (barRef.current && !barRef.current.contains(event.target as Node)) {
+        setIsBarOpen(false);
+      }
+    };
+
+    if (isBarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isBarOpen]);
 
   useEffect(() => {
     if (isInitialLoad && !currentUser && !loading) {
@@ -109,7 +135,7 @@ export default function Sidebar() {
       'sets_create',
       'sets_create_item',
       'sets_view',
-      "setsUpload",
+      'setsUpload',
     ];
 
     const isAnyDistributionActive = distributionLinks.some(link =>
@@ -180,18 +206,29 @@ export default function Sidebar() {
 
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
-      <aside className={styles.sidebar}>
-        <Link href="/" className={styles.logo_wrap}>
-          <Image
-            src={logo}
-            alt="Mustage CRM logo"
-            className={styles.logo_img}
-            width={0}
-            height={0}
-            sizes="100vw"
+      <aside className={styles.sidebar_skeleton}>
+        <div className={styles.logo_link_wrap}>
+          <Link onClick={closeMenu} href="/" className={styles.logo_wrap}>
+            <Image
+              src={logo}
+              alt="Mustage CRM logo"
+              className={styles.logo_img}
+              width={0}
+              height={0}
+              sizes="100vw"
+            />
+            <strong className={styles.logo_text}>
+              {t('Sidebar.logoText')}
+            </strong>
+          </Link>
+          <Icon
+            className={`${styles.arrow_down} ${isBarOpen ? styles.active : ''}`}
+            name="icon-angle-down"
+            width={16}
+            height={16}
+            color="#A9A9C1"
           />
-          <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
-        </Link>
+        </div>
         <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
           <div className={styles.user_wrap}>
             <div className={styles.user_image_wrap}>
@@ -245,18 +282,59 @@ export default function Sidebar() {
     );
   }
   return (
-    <aside className={styles.sidebar}>
-      <Link href="/" className={styles.logo_wrap}>
-        <Image
-          src={logo}
-          alt="Mustage CRM logo"
-          className={styles.logo_img}
-          width={0}
-          height={0}
-          sizes="100vw"
-        />
-        <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
-      </Link>
+    <aside className={`${styles.sidebar} ${isBarOpen ? styles.active : ''}`}>
+      <div className={styles.logo_link_wrap}>
+        <Link onClick={closeMenu} href="/" className={styles.logo_wrap}>
+          <Image
+            src={logo}
+            alt="Mustage CRM logo"
+            className={styles.logo_img}
+            width={0}
+            height={0}
+            sizes="100vw"
+          />
+          <strong className={styles.logo_text}>{t('Sidebar.logoText')}</strong>
+        </Link>
+        <div
+          ref={barRef}
+          onClick={barToggler}
+          className={`${styles.arrow_down_wrap} ${
+            isBarOpen ? styles.active : ''
+          }`}
+        >
+          <Icon
+            className={`${styles.top_arrow_down} ${
+              isBarOpen ? styles.active : ''
+            }`}
+            name="icon-angle-down"
+            width={16}
+            height={16}
+            color="#A9A9C1"
+          />
+          <div
+            className={`${styles.links_wrap} ${isBarOpen ? styles.active : ''}`}
+          >
+            <Link href="/" className={styles.link}>
+              MUSTAGE FINANCE
+            </Link>
+            <Link
+              href="/"
+              className={`${styles.link} ${isBarOpen ? styles.active : ''}`}
+            >
+              <span>MUSTAGE CRM</span>
+              <Icon
+                className={styles.list_icon}
+                name="icon-list-check"
+                width={12}
+                height={12}
+              />
+            </Link>
+            <Link href="/" className={styles.link}>
+              MUSTAGE TASK MANAGER
+            </Link>
+          </div>
+        </div>
+      </div>
       <div className={styles.user_wrap}>
         <div className={styles.user_image_wrap}>
           <Image
@@ -277,7 +355,11 @@ export default function Sidebar() {
           </div>
         </div>
         <form action={handleLogout}>
-          <button className={styles.log_out_btn} type="submit">
+          <button
+            className={styles.log_out_btn}
+            onClick={closeMenu}
+            type="submit"
+          >
             <Icon
               className={styles.log_out_icon}
               name={'icon-log-out'}
@@ -302,6 +384,7 @@ export default function Sidebar() {
                   key={index}
                 >
                   <Link
+                    onClick={closeMenu}
                     className={styles.nav_item_link}
                     href={`/ru/${item.link}`}
                   >
@@ -344,6 +427,7 @@ export default function Sidebar() {
                   key={index}
                 >
                   <Link
+                    onClick={closeMenu}
                     className={styles.nav_item_link}
                     href={`/ru/${item.link}`}
                   >
@@ -420,6 +504,7 @@ export default function Sidebar() {
                         }
                       >
                         <Link
+                        onClick={closeMenu} 
                           className={`${styles.option_item} ${
                             isActiveSub('distribution_settings')
                               ? styles.active_sub_link
@@ -447,6 +532,7 @@ export default function Sidebar() {
                         }
                       >
                         <Link
+                        onClick={closeMenu} 
                           className={`${styles.option_item} ${
                             isActiveSub('distribution_create')
                               ? styles.active_sub_link
@@ -474,6 +560,7 @@ export default function Sidebar() {
                         }
                       >
                         <Link
+                        onClick={closeMenu} 
                           className={`${styles.option_item} ${
                             isActiveSub('distribution_all')
                               ? styles.active_sub_link
@@ -501,6 +588,7 @@ export default function Sidebar() {
                   key={index}
                 >
                   <Link
+                    onClick={closeMenu}
                     className={styles.nav_item_link}
                     href={`/ru/${item.link}`}
                   >
@@ -573,6 +661,7 @@ export default function Sidebar() {
                       }
                     >
                       <Link
+                        onClick={closeMenu}
                         className={`${styles.option_item} ${
                           isActiveSub('auto_farm') ? styles.active_sub_link : ''
                         }`}
@@ -593,6 +682,7 @@ export default function Sidebar() {
                       }
                     >
                       <Link
+                        onClick={closeMenu}
                         className={`${styles.option_item} ${
                           isActiveSub('auto_farm_servers')
                             ? styles.active_sub_link
@@ -669,6 +759,7 @@ export default function Sidebar() {
                   }
                 >
                   <Link
+                    onClick={closeMenu}
                     className={`${styles.option_item} ${
                       isActiveSub('sets_view') ? styles.active_sub_link : ''
                     }`}
@@ -691,6 +782,7 @@ export default function Sidebar() {
                   }
                 >
                   <Link
+                    onClick={closeMenu}
                     className={`${styles.option_item} ${
                       isActiveSub('sets_create') ? styles.active_sub_link : ''
                     }`}
@@ -713,6 +805,7 @@ export default function Sidebar() {
                   }
                 >
                   <Link
+                    onClick={closeMenu}
                     className={`${styles.option_item} ${
                       isActiveSub('sets_create_item')
                         ? styles.active_sub_link
@@ -737,6 +830,7 @@ export default function Sidebar() {
                   }
                 >
                   <Link
+                    onClick={closeMenu}
                     className={`${styles.option_item} ${
                       isActiveSub('sets_upload') ? styles.active_sub_link : ''
                     }`}
@@ -775,6 +869,7 @@ export default function Sidebar() {
                     key={index}
                   >
                     <Link
+                      onClick={closeMenu}
                       className={styles.nav_item_link}
                       href={`/ru/${item.link}`}
                     >
@@ -849,6 +944,7 @@ export default function Sidebar() {
                         }
                       >
                         <Link
+                          onClick={closeMenu}
                           className={`${styles.option_item} ${
                             isActiveSub('users') ? styles.active_sub_link : ''
                           }`}
@@ -871,6 +967,7 @@ export default function Sidebar() {
                         }
                       >
                         <Link
+                          onClick={closeMenu}
                           className={`${styles.option_item} ${
                             isActiveSub('roles') ? styles.active_sub_link : ''
                           }`}
