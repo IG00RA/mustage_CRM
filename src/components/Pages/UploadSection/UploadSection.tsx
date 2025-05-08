@@ -8,7 +8,6 @@ import { getAuthHeaders } from '@/utils/apiUtils';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import UploadAccounts from '@/components/ModalComponent/UploadAccounts/UploadAccounts';
-import FormingSet from '@/components/ModalComponent/FormingSet/FormingSet';
 
 export interface UploadResponse {
   status: 'success' | 'failed';
@@ -21,12 +20,7 @@ export default function UploadSection() {
 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
   const [isOpenError, setIsOpenError] = useState(false);
-  const [isOpenForming, setIsOpenForming] = useState(false);
   const [responseData, setResponseData] = useState<UploadResponse | null>(null);
-
-  const toggleFormingModal = () => {
-    setIsOpenForming(!isOpenForming);
-  };
 
   const toggleUploadModal = () => {
     setIsOpenUpload(!isOpenUpload);
@@ -112,11 +106,6 @@ export default function UploadSection() {
             text={'Upload.buttons.load'}
             icon="icon-upload"
           />
-          {/* <WhiteBtn
-            onClick={toggleFormingModal}
-            text={'Upload.buttons.createSet'}
-            icon="icon-create-set"
-          /> */}
         </div>
       </div>
       <ModalComponent
@@ -150,13 +139,6 @@ export default function UploadSection() {
           icon="icon-cloud-download"
           iconFill="icon-cloud-download-fill"
         />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenForming}
-        onClose={toggleFormingModal}
-        title="Upload.modalForming.title"
-      >
-        <FormingSet />
       </ModalComponent>
     </section>
   );

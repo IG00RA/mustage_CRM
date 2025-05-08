@@ -14,6 +14,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { ENDPOINTS } from '@/constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '@/utils/apiUtils';
+import { useAccountSetsStore } from '@/store/accountSetsStore';
 
 type FormData = {
   nameField: string;
@@ -25,17 +26,17 @@ type FormData = {
   setDescription: string;
 };
 
-// Тип для набору підкатегорій
 type SubcategorySet = {
   subcategory_id: number;
   quantity: number;
-  name: string; // Для відображення в CustomButtonsInput
+  name: string;
 };
 
 export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   const t = useTranslations('');
-  const { categories, subcategories } = useCategoriesStore();
-
+  const { categories, fetchCategories, subcategories, fetchSubcategories } =
+    useCategoriesStore();
+  const { createSet } = useAccountSetsStore();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number>(0);
   const [subcategorySets, setSubcategorySets] = useState<SubcategorySet[]>([]);
@@ -54,9 +55,17 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     },
   });
 
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories();
+    }
+    if (subcategories.length === 0) {
+      fetchSubcategories();
+    }
+  }, [categories, fetchCategories, subcategories, fetchSubcategories]);
+
   const quantity = watch('quantity');
 
-  // Опції для категорій
   const categoryOptions = useMemo(
     () =>
       categories
@@ -65,23 +74,20 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     [categories]
   );
 
-  // Фільтровані підкатегорії залежно від вибраної категорії та вже доданих наборів
   const filteredSubCategoryOptions = useMemo(() => {
     if (selectedCategoryId === 0) return [];
 
-    // Отримуємо ID підкатегорій, які вже додані до наборів
     const addedSubCategoryIds = subcategorySets.map(set => set.subcategory_id);
 
     return subcategories
       .filter(
         sub =>
           sub.account_category_id === selectedCategoryId &&
-          !addedSubCategoryIds.includes(sub.account_subcategory_id) // Виключаємо додані підкатегорії
+          !addedSubCategoryIds.includes(sub.account_subcategory_id)
       )
       .map(sub => sub.account_subcategory_name);
-  }, [subcategories, selectedCategoryId, subcategorySets]); // Додаємо subcategorySets як залежність
+  }, [subcategories, selectedCategoryId, subcategorySets]);
 
-  // Мапи для швидкого доступу до ID і cost_price
   const categoryMap = useMemo(
     () =>
       new Map(
@@ -115,7 +121,6 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     [subcategories]
   );
 
-  // Розрахунок загальної собівартості набору
   const calculatedCost = useMemo(() => {
     return subcategorySets.reduce((total, set) => {
       const costPrice = subCategoryCostMap.get(set.subcategory_id) || 0;
@@ -123,12 +128,10 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     }, 0);
   }, [subcategorySets, subCategoryCostMap]);
 
-  // Оновлення поля cost при зміні наборів
   useEffect(() => {
     setValue('cost', calculatedCost);
   }, [calculatedCost, setValue]);
 
-  // Обробка вибору категорії
   const handleCategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedCat = categories.find(
@@ -143,7 +146,6 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Обробка вибору підкатегорії
   const handleSubCategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedSubCat = subcategories.find(
@@ -156,7 +158,6 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Додавання набору підкатегорії
   const toggleCreateName = () => {
     if (selectedSubCategoryId === 0 || quantity <= 0 || !quantity) {
       toast.error(t('Names.modalCreateSet.errorSetAddedMessage'));
@@ -177,18 +178,15 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     toast.success(t('Names.modalCreateSet.setAdded'));
   };
 
-  // Видалення набору
   const handleRemoveSet = (label: string) => {
     setSubcategorySets(prev => prev.filter(set => set.name !== label));
   };
 
-  // Відправка форми
   const onSubmit = async (data: FormData) => {
     if (subcategorySets.length === 0) {
       toast.error(t('Names.modalCreateSet.errorMessage'));
       return;
     }
-
     const requestBody = {
       set_name: data.nameField,
       set_category_id: data.account_category_id,
@@ -200,22 +198,9 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
         quantity: set.quantity,
       })),
     };
-
-    type ApiResponse = { message?: string };
-
     try {
-      const response = (await fetchWithErrorHandling(
-        ENDPOINTS.ACCOUNT_SETS,
-        {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          credentials: 'include',
-          body: JSON.stringify(requestBody),
-        },
-        () => {}
-      )) as ApiResponse;
-
-      toast.success(response.message || t('Names.okMessage'));
+      await createSet(requestBody);
+      toast.success(t('Names.okMessage'));
       reset();
       setSubcategorySets([]);
       setSelectedCategoryId(0);
@@ -258,11 +243,11 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
               {t('Names.modalCreateSet.nameCategory')}
             </label>
             <CustomSelect
-              options={categoryOptions}
+              options={[t('Load.category'), ...categoryOptions]}
               selected={
                 selectedCategoryId
-                  ? [categoryMap.get(selectedCategoryId) || '']
-                  : ['']
+                  ? [categoryMap.get(selectedCategoryId) || t('Load.category')]
+                  : [t('Load.category')]
               }
               onSelect={handleCategorySelect}
               width={'100%'}
@@ -304,15 +289,19 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
               {t('Names.modalCreateSet.setSettingsName')}
             </label>
             <CustomSelect
-              options={filteredSubCategoryOptions}
+              options={[t('Load.names'), ...filteredSubCategoryOptions]}
               selected={
                 selectedSubCategoryId
-                  ? [subCategoryMap.get(selectedSubCategoryId) || '']
-                  : ['']
+                  ? [
+                      subCategoryMap.get(selectedSubCategoryId) ||
+                        t('Load.names'),
+                    ]
+                  : [t('Load.names')]
               }
               onSelect={handleSubCategorySelect}
               width={'100%'}
               multiSelections={false}
+              shortText={false}
             />
             {errors.account_subcategory_id && (
               <p className={styles.error}>

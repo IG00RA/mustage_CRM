@@ -104,3 +104,9 @@
   line-height: 1;
   margin-top: 6px;
 }
+
+.buttons_wrap {
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}

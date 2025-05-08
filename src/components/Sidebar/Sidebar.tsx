@@ -24,6 +24,7 @@ type OpenMenusState = {
   referrals: boolean;
   users: boolean;
   autoFarm: boolean;
+  sets: boolean; // Added for sets menu
 };
 
 type MenuFunctionMap = {
@@ -45,6 +46,8 @@ type MenuFunctionMap = {
   roles: string;
   referrals_all: string;
   referrals_stat: string;
+  sets_create: string; // Added for sets_create
+  sets_create_item: string; // Added for sets_create_item
 };
 
 const menuFunctionMap: MenuFunctionMap = {
@@ -65,6 +68,10 @@ const menuFunctionMap: MenuFunctionMap = {
   roles: 'Должности',
   referrals_all: 'Все рефералы',
   referrals_stat: 'Статистика реферальной системы',
+  sets_create: 'Создание наборов',
+  sets_create_item: 'Создание единицы набора',
+  sets_view: 'Просмотр всех наборов',
+  sets_upload: 'Выгрузка наборов',
 };
 
 export default function Sidebar() {
@@ -76,6 +83,7 @@ export default function Sidebar() {
     referrals: false,
     users: false,
     autoFarm: false,
+    sets: false,
   });
 
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
@@ -97,6 +105,12 @@ export default function Sidebar() {
     const referralsLinks = ['referrals_all', 'referrals_stat'];
     const usersLinks = ['users', 'roles'];
     const autoFarmLinks = ['auto_farm', 'auto_farm_servers'];
+    const setsLinks = [
+      'sets_create',
+      'sets_create_item',
+      'sets_view',
+      "setsUpload",
+    ];
 
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
@@ -104,12 +118,14 @@ export default function Sidebar() {
     const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
     const isAnyUsersActive = usersLinks.some(link => isActiveSub(link));
     const isAnyAutoFarmActive = autoFarmLinks.some(link => isActiveSub(link));
+    const isAnySetsActive = setsLinks.some(link => isActiveSub(link));
 
     setOpenMenus({
       distribution: isAnyDistributionActive,
       referrals: isAnyReferralsActive,
       users: isAnyUsersActive,
       autoFarm: isAnyAutoFarmActive,
+      sets: isAnySetsActive,
     });
   }, [pathname]);
 
@@ -157,6 +173,10 @@ export default function Sidebar() {
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
   const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles');
   const hasAutoFarmAccess = isMenuAllowed('auto_farm');
+  const hasSetsAccess =
+    isMenuAllowed('sets_create') ||
+    isMenuAllowed('sets_create_item') ||
+    isMenuAllowed('sets_view');
 
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
@@ -596,6 +616,146 @@ export default function Sidebar() {
         </>
       )}
 
+      {hasSetsAccess && (
+        <ul role="menu">
+          <li
+            className={`${styles.nav_item} ${
+              openMenus.sets ? styles.active : ''
+            }`}
+            key={'sets'}
+            onClick={() =>
+              setOpenMenus(prev => ({
+                ...prev,
+                sets: !prev.sets,
+              }))
+            }
+          >
+            <div className={styles.nav_item_link}>
+              <Icon
+                className={styles.logo}
+                name={'icon-create-set'}
+                width={22}
+                height={22}
+              />
+              <Icon
+                className={styles.logo_hov}
+                name={'icon-create-set-hover'}
+                width={22}
+                height={22}
+              />
+              <span className={styles.nav_item_text}>
+                {t('Sidebar.setsPar')}
+              </span>
+              <Icon
+                className={`${styles.arrow_down} ${
+                  openMenus.sets ? styles.active : ''
+                }`}
+                name="icon-angle-down"
+                width={16}
+                height={16}
+                color="#A9A9C1"
+              />
+            </div>
+            <ul
+              className={`${styles.select_options} ${
+                openMenus.sets ? styles.select_open : ''
+              }`}
+            >
+              {isMenuAllowed('sets_view') && (
+                <li
+                  key={'setsView'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({ ...prev, sets: false }))
+                  }
+                >
+                  <Link
+                    className={`${styles.option_item} ${
+                      isActiveSub('sets_view') ? styles.active_sub_link : ''
+                    }`}
+                    href={`/ru/sets_view`}
+                  >
+                    <div className={styles.list_sub_mark_wrap}>
+                      <span className={styles.list_sub_mark}></span>
+                    </div>
+                    <p className={styles.list_sub_text}>
+                      {t('Sidebar.setsParMenu.viewSets')}
+                    </p>
+                  </Link>
+                </li>
+              )}
+              {isMenuAllowed('sets_create') && (
+                <li
+                  key={'setsCreate'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({ ...prev, sets: false }))
+                  }
+                >
+                  <Link
+                    className={`${styles.option_item} ${
+                      isActiveSub('sets_create') ? styles.active_sub_link : ''
+                    }`}
+                    href={`/ru/sets_create`}
+                  >
+                    <div className={styles.list_sub_mark_wrap}>
+                      <span className={styles.list_sub_mark}></span>
+                    </div>
+                    <p className={styles.list_sub_text}>
+                      {t('Sidebar.setsParMenu.createSet')}
+                    </p>
+                  </Link>
+                </li>
+              )}
+              {isMenuAllowed('sets_create_item') && (
+                <li
+                  key={'setsCreateItem'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({ ...prev, sets: false }))
+                  }
+                >
+                  <Link
+                    className={`${styles.option_item} ${
+                      isActiveSub('sets_create_item')
+                        ? styles.active_sub_link
+                        : ''
+                    }`}
+                    href={`/ru/sets_create_item`}
+                  >
+                    <div className={styles.list_sub_mark_wrap}>
+                      <span className={styles.list_sub_mark}></span>
+                    </div>
+                    <p className={styles.list_sub_text}>
+                      {t('Sidebar.setsParMenu.createSetItem')}
+                    </p>
+                  </Link>
+                </li>
+              )}
+              {isMenuAllowed('sets_upload') && (
+                <li
+                  key={'setsUpload'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({ ...prev, sets: false }))
+                  }
+                >
+                  <Link
+                    className={`${styles.option_item} ${
+                      isActiveSub('sets_upload') ? styles.active_sub_link : ''
+                    }`}
+                    href={`/ru/sets_upload`}
+                  >
+                    <div className={styles.list_sub_mark_wrap}>
+                      <span className={styles.list_sub_mark}></span>
+                    </div>
+                    <p className={styles.list_sub_text}>
+                      {t('Sidebar.setsParMenu.setsUpload')}
+                    </p>
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </li>
+        </ul>
+      )}
+
       {(filteredOtherParMenu.length > 0 ||
         hasReferralsAccess ||
         hasUsersAccess) && (
@@ -605,7 +765,7 @@ export default function Sidebar() {
             <ul role="menu">
               {filteredOtherParMenu.map((item, index) => {
                 if (item.link === 'users') {
-                  return null; // Пропускаємо "users", бо воно тепер у розкривному меню
+                  return null;
                 }
                 return (
                   <li
@@ -728,104 +888,6 @@ export default function Sidebar() {
                   </ul>
                 </li>
               )}
-              {/* {hasReferralsAccess && (
-                <li
-                  className={`${styles.nav_item} ${
-                    openMenus.referrals ? styles.active : ''
-                  }`}
-                  key={'referrals'}
-                  onClick={() =>
-                    setOpenMenus(prev => ({
-                      ...prev,
-                      referrals: !prev.referrals,
-                    }))
-                  }
-                >
-                  <div className={styles.nav_item_link}>
-                    <Icon
-                      className={styles.logo}
-                      name={'icon-briefcase-2'}
-                      width={22}
-                      height={22}
-                    />
-                    <Icon
-                      className={`${styles.logo_hov} ${styles.logo_hov_referrer}`}
-                      name={'icon-fill_briefcase-2'}
-                      width={22}
-                      height={22}
-                    />
-                    <p
-                      className={`${styles.nav_item_referrer} ${styles.nav_item_text}`}
-                    >
-                      <span>{t('Sidebar.otherParMenu.referrals')}</span>
-                      <span className={styles.referrer_quantity}>32+</span>
-                    </p>
-                    <Icon
-                      className={`${styles.arrow_down} ${
-                        openMenus.referrals ? styles.active : ''
-                      }`}
-                      name="icon-angle-down"
-                      width={16}
-                      height={16}
-                      color="#A9A9C1"
-                    />
-                  </div>
-                  <ul
-                    className={`${styles.select_options} ${
-                      openMenus.referrals ? styles.select_open : ''
-                    }`}
-                  >
-                    {isMenuAllowed('referrals_all') && (
-                      <li
-                        key={'referralsAll'}
-                        onClick={() =>
-                          setOpenMenus(prev => ({ ...prev, referrals: false }))
-                        }
-                      >
-                        <Link
-                          className={`${styles.option_item} ${
-                            isActiveSub('referrals_all')
-                              ? styles.active_sub_link
-                              : ''
-                          }`}
-                          href={`/ru/referrals_all`}
-                        >
-                          <div className={styles.list_sub_mark_wrap}>
-                            <span className={styles.list_sub_mark}></span>
-                          </div>
-                          <p className={styles.list_sub_text}>
-                            {t('Sidebar.otherParMenu.referralsAll')}
-                          </p>
-                        </Link>
-                      </li>
-                    )}
-                    {isMenuAllowed('referrals_stat') && (
-                      <li
-                        key={'referralsStat'}
-                        onClick={() =>
-                          setOpenMenus(prev => ({ ...prev, referrals: false }))
-                        }
-                      >
-                        <Link
-                          className={`${styles.option_item} ${
-                            isActiveSub('referrals_stat')
-                              ? styles.active_sub_link
-                              : ''
-                          }`}
-                          href={`/ru/referrals_stat`}
-                        >
-                          <div className={styles.list_sub_mark_wrap}>
-                            <span className={styles.list_sub_mark}></span>
-                          </div>
-                          <p className={styles.list_sub_text}>
-                            {t('Sidebar.otherParMenu.referralsStat')}
-                          </p>
-                        </Link>
-                      </li>
-                    )}
-                  </ul>
-                </li>
-              )} */}
             </ul>
           </nav>
         </>

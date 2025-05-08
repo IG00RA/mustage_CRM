@@ -26,7 +26,6 @@ import CancelBtn from '../../Buttons/CancelBtn/CancelBtn';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import CreateNames from '../../ModalComponent/CreateNames/CreateNames';
 import EditNames from '../../ModalComponent/EditNames/EditNames';
-import CreateNamesSet from '../../ModalComponent/CreateNamesSet/CreateNamesSet';
 import ShowNamesDescription from '../../ModalComponent/ShowNamesDescription/ShowNamesDescription';
 import Loader from '../../Loader/Loader';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -64,7 +63,6 @@ export default function NamesSection() {
   const [showLoader, setShowLoader] = useState<boolean>(true);
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
-  const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
   const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
     useState(false);
@@ -153,10 +151,7 @@ export default function NamesSection() {
     () => setIsOpenCreate(prev => !prev),
     []
   );
-  const toggleCreateNamesSet = useCallback(
-    () => setIsOpenCreateNamesSet(prev => !prev),
-    []
-  );
+
   const openUpdateModal = useCallback((subcategory: Subcategory) => {
     setUpdateTitle(subcategory.account_subcategory_name);
     setSelectedSubcategory(subcategory);
@@ -338,15 +333,7 @@ export default function NamesSection() {
         {(hasCreateSubcategories || hasReadSubcategories) && (
           <div className={styles.buttons_wrap}>
             {hasCreateSubcategories && (
-              <>
-                <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
-                {/* <WhiteBtn
-                  onClick={toggleCreateNamesSet}
-                  text={'Names.addSetBtn'}
-                  icon="icon-add-color"
-                  iconFill="icon-add-color"
-                /> */}
-              </>
+              <AddBtn onClick={toggleCreateModal} text={'Names.addBtn'} />
             )}
             {hasReadCategories && (
               <CustomSelect
@@ -489,14 +476,6 @@ export default function NamesSection() {
         text="Names.modalCreate.description"
       >
         <CreateNames onClose={toggleCreateModal} />
-      </ModalComponent>
-      <ModalComponent
-        isOpen={isOpenCreateNamesSet}
-        onClose={toggleCreateNamesSet}
-        title="Names.modalCreateSet.title"
-        text="Names.modalCreateSet.description"
-      >
-        <CreateNamesSet onClose={toggleCreateNamesSet} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenShowNamesDescription}

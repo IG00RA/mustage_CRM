@@ -388,7 +388,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
             ]}
             onSelect={handleSetsDisplaySelect}
             multiSelections={false}
-            width={350}
+            width={430}
           />
         </div>
 

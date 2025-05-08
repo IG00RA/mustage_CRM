@@ -13,6 +13,7 @@ interface SelectProps {
   selectWidth?: string | number;
   minSelectWidth?: string | number;
   multiSelections?: boolean;
+  shortText?: boolean;
 }
 
 export default function CustomSelect({
@@ -24,6 +25,7 @@ export default function CustomSelect({
   selectWidth,
   minSelectWidth,
   multiSelections = true,
+  shortText = true,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -82,7 +84,7 @@ export default function CustomSelect({
           onClick={() => setIsOpen(prev => !prev)}
         >
           {selected.length > 0
-            ? selected.join(', ').length > 20
+            ? selected.join(', ').length > 20 && shortText
               ? selected.join(', ').slice(0, 20) + '...'
               : selected.join(', ')
             : options[0]}
