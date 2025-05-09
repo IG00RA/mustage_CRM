@@ -28,7 +28,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
 
   return (
     <div className={styles.stat_wrap}>
-      <h2 className={styles.stat_header}>{t('Sidebar.mainParMenu.review')}</h2>
+      <h2 className={styles.header}>{t('Sidebar.mainParMenu.review')}</h2>
       <ul className={styles.stat_list}>
         <li className={styles.stat_item}>
           <h3 className={styles.stat_header}>

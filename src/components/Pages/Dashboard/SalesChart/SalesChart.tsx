@@ -231,7 +231,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
   };
 
   const handleSetsDisplaySelect = (values: string[]) => {
-    const selectedValue = values[0]; // Single selection
+    const selectedValue = values[0];
     if (selectedValue === t('AllAccounts.selects.setsDisplayAcc')) {
       setSetsDisplay('setsDisplayAcc');
     } else if (selectedValue === t('AllAccounts.selects.setsDisplaySets')) {

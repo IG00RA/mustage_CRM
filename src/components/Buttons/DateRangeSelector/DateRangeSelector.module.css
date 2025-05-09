@@ -1,7 +1,7 @@
 .chart_toggler_block {
   display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .chart_toggler_label {
@@ -89,5 +89,14 @@
     font-style: normal;
     font-weight: 400;
     line-height: 1.37;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chart_toggler_block {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
   }
 }

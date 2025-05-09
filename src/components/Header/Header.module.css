@@ -8,8 +8,9 @@
   justify-content: space-between;
   align-items: center;
   transition: all 500ms ease;
-  z-index: 999;
+  z-index: 99999;
   padding: 12px 5%;
+  background-color: #fff;
 
   @media (min-width: 1024px) {
     display: none;

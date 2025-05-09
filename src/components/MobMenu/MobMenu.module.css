@@ -22,6 +22,7 @@
 
 .burger_menu {
   height: 100vh;
-  width: 311px;
+  width: 83vw;
+  max-width: 315px;
   background-color: var(--background);
 }

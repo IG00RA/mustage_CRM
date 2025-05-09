@@ -13,13 +13,15 @@
 
 .stat_list {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .stat_item {
-  border-radius: 24px;
+  width: calc(50% - 8px);
+  max-width: 195px;
+  border-radius: 16px;
   padding: 16px;
   background: var(--background);
   box-shadow: var(--box_shadow);
@@ -27,7 +29,7 @@
 
 .stat_header {
   color: var(--text_light);
-  font-size: var(--fs_small);
+  font-size: 14px;
   font-style: normal;
   font-weight: 600;
   line-height: 1.57;
@@ -51,8 +53,38 @@
 
 .stat_quantity {
   color: var(--text_dark);
-  font-size: var(--fs_xlarge);
+  font-size: 18px;
   font-style: normal;
-  font-weight: 600;
-  line-height: 1;
+  font-weight: 700;
+  line-height: 1.33;
+}
+
+@media (min-width: 355px) {
+  .stat_quantity {
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 375px) {
+  .stat_quantity {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stat_list {
+    gap: 12px;
+  }
+
+  .stat_item {
+    border-radius: 24px;
+    max-width: 215px;
+  }
+
+  .stat_quantity {
+    font-size: var(--fs_xlarge);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1;
+  }
 }
