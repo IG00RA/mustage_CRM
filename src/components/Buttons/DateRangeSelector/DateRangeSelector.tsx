@@ -5,16 +5,25 @@ import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './DateRangeSelector.module.css';
 import { useSalesStore } from '@/store/salesStore';
-import { DateRangeSelectorProps } from '@/types/componentsTypes';
+import { DateRangeSelectorProps, AggregationType } from '@/types/salesTypes';
+import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
+
+interface AggregationOption {
+  value: AggregationType;
+  label: string;
+}
 
 const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   dateRange,
   customPeriodLabel,
   onDateRangeChange,
   onCustomDatesChange,
+  onAggregationChange,
+  aggregationType,
   initialStartDate = '',
   initialEndDate = '',
   label = 'Statistics.chart.toggler.togglerData',
+  showAggregationSelect = false,
 }) => {
   const t = useTranslations();
   const { minDate } = useSalesStore();
@@ -26,15 +35,49 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const today = new Date().toISOString().split('T')[0];
   const defaultMinDate = '2023-03-01';
 
-  const dateRangeOptions = [
-    { value: 'all' as const, label: 'togglerDataAll' },
-    { value: 'today' as const, label: 'togglerDataToday' },
-    { value: 'yesterday' as const, label: 'togglerDataYesterday' },
-    { value: 'week' as const, label: 'togglerDataWeek' },
-    { value: 'month' as const, label: 'togglerDataMonth' },
-    { value: 'quarter' as const, label: 'togglerDataQuarter' },
-    { value: 'year' as const, label: 'togglerDataYear' },
+  const dateRangeOptions = showAggregationSelect
+    ? [
+        { value: 'today' as const, label: 'togglerDataToday' },
+        { value: 'yesterday' as const, label: 'togglerDataYesterday' },
+        { value: 'week' as const, label: 'togglerDataWeek' },
+        { value: 'month' as const, label: 'togglerDataMonth' },
+        { value: 'quarter' as const, label: 'togglerDataQuarter' },
+        { value: 'year' as const, label: 'togglerDataYear' },
+      ]
+    : [
+        { value: 'today' as const, label: 'togglerDataToday' },
+        { value: 'yesterday' as const, label: 'togglerDataYesterday' },
+        { value: 'week' as const, label: 'togglerDataWeek' },
+        { value: 'month' as const, label: 'togglerDataMonth' },
+        { value: 'quarter' as const, label: 'togglerDataQuarter' },
+        { value: 'year' as const, label: 'togglerDataYear' },
+      ];
+
+  const aggregationOptions: AggregationOption[] = [
+    { value: null, label: t('Statistics.chart.toggler.togglerSelectPeriod') },
+    { value: 'monthly', label: t('Statistics.chart.toggler.togglerByMonth') },
+    { value: 'yearly', label: t('Statistics.chart.toggler.togglerByYear') },
   ];
+
+  const handleAggregationSelect = (values: string[]) => {
+    const selectedValue = values[0] as AggregationType;
+    const selectedOption = aggregationOptions.find(
+      opt => opt.value === selectedValue
+    );
+    const newAggregation = selectedOption ? selectedOption.value : null;
+    if (onAggregationChange) {
+      onAggregationChange(newAggregation);
+    }
+    if (newAggregation) {
+      onDateRangeChange('all');
+    } else {
+      onDateRangeChange('today');
+    }
+  };
+
+  const handleAllPeriodClick = () => {
+    onDateRangeChange('all');
+  };
 
   const formatDateInput = (value: string): string => {
     const numbers = value.replace(/\D/g, '').slice(0, 8);
@@ -54,7 +97,8 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     return (
       date.getDate() === day &&
       date.getMonth() === month - 1 &&
-      date.getFullYear() === year
+      date.getFullYear() === year &&
+      !isNaN(date.getTime())
     );
   };
 
@@ -212,6 +256,25 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             </div>
           )}
         </div>
+        {showAggregationSelect ? (
+          <CustomSelect
+            label={t('Statistics.chart.toggler.togglerAll')}
+            options={aggregationOptions.map(opt => opt.value || 'none')}
+            selected={[aggregationType || 'none']}
+            onSelect={handleAggregationSelect}
+            multiSelections={false}
+            width={150}
+          />
+        ) : (
+          <button
+            onClick={handleAllPeriodClick}
+            className={`${styles.chart_button} ${
+              dateRange === 'all' ? styles.active : ''
+            }`}
+          >
+            {t('Statistics.chart.toggler.togglerDataAll')}
+          </button>
+        )}
       </div>
     </div>
   );

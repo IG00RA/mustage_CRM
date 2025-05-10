@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import {
-  AccountSet,
   AccountSetsState,
   CreateSetRequest,
   CreateSetResponse,
-  FetchSetsParams,
   FetchSetsResponse,
   GetSetResponse,
   CreateSetItemRequest,

@@ -65,8 +65,6 @@ export async function login(formData: FormData) {
   //   }
   // );
 
-  // console.log('userResponse', userResponse);
-
   // if (!userResponse.ok) {
   //   return { error: 'Failed to fetch user data' };
   // }

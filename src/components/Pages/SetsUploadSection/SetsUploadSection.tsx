@@ -14,7 +14,6 @@ import { useUsersStore } from '@/store/usersStore';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
-import LoadAccountsConfirm from '@/components/ModalComponent/LoadAccountsConfirm/LoadAccountsConfirm';
 import { AccountSet } from '@/types/accountSetsTypes';
 import { AccountDataWrapper } from '@/types/accountsTypes';
 import LoadSetsConfirm from '@/components/ModalComponent/LoadSetsConfirm/LoadSetsConfirm';

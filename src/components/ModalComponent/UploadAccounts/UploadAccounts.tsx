@@ -154,11 +154,6 @@ export default function UploadAccounts({
       selectedSubcategoryObj.account_subcategory_id.toString();
     formData.append('subcategory_id', subcategoryId);
 
-    console.log('FormData entries:');
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-
     try {
       const headers = {
         accept: 'application/json',

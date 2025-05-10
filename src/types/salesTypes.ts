@@ -1,3 +1,4 @@
+// types/salesTypes.ts
 export interface Sale {
   period: string;
   amount: number;
@@ -21,6 +22,8 @@ export type ReportType =
   | 'yearly'
   | 'custom'
   | 'all';
+
+export type AggregationType = 'monthly' | 'yearly' | null; // Allow null for no selection
 
 export interface ReportParams {
   date?: string;
@@ -97,6 +100,20 @@ export interface SalesState {
     customEnd?: string,
     categoryId?: number | number[],
     subcategoryId?: number | number[],
-    sellerIds?: string[]
+    sellerIds?: string[],
+    aggregationType?: AggregationType
   ) => Promise<void>;
+}
+
+export interface DateRangeSelectorProps {
+  dateRange: RangeType;
+  customPeriodLabel: string;
+  showAggregationSelect?: boolean;
+  onDateRangeChange: (range: RangeType) => void;
+  onCustomDatesChange: (start: string, end: string) => void;
+  onAggregationChange?: (aggregation: AggregationType) => void;
+  aggregationType?: AggregationType;
+  initialStartDate?: string;
+  initialEndDate?: string;
+  label?: string;
 }

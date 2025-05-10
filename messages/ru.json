@@ -126,7 +126,11 @@
         "togglerChooseCategory": "Выберите категорию",
         "togglerName": "Наименование:",
         "togglerAllName": "Все наименования",
-        "togglerChooseName": "Выберите наименование"
+        "togglerChooseName": "Выберите наименование",
+        "togglerAll": "За все время",
+        "togglerSelectPeriod": "За все время",
+        "togglerByMonth": "По годам",
+        "togglerByYear": "По месяцам"
       },
       "buttonText": "Скачать xlsx-отчет",
       "chartView": "Вид графика:",

@@ -13,7 +13,7 @@ import { useCategoriesStore } from '@/store/categoriesStore';
 import { useUsersStore } from '@/store/usersStore';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import DateRangeSelector from '@/components/Buttons/DateRangeSelector/DateRangeSelector';
-import { RangeType } from '@/types/salesTypes';
+import { RangeType, AggregationType } from '@/types/salesTypes';
 import { useSellersStore } from '@/store/sellersStore';
 
 interface SalesChartProps {
@@ -37,6 +37,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
     number[]
   >([]);
   const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [aggregationType, setAggregationType] = useState<AggregationType>(null);
 
   const { sellers, fetchSellers, error: sellersError } = useSellersStore();
 
@@ -77,6 +78,8 @@ const SalesChart: React.FC<SalesChartProps> = ({
   useEffect(() => {
     if (chartSales.length !== 0) {
       setShowLoader(false);
+    } else {
+      setShowLoader(true);
     }
   }, [chartSales]);
 
@@ -105,8 +108,9 @@ const SalesChart: React.FC<SalesChartProps> = ({
 
   useEffect(() => {
     if (
-      dateRange !== 'custom' ||
-      (dateRange === 'custom' && customPeriodLabel)
+      (dateRange !== 'custom' ||
+        (dateRange === 'custom' && customPeriodLabel)) &&
+      (dateRange !== 'all' || (dateRange === 'all' && aggregationType))
     ) {
       useSalesStore
         .getState()
@@ -130,7 +134,8 @@ const SalesChart: React.FC<SalesChartProps> = ({
             : undefined,
           currentUser?.is_admin && selectedSellerIds.length > 0
             ? selectedSellerIds
-            : undefined
+            : undefined,
+          dateRange === 'all' ? aggregationType : undefined
         );
     }
   }, [
@@ -143,6 +148,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
     hasReadSubcategories,
     currentUser,
     setsDisplay,
+    aggregationType,
   ]);
 
   const toggleDownload = useCallback(
@@ -152,6 +158,9 @@ const SalesChart: React.FC<SalesChartProps> = ({
 
   const handleDateRangeChange = (newRange: RangeType) => {
     setDateRange(newRange);
+    if (newRange !== 'all') {
+      setAggregationType(null);
+    }
     setCustomPeriodLabel('');
     setCustomStartDate('');
     setCustomEndDate('');
@@ -160,8 +169,13 @@ const SalesChart: React.FC<SalesChartProps> = ({
   const handleCustomDatesChange = (start: string, end: string) => {
     setCustomPeriodLabel(`${start} - ${end}`);
     setDateRange('custom');
+    setAggregationType(null);
     setCustomStartDate(start);
     setCustomEndDate(end);
+  };
+
+  const handleAggregationChange = (aggregation: AggregationType) => {
+    setAggregationType(aggregation);
   };
 
   const exportToExcel = useExportToExcel({
@@ -179,6 +193,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
       ),
     [categories]
   );
+
   const subcategoryMap = useMemo(
     () =>
       new Map(
@@ -264,14 +279,18 @@ const SalesChart: React.FC<SalesChartProps> = ({
   const sellerOptions = useMemo(
     () => [
       t('AllAccounts.selects.sellerAll'),
-      ...sellers.map(seller => String(seller.seller_name)),
+      ...sellers.map(seller => String(seller.seller_name)).filter(name => name),
     ],
     [sellers, t]
   );
 
   const sellerMap = useMemo(
     () =>
-      new Map(sellers.map(seller => [seller.seller_id, seller.seller_name])),
+      new Map(
+        sellers
+          .filter(seller => seller.seller_id && seller.seller_name)
+          .map(seller => [seller.seller_id, seller.seller_name])
+      ),
     [sellers]
   );
 
@@ -315,8 +334,11 @@ const SalesChart: React.FC<SalesChartProps> = ({
             customPeriodLabel={customPeriodLabel}
             onDateRangeChange={handleDateRangeChange}
             onCustomDatesChange={handleCustomDatesChange}
+            onAggregationChange={handleAggregationChange}
+            aggregationType={aggregationType}
             initialStartDate={customStartDate}
             initialEndDate={customEndDate}
+            showAggregationSelect={true}
           />
         </div>
 
@@ -327,7 +349,9 @@ const SalesChart: React.FC<SalesChartProps> = ({
               options={[
                 t('Statistics.chart.toggler.togglerAllCategory'),
                 ...(Array.isArray(categories)
-                  ? categories.map(cat => cat.account_category_name)
+                  ? categories
+                      .map(cat => cat.account_category_name)
+                      .filter(name => name)
                   : []),
               ]}
               selected={
@@ -345,7 +369,9 @@ const SalesChart: React.FC<SalesChartProps> = ({
               options={[
                 t('Statistics.chart.toggler.togglerAllName'),
                 ...(Array.isArray(subcategories)
-                  ? subcategories.map(sub => sub.account_subcategory_name)
+                  ? subcategories
+                      .map(sub => sub.account_subcategory_name)
+                      .filter(name => name)
                   : []),
               ]}
               selected={

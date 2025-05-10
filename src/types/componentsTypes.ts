@@ -5,11 +5,14 @@ export interface PaginationState {
   pageSize: number;
 }
 
+export type AggregationType = 'monthly' | 'yearly';
+
 export interface DateRangeSelectorProps {
   dateRange: RangeType;
-  customPeriodLabel?: string;
+  customPeriodLabel: string;
   onDateRangeChange: (range: RangeType) => void;
   onCustomDatesChange: (start: string, end: string) => void;
+  onAggregationChange?: (aggregation: AggregationType) => void;
   initialStartDate?: string;
   initialEndDate?: string;
   label?: string;

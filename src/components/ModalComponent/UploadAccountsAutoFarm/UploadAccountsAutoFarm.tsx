@@ -157,10 +157,6 @@ export default function UploadAccountsAutoFarm({
     }
   };
 
-  useEffect(() => {
-    console.log('autofarmLoading:', autofarmLoading);
-  }, [autofarmLoading]);
-
   const subcategoryOptions = [
     t('AutoFarmSection.modalLoad.subcategoryPlaceholder'),
     ...subcategories.map(sub => sub.account_subcategory_name),
