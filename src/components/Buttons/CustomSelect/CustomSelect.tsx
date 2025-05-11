@@ -14,6 +14,7 @@ interface SelectProps {
   minSelectWidth?: string | number;
   multiSelections?: boolean;
   shortText?: boolean;
+  inDate?: boolean;
 }
 
 export default function CustomSelect({
@@ -22,6 +23,7 @@ export default function CustomSelect({
   onSelect,
   label,
   width,
+  inDate = false,
   selectWidth,
   minSelectWidth,
   multiSelections = true,
@@ -75,6 +77,8 @@ export default function CustomSelect({
       >
         <div
           className={`${styles.select_box} ${isOpen ? styles.open : ''} ${
+            inDate ? styles.back : ''
+          } ${
             selected.length === 0 ||
             selected.includes('Выберите селлера') ||
             selected.includes('Выберите функцию')

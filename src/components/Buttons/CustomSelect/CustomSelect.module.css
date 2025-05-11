@@ -1,8 +1,7 @@
 .select_wrapper {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .select_label {
@@ -38,11 +37,14 @@
   align-items: center;
   transition: border 0.3s ease;
   white-space: nowrap;
-  min-width: 180px;
 
   & svg {
     transition: transform 0.3s ease;
   }
+}
+
+.select_box.back {
+  background-color: #f1f1f6;
 }
 
 .text_selected {
@@ -132,5 +134,15 @@
 
   &:hover {
     background-color: #8ea0fa;
+  }
+}
+
+@media (min-width: 1024px) {
+  .select_wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
   }
 }

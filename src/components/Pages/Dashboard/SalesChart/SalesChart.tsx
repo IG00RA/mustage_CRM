@@ -360,7 +360,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
                   : [t('Statistics.chart.toggler.togglerAllCategory')]
               }
               onSelect={handleCategorySelect}
-              minSelectWidth={150}
+              width={350}
             />
           )}
           {hasReadSubcategories && (
@@ -382,9 +382,11 @@ const SalesChart: React.FC<SalesChartProps> = ({
                   : [t('Statistics.chart.toggler.togglerAllName')]
               }
               onSelect={handleSubcategorySelect}
-              minSelectWidth={170}
+              width={430}
             />
           )}
+        </div>
+        <div className={styles.chart_category_wrap_bottom}>
           {currentUser?.is_admin && (
             <CustomSelect
               label={t('AllAccounts.selects.seller')}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
 import styles from './DateRangeSelector.module.css';
@@ -31,9 +31,41 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const [customStartDate, setCustomStartDate] =
     useState<string>(initialStartDate);
   const [customEndDate, setCustomEndDate] = useState<string>(initialEndDate);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const customDateRef = useRef<HTMLDivElement>(null);
 
   const today = new Date().toISOString().split('T')[0];
   const defaultMinDate = '2023-03-01';
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        customDateRef.current &&
+        !customDateRef.current.contains(event.target as Node)
+      ) {
+        setIsCustomDateOpen(false);
+      }
+    };
+
+    if (isCustomDateOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCustomDateOpen]);
 
   const dateRangeOptions = showAggregationSelect
     ? [
@@ -54,7 +86,6 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
       ];
 
   const aggregationOptions: AggregationOption[] = [
-    { value: null, label: t('Statistics.chart.toggler.togglerSelectPeriod') },
     { value: 'monthly', label: t('Statistics.chart.toggler.togglerByMonth') },
     { value: 'yearly', label: t('Statistics.chart.toggler.togglerByYear') },
   ];
@@ -62,7 +93,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const handleAggregationSelect = (values: string[]) => {
     const selectedValue = values[0] as AggregationType;
     const selectedOption = aggregationOptions.find(
-      opt => opt.value === selectedValue
+      opt => opt.label === selectedValue
     );
     const newAggregation = selectedOption ? selectedOption.value : null;
     if (onAggregationChange) {
@@ -203,27 +234,97 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     }
   };
 
+  const renderAggregationSelect = () =>
+    showAggregationSelect ? (
+      <CustomSelect
+        options={aggregationOptions.map(
+          opt => opt.label || t('Statistics.chart.toggler.togglerAll')
+        )}
+        selected={[
+          aggregationType
+            ? t(
+                aggregationType === 'yearly'
+                  ? 'Statistics.chart.toggler.togglerByYear'
+                  : 'Statistics.chart.toggler.togglerByMonth'
+              )
+            : t('Statistics.chart.toggler.togglerAll'),
+        ]}
+        onSelect={handleAggregationSelect}
+        multiSelections={false}
+        width={130}
+        minSelectWidth={130}
+        inDate={true}
+      />
+    ) : (
+      <button
+        onClick={handleAllPeriodClick}
+        className={`${styles.chart_button} ${
+          dateRange === 'all' ? styles.active : ''
+        }`}
+      >
+        {t('Statistics.chart.toggler.togglerDataAll')}
+      </button>
+    );
+
+  const renderDateRangeButtons = () => {
+    const firstGroup = dateRangeOptions.slice(0, 4);
+    const secondGroup = dateRangeOptions.slice(4, 6);
+
+    return (
+      <>
+        <div className={styles.date_range_group}>
+          {firstGroup.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => onDateRangeChange(value)}
+              className={`${styles.chart_button} ${
+                dateRange === value ? styles.active : ''
+              }`}
+            >
+              {t(`Statistics.chart.toggler.${label}`)}
+            </button>
+          ))}
+        </div>
+        <div className={styles.date_range_group}>
+          {secondGroup.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => onDateRangeChange(value)}
+              className={`${styles.chart_button} ${
+                dateRange === value ? styles.active : ''
+              }`}
+            >
+              {t(`Statistics.chart.toggler.${label}`)}
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className={styles.chart_toggler_block}>
       <span className={styles.chart_toggler_label}>{t(label)}</span>
       <div className={styles.chart_toggler_buttons}>
-        {dateRangeOptions.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => onDateRangeChange(value)}
-            className={`${styles.chart_button} ${
-              dateRange === value ? styles.active : ''
-            }`}
-          >
-            {t(`Statistics.chart.toggler.${label}`)}
-          </button>
-        ))}
-        <div className={styles.chart_toggler_button_wrap}>
+        {isMobile ? (
+          <>
+            {renderAggregationSelect()}
+            {renderDateRangeButtons()}
+          </>
+        ) : (
+          <>
+            {renderDateRangeButtons()}
+            {renderAggregationSelect()}
+          </>
+        )}
+        <div className={styles.chart_toggler_button_wrap} ref={customDateRef}>
           <button
             onClick={handleCustomButtonClick}
             className={`${styles.chart_button} ${
-              dateRange === 'custom' ? styles.active : ''
-            }`}
+              customPeriodLabel
+                ? styles.chart_button_custom_font
+                : styles.chart_button_custom
+            } ${dateRange === 'custom' ? styles.active : ''}`}
           >
             <Icon name="icon-stat_calendar_grey" width={14} height={14} />
             {dateRange === 'custom' && customPeriodLabel
@@ -256,25 +357,6 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             </div>
           )}
         </div>
-        {showAggregationSelect ? (
-          <CustomSelect
-            label={t('Statistics.chart.toggler.togglerAll')}
-            options={aggregationOptions.map(opt => opt.value || 'none')}
-            selected={[aggregationType || 'none']}
-            onSelect={handleAggregationSelect}
-            multiSelections={false}
-            width={150}
-          />
-        ) : (
-          <button
-            onClick={handleAllPeriodClick}
-            className={`${styles.chart_button} ${
-              dateRange === 'all' ? styles.active : ''
-            }`}
-          >
-            {t('Statistics.chart.toggler.togglerDataAll')}
-          </button>
-        )}
       </div>
     </div>
   );

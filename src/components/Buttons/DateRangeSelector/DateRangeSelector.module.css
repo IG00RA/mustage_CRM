@@ -14,8 +14,14 @@
 
 .chart_toggler_buttons {
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date_range_group {
+  display: flex;
   padding: 4px;
+  gap: 4px;
   border-radius: 12px;
   border: 1px solid var(--grey);
 }
@@ -30,6 +36,9 @@
   background: var(--background);
   color: var(--disabled_grey);
   font-size: var(--fs_small);
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.58;
@@ -41,8 +50,7 @@
   }
 
   & svg {
-    margin-top: 4px;
-    margin-right: 6px;
+    margin-bottom: 2px;
   }
 }
 
@@ -51,11 +59,24 @@
   color: var(--text_dark);
 }
 
+.chart_button_custom {
+  position: absolute;
+  bottom: 12px;
+  right: 4px;
+}
+
+.chart_button_custom_font {
+  position: absolute;
+  bottom: 12px;
+  right: 4px;
+  font-size: 10px;
+  padding: 10px 12px;
+}
+
 .custom_date_range {
   position: absolute;
-  bottom: -50px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 10px;
+  right: 2px;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -65,13 +86,13 @@
 }
 
 .custom_date_range_input {
-  width: 125px;
+  width: 110px;
   border-radius: 12px;
   border: 1px solid var(--Grey, #e1e1ec);
   background: #fff;
   box-shadow: 0px 4px 6px 0px rgba(109, 100, 197, 0.1);
   color: var(--text_light);
-  font-size: var(--fs_xsmall);
+  font-size: var(--fs_small);
   font-style: normal;
   font-weight: 400;
   line-height: 1.37;
@@ -84,8 +105,7 @@
   }
   &::placeholder {
     color: var(--text_light);
-    font-size: var(--fs_xsmall);
-    font-size: 16px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 1.37;
@@ -98,5 +118,36 @@
     flex-direction: row;
     gap: 12px;
     align-items: center;
+  }
+
+  .chart_toggler_buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid var(--grey);
+  }
+
+  .date_range_group {
+    border: none;
+  }
+
+  .chart_button_custom {
+    position: static;
+    padding: 10px 12px;
+  }
+
+  .custom_date_range {
+    bottom: -50px;
+    right: -50%;
+  }
+
+  .custom_date_range_input {
+    width: 125px;
+    font-size: var(--fs_xsmall);
+    &::placeholder {
+      font-size: var(--fs_xsmall);
+    }
   }
 }

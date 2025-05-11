@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,11 +34,24 @@ interface ChartDisplayProps {
 
 const ChartDisplay: React.FC<ChartDisplayProps> = memo(
   ({ chartSales, chartType, dataType }) => {
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 768);
+      };
+
+      handleResize();
+      window.addEventListener('resize', handleResize);
+
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const formatAmount = (value: number) =>
       dataType === 'amount' ? `$${value.toFixed(2)}` : value;
 
     const barWidth = 32;
-    const gapWidth = 50;
+    const gapWidth = isMobile ? 18 : 50;
     const chartMinWidth =
       chartSales.length > 0 ? chartSales.length * (barWidth + gapWidth) : 0;
 
@@ -78,7 +91,7 @@ const ChartDisplay: React.FC<ChartDisplayProps> = memo(
               tooltipEl.id = 'custom-tooltip';
               tooltipEl.classList.add(styles.custom_tooltip);
               if (chartContainer) {
-                chartContainer.appendChild(tooltipEl); // Явний виклик appendChild
+                chartContainer.appendChild(tooltipEl);
               }
             }
 

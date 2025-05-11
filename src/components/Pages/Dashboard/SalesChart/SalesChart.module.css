@@ -129,6 +129,13 @@
 .chart_category_wrap {
   display: flex;
   gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.chart_category_wrap_bottom {
+  display: flex;
+  gap: 16px;
   margin-bottom: 48px;
   flex-wrap: wrap;
 }
@@ -146,8 +153,11 @@
 
 .bottom_wrap {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column-reverse;
+  gap: 16px;
+  & > button {
+    align-self: flex-start;
+  }
 }
 
 /* Chart style */
@@ -162,7 +172,7 @@
 }
 
 .chart_box {
-  height: 360px;
+  height: 250px;
 }
 
 .fixed_y_axis {
@@ -263,5 +273,16 @@
     gap: 12px;
     flex-direction: row;
     align-items: center;
+  }
+
+  .chart_box {
+    height: 360px;
+  }
+
+  .bottom_wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
   }
 }
