@@ -274,11 +274,11 @@
     "downloadBtLoad": "Загрузка...",
     "editBtn": "Настроить внешний вид таблички",
     "historyBtn": "История",
-    "loadDate": "Дата загрузки ",
-    "sellDate": "Дата продажи ",
+    "loadDate": "Дата загрузки: ",
+    "sellDate": "Дата продажи: ",
     "selects": {
       "categories": "Категории:",
-      "inSet": "В наборе",
+      "inSet": "В наборе: ",
       "allInSet": "Все",
       "inSetYes": "В наборе",
       "inSetNo": "Не в наборе",
@@ -297,7 +297,7 @@
       "transferYes": "Передан",
       "seller": "Селлер:",
       "sellerAll": "Все",
-      "setsDisplay": "Режим отображения наборов",
+      "setsDisplay": "Режим отображения наборов: ",
       "setsDisplayAcc": "Аккаунты, входящие в набор",
       "setsDisplaySets": "Отдельные наборы"
     },

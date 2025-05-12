@@ -285,7 +285,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
             </button>
           ))}
         </div>
-        <div className={styles.date_range_group}>
+        <div className={styles.date_range_group_second}>
           {secondGroup.map(({ value, label }) => (
             <button
               key={value}

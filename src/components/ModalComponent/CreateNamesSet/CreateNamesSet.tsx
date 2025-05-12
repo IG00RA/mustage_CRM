@@ -58,7 +58,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       fetchCategories();
     }
     if (subcategories.length === 0) {
-      fetchSubcategories();
+      fetchSubcategories(undefined, false);
     }
   }, [categories, fetchCategories, subcategories, fetchSubcategories]);
 

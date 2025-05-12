@@ -30,10 +30,17 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
     set({ categories: data.items });
   },
 
-  fetchSubcategories: async (categoryId?: number) => {
-    const url = categoryId
-      ? `${ENDPOINTS.SUBCATEGORIES}?category_id=${categoryId}&limit=100`
-      : `${ENDPOINTS.SUBCATEGORIES}?limit=100`;
+  fetchSubcategories: async (
+    categoryId?: number,
+    is_accounts_set?: boolean
+  ) => {
+    let url = `${ENDPOINTS.SUBCATEGORIES}?limit=100`;
+    if (categoryId) {
+      url += `&category_id=${categoryId}`;
+    }
+    if (is_accounts_set !== undefined) {
+      url += `&is_accounts_set=${is_accounts_set}`;
+    }
     const data = await fetchWithErrorHandling<Response<Subcategory>>(
       url,
       {

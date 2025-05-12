@@ -477,3 +477,10 @@
     right: -86px;
   }
 }
+
+@media (min-width: 1600px) {
+  .sidebar {
+    top: 0;
+    left: calc(50% - 800px);
+  }
+}

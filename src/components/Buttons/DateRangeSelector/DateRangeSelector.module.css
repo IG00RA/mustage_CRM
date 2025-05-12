@@ -20,10 +20,23 @@
 
 .date_range_group {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 4px;
   gap: 4px;
   border-radius: 12px;
   border: 1px solid var(--grey);
+  max-width: 330px;
+}
+
+.date_range_group_second {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--grey);
+  max-width: 330px;
 }
 
 .chart_toggler_button_wrap {
@@ -31,7 +44,7 @@
 }
 
 .chart_button {
-  padding: 6px 12px;
+  padding: 6px 1px;
   border-radius: 8px;
   background: var(--background);
   color: var(--disabled_grey);
@@ -112,16 +125,53 @@
   }
 }
 
-@media (min-width: 1024px) {
-  .chart_toggler_block {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-    align-items: center;
+@media (min-width: 345px) {
+  .chart_button {
+    padding: 6px 5px;
+  }
+  .chart_button_custom_font {
+    padding: 10px 5px;
+  }
+}
+
+@media (min-width: 365px) {
+  .chart_button {
+    padding: 6px 12px;
+  }
+  .chart_button_custom_font {
+    padding: 10px 12px;
+  }
+}
+
+@media (min-width: 415px) {
+  .chart_button_custom_font {
+    right: auto;
+    left: 172px;
+  }
+  .chart_button_custom {
+    right: auto;
+    left: 172px;
+  }
+  .custom_date_range {
+    right: auto;
+    left: 84px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chart_button {
+    position: static;
+    padding: 6px 4px;
+  }
+  .chart_button_custom_font {
+    position: static;
+    padding: 10px 4px;
+    font-size: 14px;
   }
 
   .chart_toggler_buttons {
     display: flex;
+    align-items: center;
     flex-direction: row;
     gap: 4px;
     padding: 4px;
@@ -133,14 +183,20 @@
     border: none;
   }
 
-  .chart_button_custom {
-    position: static;
-    padding: 10px 12px;
+  .date_range_group_second {
+    border: none;
+  }
+  .chart_toggler_block {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
   }
 
   .custom_date_range {
+    left: auto;
     bottom: -50px;
-    right: -50%;
+    right: -5%;
   }
 
   .custom_date_range_input {
@@ -149,5 +205,42 @@
     &::placeholder {
       font-size: var(--fs_xsmall);
     }
+  }
+}
+
+@media (min-width: 1024px) {
+  .chart_toggler_block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .chart_button_custom {
+    padding: 10px 12px;
+  }
+  .chart_button_custom_font {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .custom_date_range {
+    right: -50%;
+  }
+}
+
+@media (min-width: 1350px) {
+  .chart_toggler_block {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1400px) {
+  .chart_button_custom_font {
+    font-size: 14px;
+  }
+  .chart_button {
+    padding: 6px 12px;
   }
 }

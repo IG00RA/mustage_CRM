@@ -131,6 +131,7 @@
   gap: 16px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  max-width: 350px;
 }
 
 .chart_category_wrap_bottom {
@@ -138,6 +139,7 @@
   gap: 16px;
   margin-bottom: 48px;
   flex-wrap: wrap;
+  max-width: 350px;
 }
 
 .chart_label {
@@ -262,11 +264,20 @@
   gap: 30px;
 }
 
-@media (min-width: 1024px) {
-  .chart_togglers_wrap {
+@media (min-width: 768px) {
+  .chart_category_wrap {
+    flex-wrap: nowrap;
+    max-width: none;
+  }
+  .chart_category_wrap_bottom {
+    flex-wrap: nowrap;
+    max-width: none;
+  }
+  .bottom_wrap {
     display: flex;
-    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    flex-direction: row;
   }
 
   .chart_toggler_block {
@@ -278,11 +289,15 @@
   .chart_box {
     height: 360px;
   }
+}
 
-  .bottom_wrap {
+@media (min-width: 1024px) {
+}
+
+@media (min-width: 1350px) {
+  .chart_togglers_wrap {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     flex-direction: row;
+    align-items: center;
   }
 }

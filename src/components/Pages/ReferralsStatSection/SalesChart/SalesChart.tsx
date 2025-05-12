@@ -21,8 +21,8 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import styles from './SalesChart.module.css';
 import useExportToExcel from '@/hooks/useExportToExcel';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
-import filterSalesData from '@/helpers/filterData';
 import { Sale } from '@/types/salesTypes';
+import { filterSalesData } from '@/helpers/filterData';
 
 ChartJS.register(
   CategoryScale,

@@ -751,7 +751,7 @@ export default function Sidebar({ closeMenu }: SidebarProps) {
                 openMenus.sets ? styles.select_open : ''
               }`}
             >
-              {isMenuAllowed('sets_view') && (
+              {/* {isMenuAllowed('sets_view') && (
                 <li
                   key={'setsView'}
                   onClick={() =>
@@ -773,7 +773,7 @@ export default function Sidebar({ closeMenu }: SidebarProps) {
                     </p>
                   </Link>
                 </li>
-              )}
+              )} */}
               {isMenuAllowed('sets_create') && (
                 <li
                   key={'setsCreate'}

@@ -61,7 +61,7 @@ export default function UploadAccounts({
         cat => cat.account_category_name === selectedCategory[0]
       )?.account_category_id;
       if (categoryId) {
-        fetchSubcategories(categoryId);
+        fetchSubcategories(categoryId, false);
       }
     } else {
       setSelectedSubcategory([]);

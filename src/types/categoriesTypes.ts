@@ -23,5 +23,8 @@ export interface CategoriesState {
   loading: boolean;
   error: string | null;
   fetchCategories: () => Promise<void>;
-  fetchSubcategories: (categoryId?: number) => Promise<void>;
+  fetchSubcategories: (
+    categoryId?: number,
+    is_accounts_set?: boolean
+  ) => Promise<void>;
 }

@@ -88,7 +88,7 @@ export default function LoadSection() {
       const categoryId = categories.find(
         cat => cat.account_category_name === selectedCategory[0]
       )?.account_category_id;
-      if (categoryId) fetchSubcategories(categoryId);
+      if (categoryId) fetchSubcategories(categoryId, false);
     } else {
       setSelectedSubcategory([]);
       setTotalAvailableAccounts(0);
@@ -214,7 +214,6 @@ export default function LoadSection() {
       date.getMonth() + 1
     }_${date.getFullYear()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}`;
 
-    // Generate XLSX file with ExcelJS
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Accounts');
 
