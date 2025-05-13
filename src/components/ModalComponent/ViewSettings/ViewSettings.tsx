@@ -1,6 +1,7 @@
 'use client';
 
 import styles from '../ModalComponent.module.css';
+import ownStyles from './ViewSettings.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useTranslations } from 'next-intl';
@@ -24,7 +25,6 @@ export default function ViewSettings({
 }: ViewSettingsProps) {
   const t = useTranslations();
 
-  // Стан для вибору чекбоксів
   const [checkedSettings, setCheckedSettings] = useState<
     Record<string, boolean>
   >(
@@ -34,11 +34,9 @@ export default function ViewSettings({
     )
   );
 
-  // Стан для порядку елементів
   const [order, setOrder] = useState<string[]>(defaultColumns);
 
   useEffect(() => {
-    // Синхронізація чекбоксів і порядку із selectedColumns при зміні пропса
     setCheckedSettings(
       defaultColumns.reduce(
         (acc, id) => ({ ...acc, [id]: selectedColumns.includes(id) }),
@@ -46,7 +44,6 @@ export default function ViewSettings({
       )
     );
 
-    // Оновлюємо порядок: спочатку вибрані колонки в їх збереженому порядку, потім решта
     const selectedInOrder = selectedColumns.filter(id =>
       defaultColumns.includes(id)
     );
@@ -82,7 +79,6 @@ export default function ViewSettings({
     onSave(newSelectedColumns);
   };
 
-  // Мемоїзоване обчислення activeButtons для моментального оновлення
   const activeButtons = useMemo(() => {
     return order.filter(id => checkedSettings[id]).map(id => t(id));
   }, [order, checkedSettings, t]);
@@ -113,7 +109,7 @@ export default function ViewSettings({
           onRemove={handleRemoveButton}
         />
       </div>
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn text="DBSettings.form.cancelBtn" onClick={onClose} />
         <SubmitBtn text="AllAccounts.modalUpdate.createBtn" />
       </div>

@@ -31,14 +31,12 @@ const settingsOptions = [
   'Names.modalCreate.megaLink',
 ];
 
-// Мапінг для перетворення значень format_field при відправці
 const settingsMapping: Record<string, string> = {
   'Names.modalCreate.id': 'account_subcategory_id',
   'Names.modalCreate.data': 'account_data',
   'Names.modalCreate.megaLink': 'archive_link',
 };
 
-// Зворотний мапінг для заповнення форми
 const reverseSettingsMapping: Record<string, string> = {
   account_subcategory_id: 'Names.modalCreate.id',
   account_data: 'Names.modalCreate.data',
@@ -77,27 +75,23 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
 
   useEffect(() => {
     if (subcategory) {
-      // Заповнення основних полів
       setValue('nameField', subcategory.account_subcategory_name);
       setValue('price', subcategory.price);
       setValue('cost', subcategory.cost_price);
       setValue('nameDescription', subcategory.description || '');
       setValue('separator', subcategory.output_separator || '');
 
-      // Обробка output_format_field для чекбоксів і порядку
       const formatFields = subcategory.output_format_field || [];
       const mappedFields = formatFields.map(
         field => reverseSettingsMapping[field] || field
       );
 
-      // Встановлюємо чекбокси
       const initialSettings: Record<string, boolean> = {};
       settingsOptions.forEach(option => {
         initialSettings[option] = mappedFields.includes(option);
       });
       setCheckedSettings(initialSettings);
 
-      // Встановлюємо порядок: спочатку поля з subcategory, потім решта
       const remainingOptions = settingsOptions.filter(
         opt => !mappedFields.includes(opt)
       );
@@ -134,7 +128,6 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
     if (!subcategory) return;
 
     try {
-      // Використовуємо порядок із order для вибраних налаштувань
       const selectedSettings = order.filter(id => checkedSettings[id]);
       const mappedSettings = selectedSettings.map(
         setting => settingsMapping[setting]
@@ -285,7 +278,7 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
         </span>
       </div>
 
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn
           text="Names.modalUpdate.closeBtn"
           onClick={() => {

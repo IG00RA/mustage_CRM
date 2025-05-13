@@ -182,8 +182,11 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
           options={categoryOptions}
           selected={
             selectedCategoryId
-              ? [categoryMap.get(selectedCategoryId) || '']
-              : ['']
+              ? [
+                  categoryMap.get(selectedCategoryId) ||
+                    t('AllAccounts.selectBtn'),
+                ]
+              : [t('AllAccounts.selectBtn')]
           }
           onSelect={handleCategorySelect}
           width={'100%'}
@@ -294,7 +297,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
         </span>
       </div>
 
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn
           text="DBSettings.form.cancelBtn"
           onClick={() => {

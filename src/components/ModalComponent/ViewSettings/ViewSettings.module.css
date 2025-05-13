@@ -1,0 +1,17 @@
+.buttons_wrap {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 32px;
+  justify-content: space-between;
+}
+
+.buttons_wrap button {
+  flex: 1;
+}
+
+@media (min-width: 370px) {
+  .buttons_wrap {
+    gap: 16px;
+  }
+}

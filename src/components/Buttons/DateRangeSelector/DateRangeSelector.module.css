@@ -72,6 +72,36 @@
   color: var(--text_dark);
 }
 
+.chart_button_all {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--disabled_grey);
+  font-size: var(--fs_small);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.58;
+  transition: background 0.3s ease, color 0.3s ease;
+  &:hover,
+  &:focus {
+    background: var(--grey_light);
+    color: var(--text_dark);
+  }
+
+  & svg {
+    margin-bottom: 2px;
+  }
+}
+
+.chart_button_all.active {
+  background: var(--grey_light);
+  color: var(--text_dark);
+}
+
 .chart_button_custom {
   position: absolute;
   bottom: 12px;
@@ -138,6 +168,9 @@
   .chart_button {
     padding: 6px 12px;
   }
+  .chart_button_all {
+    padding: 6px 12px;
+  }
   .chart_button_custom_font {
     padding: 10px 12px;
   }
@@ -160,6 +193,11 @@
 
 @media (min-width: 768px) {
   .chart_button {
+    position: static;
+    padding: 6px 4px;
+  }
+  .chart_button_all {
+    align-self: center;
     position: static;
     padding: 6px 4px;
   }
@@ -241,6 +279,9 @@
     font-size: 14px;
   }
   .chart_button {
+    padding: 6px 12px;
+  }
+  .chart_button_all {
     padding: 6px 12px;
   }
 }

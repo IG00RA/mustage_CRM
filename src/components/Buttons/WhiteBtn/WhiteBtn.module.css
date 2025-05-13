@@ -20,7 +20,7 @@
   border-radius: 12px;
   border: 1px solid var(--main_blue);
   color: var(--main_blue);
-  font-size: var(--fs_xsmall);
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: 1.58;
@@ -43,5 +43,11 @@
     border: 1px solid var(--grey);
     background: var(--grey_light);
     color: var(--disabled_grey);
+  }
+}
+
+@media (min-width: 355px) {
+  .button {
+    font-size: var(--fs_xsmall);
   }
 }

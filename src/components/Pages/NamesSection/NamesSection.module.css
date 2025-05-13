@@ -1,4 +1,6 @@
 .header_container {
+  margin: 0 auto;
+  max-width: var(--mobile_xl);
   padding: 24px;
   border-radius: 24px;
   background: var(--background);
@@ -26,8 +28,22 @@
 
 .buttons_wrap {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 16px;
   margin-top: 24px;
+
+  & > button {
+    width: 100%;
+  }
+
+  & div {
+    width: 100%;
+  }
+  & input {
+    width: 100%;
+  }
 
   & button svg {
     top: 13px;
@@ -107,13 +123,13 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 16px 24px 24px;
-  gap: 24px;
+  padding: 10px 8px 10px 16px;
+  gap: 8px;
 }
 
 .pagination_text {
   color: var(--text_dark);
-  font-size: var(--fs_small);
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.58;
@@ -128,10 +144,6 @@
   width: 36px;
   height: 36px;
   padding: 8px;
-
-  &:hover,
-  &:focus {
-  }
 }
 
 .icon_back {
@@ -182,4 +194,36 @@
   border-radius: 4px;
   border: 1px solid var(--grey);
   outline: none;
+}
+
+.table_wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .header_container {
+    margin: 0;
+  }
+  .pagination {
+    align-items: center;
+    padding: 16px 24px 24px;
+    gap: 24px;
+  }
+
+  .pagination_text {
+    font-size: var(--fs_small);
+  }
+}
+@media (min-width: 1024px) {
+  .header_container {
+    max-width: none;
+  }
+  .buttons_wrap {
+    flex-direction: row;
+    justify-content: flex-start;
+    & > button {
+      width: auto;
+    }
+  }
 }

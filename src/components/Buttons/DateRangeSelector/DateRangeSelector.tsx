@@ -258,7 +258,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     ) : (
       <button
         onClick={handleAllPeriodClick}
-        className={`${styles.chart_button} ${
+        className={`${styles.chart_button_all} ${
           dateRange === 'all' ? styles.active : ''
         }`}
       >
