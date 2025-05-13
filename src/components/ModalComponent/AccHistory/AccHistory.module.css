@@ -81,6 +81,8 @@
 }
 
 .no_data_wrap {
+  width: 80vw;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -113,6 +115,8 @@
   border-radius: 8px;
   margin: 20px;
   text-align: center;
+  width: 80vw;
+  max-width: 400px;
 }
 
 .error_icon {

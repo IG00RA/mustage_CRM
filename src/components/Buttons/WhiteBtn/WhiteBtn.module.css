@@ -1,9 +1,11 @@
 .icon {
   opacity: 1;
+  flex-shrink: 0;
   transition: opacity 0.3s ease;
 }
 
 .icon_hov {
+  flex-shrink: 0;
   position: absolute;
   top: 13px;
   left: 16px;
@@ -14,8 +16,10 @@
 .button {
   position: relative;
   display: flex;
-  padding: 8px 16px;
   align-items: center;
+  text-align: left;
+  justify-content: flex-start;
+  padding: 8px 16px;
   gap: 8px;
   border-radius: 12px;
   border: 1px solid var(--main_blue);
@@ -25,7 +29,6 @@
   font-weight: 500;
   line-height: 1.58;
   transition: background 0.3s ease;
-  white-space: nowrap;
 
   &:hover,
   &:focus {
@@ -46,8 +49,15 @@
   }
 }
 
-@media (min-width: 355px) {
+@media (min-width: 375px) {
   .button {
     font-size: var(--fs_xsmall);
+  }
+}
+
+@media (min-width: 768px) {
+  .button {
+    white-space: nowrap;
+    text-align: center;
   }
 }

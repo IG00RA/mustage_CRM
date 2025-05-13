@@ -1,4 +1,6 @@
 .header_container {
+  margin: 0 auto;
+  max-width: var(--mobile_xl);
   padding: 24px;
   border-radius: 24px;
   background: var(--background);
@@ -27,6 +29,11 @@
 .button_wrap {
   display: flex;
   gap: 8px;
+  flex-direction: column;
+
+  & button:first-child svg {
+    top: 34px;
+  }
 }
 
 .form {
@@ -129,4 +136,29 @@
 
 .modal_error {
   max-width: 500px;
+}
+
+@media (min-width: 321px) {
+  .button_wrap button:first-child svg {
+    top: 25px;
+  }
+}
+
+@media (min-width: 512px) {
+  .button_wrap button:first-child svg {
+    top: 13px;
+    left: 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .button_wrap {
+    flex-direction: row;
+    align-items: center;
+  }
+  .header_container {
+    max-width: none;
+    margin: 0;
+    margin-bottom: 24px;
+  }
 }

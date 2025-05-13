@@ -149,7 +149,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           {children}
-          <ToastContainer />
+          <ToastContainer style={{ 'zIndex': '999999', 'top':"60px" }} />
           <div id="__next"></div>
         </NextIntlClientProvider>
       </body>

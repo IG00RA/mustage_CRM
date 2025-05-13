@@ -11,7 +11,12 @@
 }
 
 .sidebar_skeleton {
-  display: none;
+  display: block;
+  position: fixed;
+  width: 285px;
+  padding: 26px 16px;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .loader {
@@ -464,22 +469,14 @@
     margin-left: 0px;
   }
 
-  .sidebar_skeleton {
-    display: block;
-    position: fixed;
-    width: 285px;
-    padding: 26px 16px;
-    height: 100vh;
-    overflow-y: auto;
-  }
-
   .links_wrap {
     right: -86px;
   }
 }
 
 @media (min-width: 1600px) {
-  .sidebar {
+  .sidebar,
+  .sidebar_skeleton {
     top: 0;
     left: calc(50% - 800px);
   }

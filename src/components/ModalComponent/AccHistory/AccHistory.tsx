@@ -72,22 +72,22 @@ export default function AccHistory({ accountId, onClose }: AccHistoryProps) {
   }
 
   if (error) {
-  return (
-    <div className={styles.error_wrap}>
-      <div className={styles.error_icon}>⚠️</div>
-      <p className={styles.error_text}>
-        {t('AllAccounts.modalHistory.error', { message: error })}
-      </p>
-      <div className={styles.buttons_wrap}>
-        <CancelBtn
-          text="Load.modalConfirm.btnClose"
-          onClick={() => {
-            onClose();
-          }}
-        />
+    return (
+      <div className={styles.error_wrap}>
+        <div className={styles.error_icon}>⚠️</div>
+        <p className={styles.error_text}>
+          {t('AllAccounts.modalHistory.error', { message: error })}
+        </p>
+        <div className={styles.buttons_wrap}>
+          <CancelBtn
+            text="Load.modalConfirm.btnClose"
+            onClick={() => {
+              onClose();
+            }}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
   }
 
   if (!historyData) {

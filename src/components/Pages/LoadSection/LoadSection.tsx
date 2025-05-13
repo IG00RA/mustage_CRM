@@ -315,7 +315,6 @@ export default function LoadSection() {
     link.download = `${fileName}.xlsx`;
     link.click();
 
-    // Generate TXT file based on server response
     const txtContent = accounts
       .map((acc: AccountDataWrapper) => {
         const formatFields = acc.account.subcategory.output_format_field || [
@@ -397,7 +396,7 @@ export default function LoadSection() {
             ]}
             selected={selectedCategory}
             onSelect={handleCategorySelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
           <CustomSelect
@@ -408,7 +407,7 @@ export default function LoadSection() {
             ]}
             selected={selectedSubcategory}
             onSelect={handleSubcategorySelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
         </div>

@@ -234,8 +234,8 @@ export default function UploadAccounts({
           selected={selectedCategory}
           onSelect={handleCategorySelect}
           multiSelections={false}
-          width={508}
-          selectWidth={383}
+          width={'100%'}
+          // selectWidth={383}
         />
       </div>
 
@@ -250,8 +250,8 @@ export default function UploadAccounts({
           selected={selectedSubcategory}
           onSelect={handleSubcategorySelect}
           multiSelections={false}
-          width={508}
-          selectWidth={383}
+          width={'100%'}
+          // selectWidth={383}
         />
       </div>
 
@@ -278,7 +278,7 @@ export default function UploadAccounts({
         </p>
       )}
 
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleReset} />
         <SubmitBtn text="Upload.modalUpload.btn" />
       </div>
