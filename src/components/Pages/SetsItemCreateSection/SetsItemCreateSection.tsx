@@ -51,7 +51,7 @@ export default function SetsItemCreateSection() {
     }
     fetchSets().then(data => {
       setAccountSets(data.items);
-         });
+    });
   }, [categories, fetchCategories, fetchSets]);
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function SetsItemCreateSection() {
       const response = await createSetItem(setId, requestBody);
       if (response.status === 'formed') {
         toast.success(response.message || t('Sets.createItem.successMessage'));
-               reset({
+        reset({
           namesPrice: undefined,
           accQuantity: undefined,
         });
@@ -172,7 +172,7 @@ export default function SetsItemCreateSection() {
             ]}
             selected={selectedCategory}
             onSelect={handleCategorySelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
           <CustomSelect
@@ -180,7 +180,7 @@ export default function SetsItemCreateSection() {
             options={[t('Load.names'), ...filteredSets]}
             selected={selectedSet}
             onSelect={handleSetSelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
         </div>

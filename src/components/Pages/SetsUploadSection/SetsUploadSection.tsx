@@ -220,7 +220,6 @@ export default function SetsUploadSection() {
       return acc;
     }, {} as Record<string, AccountDataWrapper[]>);
 
-    // Generate TXT file
     const txtContent = Object.entries(accountsBySubcategory)
       .map(([subcatName, subcatAccounts]) => {
         const accountsData = subcatAccounts
@@ -256,7 +255,6 @@ export default function SetsUploadSection() {
     txtLink.download = `${fileName}.txt`;
     txtLink.click();
 
-    // Generate XLSX file with separate sheets for each subcategory
     const workbook = new ExcelJS.Workbook();
 
     Object.entries(accountsBySubcategory).forEach(
@@ -440,7 +438,7 @@ export default function SetsUploadSection() {
             ]}
             selected={selectedCategory}
             onSelect={handleCategorySelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
           <CustomSelect
@@ -448,7 +446,7 @@ export default function SetsUploadSection() {
             options={[t('Load.names'), ...filteredSets]}
             selected={selectedSet}
             onSelect={handleSetSelect}
-            width={602}
+            width={'100%'}
             multiSelections={false}
           />
         </div>
@@ -509,9 +507,7 @@ export default function SetsUploadSection() {
                     errors.seller_name ? styles.input_error : ''
                   }`}
                   readOnly
-                  {...register('seller_name', {
-                    // required: t('DBSettings.form.errorMessage'),
-                  })}
+                  {...register('seller_name', {})}
                 />
               </div>
               {errors.seller_name && (

@@ -201,10 +201,6 @@
   width: 36px;
   height: 36px;
   padding: 8px;
-
-  &:hover,
-  &:focus {
-  }
 }
 
 .icon_back {

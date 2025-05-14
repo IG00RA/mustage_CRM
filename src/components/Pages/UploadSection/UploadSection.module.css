@@ -32,7 +32,11 @@
   flex-direction: column;
 
   & button:first-child svg {
-    top: 34px;
+    top: 20px;
+  }
+
+  & button {
+    align-self: flex-start;
   }
 }
 
@@ -138,16 +142,21 @@
   max-width: 500px;
 }
 
-@media (min-width: 321px) {
+@media (min-width: 350px) {
   .button_wrap button:first-child svg {
-    top: 25px;
+    top: 22px;
+  }
+}
+
+@media (min-width: 390px) {
+  .button_wrap button:first-child svg {
+    top: 26px;
   }
 }
 
 @media (min-width: 512px) {
   .button_wrap button:first-child svg {
     top: 13px;
-    left: 16px;
   }
 }
 

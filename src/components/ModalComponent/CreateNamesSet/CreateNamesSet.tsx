@@ -215,7 +215,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+    <form onSubmit={handleSubmit(onSubmit)} className={ownStyles.form}>
       <div className={ownStyles.field_wrap_main}>
         <div className={ownStyles.field_wrap}>
           <div className={styles.field}>

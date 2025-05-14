@@ -263,6 +263,8 @@
   align-items: center;
   flex-direction: column;
   gap: 12px;
+  width: 80vw;
+  max-width: 550px;
 }
 
 @media (min-width: 768px) {

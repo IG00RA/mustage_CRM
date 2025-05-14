@@ -42,32 +42,34 @@ export default function AccHistory({ accountId, onClose }: AccHistoryProps) {
 
   if (loading) {
     return (
-      <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
-        <div className={styles.account_info}>
-          {[...Array(6)].map((_, index) => (
-            <p className={styles.info_text} key={index}>
-              <Skeleton width={100} />
-              <Skeleton width={200} />
-            </p>
-          ))}
-        </div>
-        <div className={styles.history_section}>
-          <h3 className={styles.history_title}>
-            <Skeleton width={150} />
-          </h3>
-          <ul>
-            {[...Array(2)].map((_, index) => (
-              <li className={styles.history_item} key={index}>
-                <Skeleton width={120} />
-                <Skeleton width={300} />
-              </li>
+      <div className={styles.wrap}>
+        <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
+          <div className={styles.account_info}>
+            {[...Array(6)].map((_, index) => (
+              <p className={styles.info_text} key={index}>
+                <Skeleton width={100} />
+                <Skeleton width={200} />
+              </p>
             ))}
-          </ul>
-        </div>
-        <div className={styles.buttons_wrap}>
-          <Skeleton width={350} height={40} />
-        </div>
-      </SkeletonTheme>
+          </div>
+          <div className={styles.history_section}>
+            <h3 className={styles.history_title}>
+              <Skeleton width={150} />
+            </h3>
+            <ul>
+              {[...Array(2)].map((_, index) => (
+                <li className={styles.history_item} key={index}>
+                  <Skeleton width={120} />
+                  <Skeleton width={300} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className={styles.buttons_wrap}>
+            <Skeleton width={350} height={40} />
+          </div>
+        </SkeletonTheme>
+      </div>
     );
   }
 

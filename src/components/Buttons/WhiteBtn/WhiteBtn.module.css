@@ -8,7 +8,7 @@
   flex-shrink: 0;
   position: absolute;
   top: 9px;
-  left: calc(50% - 107px);
+  left: 16px;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -52,7 +52,6 @@
 @media (min-width: 350px) {
   .icon_hov {
     top: 11px;
-    left: calc(50% - 123px);
   }
   .button {
     font-size: var(--fs_small);
@@ -62,7 +61,6 @@
 @media (min-width: 390px) {
   .icon_hov {
     top: 13px;
-    left: calc(50% - 139px);
   }
   .button {
     font-size: var(--fs_xsmall);

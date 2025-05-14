@@ -481,21 +481,21 @@ export default function ServersProxiesSection() {
             options={geoOptions}
             selected={selectGeo}
             onSelect={setSelectGeo}
-            width={250}
+            width={'100%'}
           />
           <CustomSelect
             label={`${t('ServersProxiesSection.activityMode')}:`}
             options={modeOptions}
             selected={selectMode}
             onSelect={setSelectMode}
-            width={320}
+            width={'100%'}
           />
           <CustomSelect
             label={`${t('ServersProxiesSection.serverStatus')}:`}
             options={statusOptions}
             selected={selectStatus}
             onSelect={setSelectStatus}
-            width={300}
+            width={'100%'}
           />
         </div>
         <div className={styles.table_wrapper}>
@@ -620,14 +620,14 @@ export default function ServersProxiesSection() {
             options={geoOptions}
             selected={selectProxyGeo}
             onSelect={setSelectProxyGeo}
-            width={250}
+            width={'100%'}
           />
           <CustomSelect
             label={`${t('ServersProxiesSection.activityMode')}:`}
             options={modeOptions}
             selected={selectProxyMode}
             onSelect={setSelectProxyMode}
-            width={320}
+            width={'100%'}
           />
         </div>
         <div className={styles.table_wrapper}>
