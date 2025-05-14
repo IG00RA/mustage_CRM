@@ -25,10 +25,14 @@
 
 .buttons_wrap {
   display: flex;
-  gap: 16px;
+  gap: 10px;
+  flex-direction: column;
   padding-left: 24px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--grey);
+  & > div {
+    max-width: 350px;
+  }
 }
 
 .table_container {
@@ -59,12 +63,12 @@
     padding-left: 24px;
   }
 }
-
 .th {
   color: var(--text_light);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
+  min-width: 80px;
 }
 
 .td {
@@ -115,10 +119,12 @@
 
 .table_add_btn {
   display: flex;
+  flex-direction: column-reverse;
   justify-content: center;
   align-items: center;
   gap: 12px;
   padding: 16px 0 24px;
+
 }
 
 .table_header {
@@ -156,10 +162,9 @@
 }
 
 .replenishment_table_wrapper {
-  max-height: 185px;
+  max-height: 290px;
   overflow-y: auto;
   overflow-x: auto;
-  width: px;
   border-bottom: 1px solid var(--grey);
 }
 
@@ -225,4 +230,21 @@
 
 .modal_error {
   max-width: 500px;
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .replenishment_table_wrapper {
+    max-height: 185px;
+  }
+
+  .table_add_btn {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
 }

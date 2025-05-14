@@ -278,7 +278,6 @@ export default function AutoFarmSection() {
     },
   ];
 
-  // Умовно додаємо колонку дій, якщо є права на UPDATE або is_admin: true
   if (autofarmAccess.hasUpdate) {
     mainColumns.push({
       id: 'actions',
@@ -391,14 +390,14 @@ export default function AutoFarmSection() {
             options={[t('AutoFarmSection.geoSelect'), ...GEO_OPTIONS]}
             selected={selectGeoAcc}
             onSelect={setSelectGeoAcc}
-            width={296}
+            width={'100%'}
           />
           <CustomSelect
             label={`${t('AutoFarmSection.type')}:`}
             options={[t('AutoFarmSection.typeSelect'), ...ACTIVITY_MODES]}
             selected={selectTypeAcc}
             onSelect={setSelectTypeAcc}
-            width={296}
+            width={'100%'}
           />
         </div>
         <div className={styles.table_wrapper}>
@@ -444,14 +443,14 @@ export default function AutoFarmSection() {
             options={[t('AutoFarmSection.geoSelect'), ...GEO_OPTIONS]}
             selected={selectGeoReplenishment}
             onSelect={setSelectGeoReplenishment}
-            width={250}
+            width={'100%'}
           />
           <CustomSelect
             label={`${t('AutoFarmSection.type')}:`}
             options={[t('AutoFarmSection.typeSelect'), ...ACTIVITY_MODES]}
             selected={selectTypeReplenishment}
             onSelect={setSelectTypeReplenishment}
-            width={350}
+            width={'100%'}
           />
         </div>
         <div className={styles.replenishment_table_wrapper}>

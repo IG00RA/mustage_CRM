@@ -207,7 +207,7 @@ export default function ReplenishmentAccountsFarm({
           selected={selectGeo}
           onSelect={setSelectGeo}
           multiSelections={false}
-          width={508}
+          width={'100%'}
         />
       </div>
 
@@ -218,7 +218,7 @@ export default function ReplenishmentAccountsFarm({
           selected={selectMode}
           onSelect={setSelectMode}
           multiSelections={false}
-          width={508}
+          width={'100%'}
         />
       </div>
 
@@ -250,7 +250,7 @@ export default function ReplenishmentAccountsFarm({
         </p>
       )}
 
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn
           text="AutoFarmSection.modalReplenishmentAcc.btnCancel"
           onClick={handleReset}

@@ -13,3 +13,17 @@
     line-height: 1.37;
   }
 }
+
+.buttons_wrap {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+}

@@ -34,7 +34,7 @@
 
 .textarea {
   font-family: var(--font_sfPro);
-  width: 602px;
+  max-width: 602px;
   height: 120px;
   resize: none;
 }

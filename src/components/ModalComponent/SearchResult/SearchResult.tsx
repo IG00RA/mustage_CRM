@@ -103,7 +103,7 @@ export default function SearchResult({
             readOnly
           />
         </div>
-        <div className={styles.buttons_wrap}>
+        <div className={ownStyles.buttons_wrap}>
           <CancelBtn
             text="DistributionSettings.modalUpload.btnCancel"
             onClick={onClose}

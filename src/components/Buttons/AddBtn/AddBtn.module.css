@@ -5,7 +5,7 @@
 
 .icon_hov {
   position: absolute;
-  top: 14px;
+  top: 9px;
   left: 16px;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -21,7 +21,7 @@
   background: var(--main_blue);
   transition: background 0.3s ease;
   color: var(--grey_light);
-  font-size: var(--fs_xsmall);
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
   line-height: 1.37;
@@ -36,5 +36,25 @@
     & .icon_hov {
       opacity: 1;
     }
+  }
+}
+
+@media (min-width: 350px) {
+  .button {
+    font-size: var(--fs_small);
+  }
+
+  .icon_hov {
+    top: 11px;
+  }
+}
+
+@media (min-width: 375px) {
+  .button {
+    font-size: var(--fs_xsmall);
+  }
+
+  .icon_hov {
+    top: 14px;
   }
 }

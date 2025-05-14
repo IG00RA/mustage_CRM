@@ -86,12 +86,7 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
-  &:first-child {
-    width: 64px;
-  }
-  &:last-child {
-    width: 305px;
-  }
+  min-width: 80px;
 }
 
 .td {
@@ -125,8 +120,8 @@
 
 .bottom_wrap {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: column-reverse;
+  gap: 12px;
   padding: 8px;
 }
 
@@ -210,6 +205,8 @@
   align-items: center;
   gap: 10px;
   flex-direction: column;
+  width: 80vw;
+  max-width: 550px;
 }
 
 .modal_btn_wrap {

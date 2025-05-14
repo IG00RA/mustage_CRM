@@ -47,7 +47,7 @@
 
 .textarea {
   font-family: var(--font_sfPro);
-  width: 602px;
+  max-width: 602px;
   height: 120px;
   resize: none;
 }
@@ -55,4 +55,19 @@
 .textarea::placeholder {
   font-family: var(--font_sfPro);
   transition: all 0.3s ease;
+}
+
+.buttons_wrap {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
 }

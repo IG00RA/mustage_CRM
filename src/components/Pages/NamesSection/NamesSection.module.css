@@ -85,12 +85,7 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
-  &:first-child {
-    width: 64px;
-  }
-  &:last-child {
-    width: 305px;
-  }
+  min-width: 80px;
 }
 
 .td {

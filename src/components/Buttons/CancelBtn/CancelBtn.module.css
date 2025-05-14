@@ -8,7 +8,7 @@
   border-radius: 12px;
   border: 1px solid var(--main_blue);
   color: var(--main_blue);
-  font-size: var(--fs_xsmall);
+  font-size: var(--fs_small);
   font-style: normal;
   font-weight: 600;
   line-height: 1.37;
@@ -25,6 +25,7 @@
 @media (min-width: 360px) {
   .button {
     padding: 12px 16px;
+    font-size: var(--fs_xsmall);
   }
 }
 

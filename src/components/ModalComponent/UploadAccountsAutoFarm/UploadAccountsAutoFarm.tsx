@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import styles from '../ModalComponent.module.css';
+import ownStyles from './UploadAccountsAutoFarm.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
@@ -242,7 +243,7 @@ export default function UploadAccountsAutoFarm({
                 : ''
             );
           }}
-          width={298}
+          width={'100%'}
           multiSelections={false}
         />
         {categoriesLoading && <p>{t('AutoFarmSection.loading')}</p>}
@@ -269,7 +270,7 @@ export default function UploadAccountsAutoFarm({
             }
             setValue('fpNumber', selected[0]);
           }}
-          width={298}
+          width={'100%'}
           multiSelections={false}
         />
       </div>
@@ -282,7 +283,7 @@ export default function UploadAccountsAutoFarm({
         />
       </div>
 
-      <div className={styles.buttons_wrap}>
+      <div className={ownStyles.buttons_wrap}>
         <CancelBtn
           text="AutoFarmSection.modalLoad.btnCancel"
           onClick={() => {

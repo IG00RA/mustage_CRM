@@ -151,6 +151,7 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
+  min-width: 80px;
 }
 .td {
   color: var(--text_dark);

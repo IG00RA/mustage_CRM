@@ -69,14 +69,8 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
-  &:first-child {
-    width: 64px;
-  }
-  &:last-child {
-    width: 175px;
-  }
+  min-width: 80px;
 }
-
 .td {
   color: var(--text_dark);
   font-size: var(--fs_small);

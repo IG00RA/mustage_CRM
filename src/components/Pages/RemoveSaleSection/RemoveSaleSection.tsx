@@ -375,7 +375,7 @@ export default function RemoveSaleSection() {
                 : t('RemoveSaleSection.ascending'),
             ]}
             onSelect={handleSortChange}
-            width={350}
+            width={'100%'}
             multiSelections={false}
           />
           <SearchInput
@@ -395,40 +395,45 @@ export default function RemoveSaleSection() {
       </div>
       <div className={styles.table_container}>
         {showLoader && <Loader error={error} />}
-        <table className={styles.table}>
-          <thead className={styles.thead}>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th
-                    className={styles.th}
-                    key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {{ asc: ' ↑', desc: ' ↓' }[
-                      header.column.getIsSorted() as string
-                    ] ?? null}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className={styles.tbody}>
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <td className={styles.td} key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className={styles.table_wrap}>
+          <table className={styles.table}>
+            <thead className={styles.thead}>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th
+                      className={styles.th}
+                      key={header.id}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {{ asc: ' ↑', desc: ' ↓' }[
+                        header.column.getIsSorted() as string
+                      ] ?? null}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className={styles.tbody}>
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <td className={styles.td} key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className={styles.bottom_wrap}>
           <div className={styles.download_wrap}>
             <WhiteBtn

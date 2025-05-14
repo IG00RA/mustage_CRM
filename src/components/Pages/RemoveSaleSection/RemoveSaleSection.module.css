@@ -61,7 +61,7 @@
 
 .textarea {
   font-family: var(--font_sfPro);
-  width: 602px;
+  max-width: 602px;
   height: 120px;
   resize: none;
 }
@@ -81,7 +81,17 @@
 
 .search_wrap {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 350px;
+
+  & input {
+    width: 100%;
+  }
+  & > div {
+    max-width: 350px;
+  }
 }
 
 .table_container {
@@ -118,12 +128,7 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.84;
-  &:first-child {
-    width: 64px;
-  }
-  &:last-child {
-    width: 305px;
-  }
+  min-width: 80px;
 }
 
 .td {
@@ -157,26 +162,31 @@
 
 .bottom_wrap {
   display: flex;
-  justify-content: space-between;
-  padding: 16px 24px 24px;
+  flex-direction: column-reverse;
+  gap: 12px;
+  padding: 8px;
 }
 
 .download_wrap {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  flex-direction: column;
+  & button {
+    align-self: flex-start;
+  }
 }
 
 .pagination {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-
-  gap: 24px;
+  padding: 10px 8px 10px 16px;
+  gap: 8px;
 }
 
 .pagination_text {
   color: var(--text_dark);
-  font-size: var(--fs_small);
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.58;
@@ -217,5 +227,58 @@
   &:focus {
     border: none;
     outline: none;
+  }
+}
+
+.table_wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.modal_btn_wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 80vw;
+  max-width: 400px;
+}
+
+@media (min-width: 768px) {
+  .search_wrap {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
+    max-width: none;
+  }
+
+  .download_wrap {
+    gap: 16px;
+    flex-direction: row;
+    align-items: center;
+  }
+  .bottom_wrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 24px;
+  }
+  .header_container {
+    margin: 0;
+  }
+  .pagination {
+    align-items: center;
+    padding: 16px 24px 24px;
+    gap: 24px;
+  }
+
+  .pagination_text {
+    font-size: var(--fs_small);
+  }
+}
+@media (min-width: 1024px) {
+  .header_container {
+    max-width: none;
   }
 }

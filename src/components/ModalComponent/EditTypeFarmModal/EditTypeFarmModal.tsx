@@ -229,8 +229,7 @@ export default function EditTypeFarmModal({
 
   return (
     <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
-      <div>
-        {/* Geo and Activity Mode Labels */}
+      <div className={ownStyles.wrapper}>
         <p className={ownStyles.label}>
           {t('AutoFarmSection.geo')}:{' '}
           <span className={ownStyles.text}>{geo}</span>
@@ -241,7 +240,6 @@ export default function EditTypeFarmModal({
         </p>
 
         {loading ? (
-          // Skeleton Loading State
           <div className={ownStyles.modal_content}>
             <table className={ownStyles.table_top}>
               <thead>
@@ -277,13 +275,11 @@ export default function EditTypeFarmModal({
             </table>
           </div>
         ) : error ? (
-          // Error State
           <p className={styles.error}>{error}</p>
         ) : (
-          // Data Loaded State
           <>
             {allFarmDays.length > 0 ? (
-              <>
+              <div className={ownStyles.wrap_top}>
                 <table className={ownStyles.table_top}>
                   <thead>
                     <tr>
@@ -360,7 +356,7 @@ export default function EditTypeFarmModal({
                     </tbody>
                   </table>
                 </div>
-              </>
+              </div>
             ) : (
               <p className={ownStyles.table}>
                 {t('AutoFarmSection.modalEditType.noData')}
@@ -369,7 +365,6 @@ export default function EditTypeFarmModal({
           </>
         )}
 
-        {/* Buttons */}
         <div className={ownStyles.buttons_wrap}>
           <WhiteBtn
             onClick={handleExportFiltered}
