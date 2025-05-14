@@ -149,7 +149,7 @@
   line-height: 1.37;
   transition: border 0.3s ease;
   font-family: var(--font_sfPro);
-  width: 508px;
+  max-width: 508px;
   height: 168px;
   resize: none;
   margin-bottom: 18px;

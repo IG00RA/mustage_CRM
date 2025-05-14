@@ -36,19 +36,21 @@
   gap: 16px;
   width: 100%;
   margin-bottom: 12px;
+  max-width: 602px;
 }
 
 .field {
-  width: 602px;
+  width: 100%;
+  max-width: 602px;
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .label_wrap {
   display: flex;
-  gap: 12px;
-  align-items: center;
+  gap: 6px;
+  flex-direction: column;
 }
 
 .label {
@@ -112,5 +114,14 @@
     max-width: none;
     margin: 0;
     margin-bottom: 24px;
+  }
+
+  .label_wrap {
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+  }
+  .field {
+    margin-bottom: 16px;
   }
 }
