@@ -82,7 +82,7 @@ export default function Header({
               href="/"
               className={`${styles.link} ${isBarOpen ? styles.active : ''}`}
             >
-              <span>MUSTAGE CRM</span>
+              <span>ACCOUNTS PANEL</span>
               <Icon
                 className={styles.list_icon}
                 name="icon-list-check"

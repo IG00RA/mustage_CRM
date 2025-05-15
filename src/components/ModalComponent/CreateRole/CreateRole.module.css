@@ -24,7 +24,8 @@
 }
 
 .form {
-  width: 600px;
+  width: 80vw;
+  max-width: 600px;
 }
 
 .inputWrapper {
@@ -85,6 +86,7 @@
   display: inline-block;
   width: 40px;
   height: 24px;
+  flex-shrink: 0;
 }
 
 .switch input {
@@ -128,6 +130,8 @@
 .functionsTable {
   padding: 12px;
   margin-bottom: 16px;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .tableHeader {
@@ -135,6 +139,7 @@
   justify-content: space-between;
   padding: 10px;
   font-weight: 500;
+  min-width: 540px;
 }
 
 .tableHeader span:first-child {
@@ -180,6 +185,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 8px;
   transition: background 0.3s ease;
   border-radius: 8px;
@@ -190,15 +196,17 @@
 }
 
 .name_open {
+  min-width: 510px;
   background: #f1f1f6;
 }
 
 .functionName {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-
+  min-width: 280px;
   &:hover {
     .expandButton {
       background: rgba(145, 158, 171, 0.24);
@@ -231,9 +239,10 @@
 }
 
 .checkboxes {
+  flex-shrink: 0;
   display: flex;
   gap: 32px;
-  width: 200px;
+  min-width: 200px;
   margin-left: auto;
   justify-content: flex-end;
 }
@@ -252,5 +261,11 @@
 .btnWrap {
   display: flex;
   gap: 10px;
-  flex-direction: row !important;
+  flex-direction: column !important;
+}
+
+@media (min-width: 768px) {
+  .btnWrap {
+    flex-direction: row !important;
+  }
 }

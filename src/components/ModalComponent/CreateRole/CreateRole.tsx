@@ -80,7 +80,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     mode: 'onChange',
   });
 
-  // Завантаження функцій та категорій
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -107,7 +106,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     fetchSubcategories,
   ]);
 
-  // Очищення roleFunctions та globalSubcategoriesConfig при вимкненні перемикача
   useEffect(() => {
     if (!isAccessSectionOpen) {
       setRoleFunctions({});
@@ -273,7 +271,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
         [functionId]: {
           ...current,
           isNamesChecked: newNamesChecked,
-          // Додаємо глобальні підкатегорії при увімкненні isNamesChecked
           subcategories:
             newNamesChecked &&
             globalSubcategoriesConfig.subcategories.length > 0
@@ -380,7 +377,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
           !globalSubcategoriesConfig.subcategories.includes(
             sub.account_subcategory_id
           )
-      ) // Виключаємо глобальні підкатегорії
+      )
       .map(sub => sub.account_subcategory_id);
 
     setRoleFunctions(prev => ({
@@ -416,7 +413,6 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
     }));
   };
 
-  // Глобальні підкатегорії
   const handleGlobalCategoryChange = (category: string) => {
     setGlobalSubcategoriesConfig(prev => ({
       ...prev,

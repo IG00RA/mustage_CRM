@@ -57,7 +57,6 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     )
   );
 
-  // Ініціалізація глобальних підкатегорій із ролі
   const initialGlobalSubcategories =
     role.functions.length > 0
       ? role.functions.reduce((common, func) => {
@@ -117,7 +116,6 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     },
   });
 
-  // Завантаження функцій та категорій
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -144,7 +142,6 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     fetchSubcategories,
   ]);
 
-  // Очищення при зміні стану тоглерів
   useEffect(() => {
     if (!isAccessSectionOpen) {
       setRoleFunctions({});
@@ -157,7 +154,6 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
     }
   }, [isAccessSectionOpen]);
 
-  // Очищення глобальних підкатегорій при вимкненні тоглера
   useEffect(() => {
     if (!isGlobalSubcategoriesOpen) {
       setGlobalSubcategoriesConfig(prev => ({

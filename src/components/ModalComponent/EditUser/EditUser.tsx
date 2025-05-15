@@ -573,13 +573,6 @@ export default function EditUser({
               onChange={handleNotificationsToggle}
               label={t('UserSection.modalCreate.notifSettings')}
             />
-            {isAddAllSubcategoriesEnabled && (
-              <WhiteBtn
-                onClick={handleAddAllSubcategories}
-                text={'UserSection.modalCreate.addAllSubcategoriesBtn'}
-                icon="icon-add-color"
-              />
-            )}
           </div>
         </div>
 
@@ -611,11 +604,20 @@ export default function EditUser({
               />
             </div>
             <div className={`${styles.field} ${ownStyles.field}`}>
-              <WhiteBtn
-                onClick={handleAddSubcategories}
-                text={'UserSection.modalCreate.namesBtn'}
-                icon="icon-add-color"
-              />
+              <div className={ownStyles.checkbox_wrapper}>
+                <WhiteBtn
+                  onClick={handleAddSubcategories}
+                  text={'UserSection.modalCreate.namesBtn'}
+                  icon="icon-add-color"
+                />
+                {isAddAllSubcategoriesEnabled && (
+                  <WhiteBtn
+                    onClick={handleAddAllSubcategories}
+                    text={'UserSection.modalCreate.addAllSubcategoriesBtn'}
+                    icon="icon-add-color"
+                  />
+                )}
+              </div>
             </div>
             <div className={styles.field}>
               <label className={styles.label}>
@@ -629,7 +631,7 @@ export default function EditUser({
           </>
         )}
 
-        <div className={styles.buttons_wrap}>
+        <div className={ownStyles.buttons_wrap}>
           <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleClose} />
           <SubmitBtn
             text={

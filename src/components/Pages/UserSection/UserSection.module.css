@@ -26,12 +26,20 @@
 
 .buttons_wrap {
   display: flex;
-  gap: 16px;
+  gap: 10px;
+  flex-direction: column;
   margin-top: 24px;
 
   & button svg {
     top: 13px;
     left: 16px;
+  }
+  & button {
+    align-self: flex-start;
+  }
+
+  & input {
+    width: 100%;
   }
 }
 
@@ -70,6 +78,14 @@
   font-weight: 600;
   line-height: 1.84;
   min-width: 80px;
+  &:first-child {
+    min-width: auto;
+    width: 40px;
+  }
+
+  &:nth-child(2) {
+    min-width: 155px;
+  }
 }
 
 .td {
@@ -98,17 +114,22 @@
   }
 }
 
+.table_wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .pagination {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 16px 24px 24px;
-  gap: 24px;
+  padding: 10px 8px 10px 16px;
+  gap: 8px;
 }
 
 .pagination_text {
   color: var(--text_dark);
-  font-size: var(--fs_small);
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.58;
@@ -149,5 +170,23 @@
   &:focus {
     border: none;
     outline: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .pagination {
+    align-items: center;
+    padding: 16px 24px 24px;
+    gap: 24px;
+  }
+
+  .pagination_text {
+    font-size: var(--fs_small);
   }
 }

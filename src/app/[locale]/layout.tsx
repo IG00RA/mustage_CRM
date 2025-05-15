@@ -60,8 +60,8 @@ const localeMetadata: Record<
       'вакансії, робота, Mustage Team, digital-маркетинг, affiliate-маркетинг, кар’єра',
   },
   ru: {
-    title: 'Mustage CRM – Админ-панель для управления аккаунтами',
-    description: 'Mustage CRM – Админ-панель для управления аккаунтами',
+    title: 'ACCOUNTS PANEL – Админ-панель для управления аккаунтами',
+    description: 'ACCOUNTS PANEL – Админ-панель для управления аккаунтами',
     keywords:
       'вакансии, работа, Mustage Team, digital-маркетинг, affiliate-маркетинг, карьера',
   },
@@ -149,7 +149,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           {children}
-          <ToastContainer style={{ 'zIndex': '999999', 'top':"60px" }} />
+          <ToastContainer style={{ zIndex: '999999', top: '60px' }} />
           <div id="__next"></div>
         </NextIntlClientProvider>
       </body>

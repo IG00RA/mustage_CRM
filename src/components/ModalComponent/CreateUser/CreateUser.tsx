@@ -575,7 +575,7 @@ export default function CreateUser({
               />
             </div>
             <div className={`${styles.field} ${ownStyles.field}`}>
-              <div className={ownStyles.checkboxWrapper}>
+              <div className={ownStyles.checkbox_wrapper}>
                 <WhiteBtn
                   onClick={handleAddSubcategories}
                   text={'UserSection.modalCreate.namesBtn'}
@@ -602,7 +602,7 @@ export default function CreateUser({
           </>
         )}
 
-        <div className={styles.buttons_wrap}>
+        <div className={ownStyles.buttons_wrap}>
           <CancelBtn text="DBSettings.form.cancelBtn" onClick={handleClose} />
           <SubmitBtn
             text={

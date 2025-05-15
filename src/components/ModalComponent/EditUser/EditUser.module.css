@@ -24,7 +24,8 @@
 }
 
 .form {
-  width: 600px;
+  width: 80vw;
+  max-width: 600px;
 }
 
 .inputWrapper {
@@ -50,10 +51,68 @@
   font-size: 12px;
 }
 
-.checkboxWrapper {
+.checkbox_wrapper {
   display: flex;
-  gap: 10px;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+
+  & button:nth-child(2) {
+    width: 220px;
+    & svg:nth-child(2) {
+      top: 18px;
+    }
+  }
 }
 
+.buttons_wrap {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+}
 
+@media (min-width: 350px) {
+  .checkbox_wrapper {
+    & button:nth-child(2) {
+      width: 245px;
+      & svg:nth-child(2) {
+        top: 22px;
+      }
+    }
+  }
+}
+
+@media (min-width: 387px) {
+  .checkbox_wrapper {
+    & button:nth-child(2) {
+      & svg:nth-child(2) {
+        top: 25px;
+      }
+    }
+  }
+}
+
+@media (min-width: 440px) {
+  .checkbox_wrapper {
+    & button:nth-child(2) {
+      width: auto;
+      & svg:nth-child(2) {
+        top: 12px;
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .checkbox_wrapper {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+  }
+}

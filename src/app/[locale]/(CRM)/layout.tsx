@@ -6,7 +6,7 @@ import ResponsiveNav from '@/components/ResponsiveNav/ResponsiveNav';
 
 export const generateMetadata = async () => {
   return {
-    title: `Админ-панель | Mustage CRM`,
+    title: `Админ-панель | Mustage ACCOUNTS PANEL`,
     description: 'Админ-панель для управления аккаунтами',
   };
 };
