@@ -21,3 +21,10 @@
   margin-right: 4px;
   transition: fill 0.3s ease;
 }
+
+.drag_handle {
+  touch-action: none;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+}

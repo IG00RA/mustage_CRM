@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  TouchSensor,
   DragEndEvent,
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -32,11 +33,16 @@ export default function CustomDragDrop({
   }, [settingsOptions]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    })
   );
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    // Перевіряємо, чи over не null і чи ідентифікатори різні
     if (over && active.id !== over.id) {
       const newSettings = arrayMove(
         settings,
@@ -46,7 +52,6 @@ export default function CustomDragDrop({
       setSettings(newSettings);
       onReorder(newSettings);
     }
-    // Якщо over === null, нічого не робимо
   };
 
   const SortableItem: FC<{ id: string; children: ReactNode }> = ({
@@ -58,18 +63,21 @@ export default function CustomDragDrop({
     return (
       <div
         ref={setNodeRef}
-        style={{ transform: CSS.Transform.toString(transform), transition }}
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition,
+        }}
         className={styles.checkbox_field}
-        {...attributes}
-        {...listeners}
       >
-        <Icon
-          name="icon-line-drag"
-          className={styles.drag_icon}
-          width={16}
-          height={16}
-          color="#e1e1ec"
-        />
+        <div className={styles.drag_handle} {...attributes} {...listeners}>
+          <Icon
+            name="icon-line-drag"
+            className={styles.drag_icon}
+            width={16}
+            height={16}
+            color="#e1e1ec"
+          />
+        </div>
         {children}
       </div>
     );
