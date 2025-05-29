@@ -1,3 +1,4 @@
+import 'normalize.css/normalize.css';
 import '../../styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 

@@ -21,7 +21,7 @@
     "file-server": "^2.2.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.475.0",
-    "modern-normalize": "^3.0.1",
+    "normalize.css": "^8.0.1",
     "next": "^15.0.1",
     "next-intl": "^3.25.0",
     "react": "^18",

@@ -31,12 +31,30 @@ const settingsOptions = [
   'Names.modalCreate.id',
   'Names.modalCreate.data',
   'Names.modalCreate.megaLink',
+  'Names.modalCreate.accountId',
+  'Names.modalCreate.workerName',
+  'Names.modalCreate.teamleadName',
+  'Names.modalCreate.clientName',
+  'Names.modalCreate.accountName',
+  'Names.modalCreate.price',
+  'Names.modalCreate.profileLink',
+  'Names.modalCreate.sellerName',
+  'Names.modalCreate.categoryId',
 ];
 
 const settingsMapping: Record<string, string> = {
   'Names.modalCreate.id': 'account_subcategory_id',
   'Names.modalCreate.data': 'account_data',
   'Names.modalCreate.megaLink': 'archive_link',
+  'Names.modalCreate.accountId': 'account_id',
+  'Names.modalCreate.workerName': 'worker_name',
+  'Names.modalCreate.teamleadName': 'teamlead_name',
+  'Names.modalCreate.clientName': 'client_name',
+  'Names.modalCreate.accountName': 'account_name',
+  'Names.modalCreate.price': 'price',
+  'Names.modalCreate.profileLink': 'profile_link',
+  'Names.modalCreate.sellerName': 'seller_name',
+  'Names.modalCreate.categoryId': 'account_category_id',
 };
 
 export default function CreateNames({ onClose }: { onClose: () => void }) {
@@ -116,7 +134,6 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Отримуємо вибрані налаштування з урахуванням порядку з масиву order
       const selectedSettings = order.filter(id => checkedSettings[id]);
 
       const mappedSettings = selectedSettings.map(
