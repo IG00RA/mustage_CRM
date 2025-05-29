@@ -724,13 +724,13 @@ export default function Sidebar({ closeMenu }: SidebarProps) {
               <div className={styles.nav_item_link}>
                 <Icon
                   className={styles.logo}
-                  name={'icon-create-set'}
+                  name={'icon-elements'}
                   width={22}
                   height={22}
                 />
                 <Icon
                   className={styles.logo_hov}
-                  name={'icon-create-set-hover'}
+                  name={'icon-fill_elements'}
                   width={22}
                   height={22}
                 />

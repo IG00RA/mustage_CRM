@@ -587,7 +587,7 @@ export default function LoadSection() {
           category={selectedCategory[0] || ''}
           names={selectedSubcategory[0] || ''}
           accQuantity={formData?.accQuantity || ''}
-          seller={formData?.price || ''}
+          seller={currentUser?.seller?.seller_name || ''}
           sellSum={formData?.nameDescription || ''}
           tgNick={formData?.tgNick || ''}
           onConfirm={handleConfirmSubmit}

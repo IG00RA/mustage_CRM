@@ -29,18 +29,45 @@ const settingsOptions = [
   'Names.modalCreate.id',
   'Names.modalCreate.data',
   'Names.modalCreate.megaLink',
+  'Names.modalCreate.accountId',
+  'Names.modalCreate.workerName',
+  'Names.modalCreate.teamleadName',
+  'Names.modalCreate.clientName',
+  'Names.modalCreate.accountName',
+  'Names.modalCreate.price',
+  'Names.modalCreate.profileLink',
+  'Names.modalCreate.sellerName',
+  'Names.modalCreate.categoryId',
 ];
 
 const settingsMapping: Record<string, string> = {
   'Names.modalCreate.id': 'account_subcategory_id',
   'Names.modalCreate.data': 'account_data',
   'Names.modalCreate.megaLink': 'archive_link',
+  'Names.modalCreate.accountId': 'account_id',
+  'Names.modalCreate.workerName': 'worker_name',
+  'Names.modalCreate.teamleadName': 'teamlead_name',
+  'Names.modalCreate.clientName': 'client_name',
+  'Names.modalCreate.accountName': 'account_name',
+  'Names.modalCreate.price': 'price',
+  'Names.modalCreate.profileLink': 'profile_link',
+  'Names.modalCreate.sellerName': 'seller_name',
+  'Names.modalCreate.categoryId': 'account_category_id',
 };
 
 const reverseSettingsMapping: Record<string, string> = {
   account_subcategory_id: 'Names.modalCreate.id',
   account_data: 'Names.modalCreate.data',
   archive_link: 'Names.modalCreate.megaLink',
+  account_id: 'Names.modalCreate.accountId',
+  worker_name: 'Names.modalCreate.workerName',
+  teamlead_name: 'Names.modalCreate.teamleadName',
+  client_name: 'Names.modalCreate.clientName',
+  account_name: 'Names.modalCreate.accountName',
+  price: 'Names.modalCreate.price',
+  profile_link: 'Names.modalCreate.profileLink',
+  seller_name: 'Names.modalCreate.sellerName',
+  account_category_id: 'Names.modalCreate.categoryId',
 };
 
 interface EditNamesProps {
@@ -225,9 +252,7 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
             errors.nameDescription ? styles.input_error : ''
           }`}
           placeholder={t('DBSettings.form.placeholder')}
-          {...register('nameDescription', {
-            required: t('DBSettings.form.errorMessage'),
-          })}
+          {...register('nameDescription', {})}
         />
         {errors.nameDescription && (
           <p className={styles.error}>{errors.nameDescription.message}</p>
