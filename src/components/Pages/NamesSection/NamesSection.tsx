@@ -15,7 +15,9 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
+  SortingState,
 } from '@tanstack/react-table';
 import AddBtn from '../../Buttons/AddBtn/AddBtn';
 import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
@@ -45,6 +47,7 @@ interface TableSubcategory {
   description: string | null | undefined;
   output_separator: string | null | undefined;
   output_format_field: string[] | null | undefined;
+  available_accounts: number;
 }
 
 export default function NamesSection() {
@@ -80,6 +83,7 @@ export default function NamesSection() {
     }
     return { pageIndex: 0, pageSize: 5 };
   });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const isFunctionsEmpty = currentUser?.functions.length === 0;
   const subcategoryPermissions =
@@ -151,7 +155,6 @@ export default function NamesSection() {
     () => setIsOpenCreate(prev => !prev),
     []
   );
-
   const openUpdateModal = useCallback((subcategory: Subcategory) => {
     setUpdateTitle(subcategory.account_subcategory_name);
     setSelectedSubcategory(subcategory);
@@ -174,6 +177,21 @@ export default function NamesSection() {
     setSelectedDescription('');
   }, []);
 
+  const handleSort = useCallback((columnId: string) => {
+    setSorting(prev => {
+      const currentSort = prev.find(sort => sort.id === columnId);
+      const newSort = currentSort
+        ? [
+            {
+              id: columnId,
+              desc: currentSort.desc ? false : true,
+            },
+          ]
+        : [{ id: columnId, desc: true }];
+      return newSort;
+    });
+  }, []);
+
   const data = useMemo<TableSubcategory[]>(
     () =>
       subcategories.map(subcategory => ({
@@ -185,6 +203,7 @@ export default function NamesSection() {
         description: subcategory.description,
         output_separator: subcategory.output_separator,
         output_format_field: subcategory.output_format_field,
+        available_accounts: subcategory.available_accounts,
       })),
     [subcategories]
   );
@@ -232,10 +251,15 @@ export default function NamesSection() {
 
   const columns = useMemo<ColumnDef<TableSubcategory>[]>(() => {
     const baseColumns: ColumnDef<TableSubcategory>[] = [
-      { accessorKey: 'account_subcategory_id', header: 'ID' },
+      {
+        accessorKey: 'account_subcategory_id',
+        header: 'ID',
+        enableSorting: true,
+      },
       {
         accessorKey: 'account_subcategory_name',
         header: t('Names.table.name'),
+        enableSorting: true,
       },
       {
         accessorKey: 'account_category_id',
@@ -252,9 +276,25 @@ export default function NamesSection() {
             filterValue.length === 0 || filterValue.includes(String(rowValue))
           );
         },
+        enableSorting: true,
       },
-      { accessorKey: 'cost_price', header: t('Names.table.cost') },
-      { accessorKey: 'price', header: t('Names.table.price') },
+      {
+        accessorKey: 'cost_price',
+        header: t('Names.table.cost'),
+        cell: ({ getValue }) => Number(getValue()).toFixed(2),
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'price',
+        header: t('Names.table.price'),
+        cell: ({ getValue }) => Number(getValue()).toFixed(2),
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'available_accounts',
+        header: t('Names.table.availability'),
+        enableSorting: true,
+      },
     ];
 
     if (hasUpdateSubcategories) {
@@ -279,6 +319,7 @@ export default function NamesSection() {
             />
           </div>
         ),
+        enableSorting: false,
       });
     }
 
@@ -305,9 +346,11 @@ export default function NamesSection() {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: { globalFilter, pagination, columnFilters },
+    getSortedRowModel: getSortedRowModel(),
+    state: { globalFilter, pagination, columnFilters, sorting },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     autoResetPageIndex: false,
     filterFns: {
       global: (row, columnId, filterValue) => {
@@ -390,11 +433,29 @@ export default function NamesSection() {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th className={styles.th} key={header.id}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                    <th
+                      className={styles.th}
+                      key={header.id}
+                      onClick={
+                        header.column.getCanSort()
+                          ? () => handleSort(header.column.id)
+                          : undefined
+                      }
+                      style={{
+                        cursor: header.column.getCanSort()
+                          ? 'pointer'
+                          : 'default',
+                      }}
+                    >
+                      <div className={styles.header_cell}>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {header.column.getCanSort() && (
+                          <span className={styles.sort_icons}>↕</span>
+                        )}
+                      </div>
                     </th>
                   ))}
                 </tr>

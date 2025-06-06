@@ -181,6 +181,7 @@
   .header_container {
     margin: 0;
     max-width: auto;
+    margin-bottom: 24px;
   }
   .pagination {
     align-items: center;

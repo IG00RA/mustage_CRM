@@ -9,6 +9,8 @@ export interface Subcategory {
   account_subcategory_id: number;
   account_subcategory_name: string;
   account_category_id: number;
+  available_accounts: number;
+  is_accounts_set: boolean;
   price: number;
   cost_price: number;
   description?: string | null;

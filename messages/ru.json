@@ -210,6 +210,7 @@
       "price": "Цена",
       "actions": "Действия",
       "editBtn": "Редактировать",
+      "availability": "Наличие",
       "enterBtn": "Вывести описание"
     },
     "modalCreate": {
