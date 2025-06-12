@@ -283,17 +283,7 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
 
   dumpReadyAccounts: async (params: AutofarmDumpParams) => {
     set({ loading: true, error: null });
-    const queryParams = new URLSearchParams({
-      geo: params.geo,
-      activity_mode: params.activity_mode,
-      fp_number: params.fp_number.toString(),
-      subcategory_id: params.subcategory_id.toString(),
-      to_dump: params.to_dump.toString(),
-    });
-
-    const url = `${
-      ENDPOINTS.AUTO_FARM_DUMP_READY_ACCOUNTS
-    }?${queryParams.toString()}`;
+    const url = ENDPOINTS.AUTO_FARM_DUMP_READY_ACCOUNTS;
 
     try {
       const data = await fetchWithErrorHandling<AutofarmDumpResponse>(
@@ -305,6 +295,14 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
             'Content-Type': 'application/json',
           },
           credentials: 'include',
+          body: JSON.stringify({
+            geo: params.geo,
+            activity_mode: params.activity_mode,
+            fp_number: params.fp_number,
+            subcategory_id: params.subcategory_id,
+            to_dump: params.to_dump,
+            target_platform: params.target_platform ?? 'CRM',
+          }),
         },
         () => {}
       );

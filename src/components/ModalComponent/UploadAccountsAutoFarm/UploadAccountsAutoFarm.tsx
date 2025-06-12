@@ -18,6 +18,7 @@ interface FormData {
   toDump: string;
   subcategoryId: string;
   fpNumber: string;
+  target_platform?: string | null;
 }
 
 const settingsOptions = ['AutoFarmSection.modalLoad.check'];
@@ -61,6 +62,7 @@ export default function UploadAccountsAutoFarm({
       toDump: '',
       subcategoryId: '',
       fpNumber: '',
+      target_platform: 'CRM',
     },
   });
 
@@ -117,12 +119,17 @@ export default function UploadAccountsAutoFarm({
     });
 
     try {
+      const targetPlatform = checkedSettings[settingsOptions[0]]
+        ? 'SHOP'
+        : 'CRM';
+
       const response = await dumpReadyAccounts({
         geo,
         activity_mode: activityMode,
         fp_number: parseInt(data.fpNumber),
         subcategory_id: parseInt(data.subcategoryId),
         to_dump: toDumpNum,
+        target_platform: targetPlatform,
       });
 
       const subcategory = subcategories.find(
@@ -151,6 +158,7 @@ export default function UploadAccountsAutoFarm({
         toDump: '',
         subcategoryId: '',
         fpNumber: '',
+        target_platform: 'CRM',
       });
     } catch {
       toast.dismiss(toastId.current);

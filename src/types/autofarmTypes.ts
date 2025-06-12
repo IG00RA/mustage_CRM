@@ -61,6 +61,7 @@ export interface AutofarmDumpParams {
   fp_number: number;
   subcategory_id: number;
   to_dump: number;
+  target_platform?: string | null;
 }
 
 export interface GeoOption {
