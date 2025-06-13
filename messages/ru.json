@@ -144,6 +144,7 @@
     "addBtn": "Добавить столбец в представление аккаунтов",
     "form": {
       "columnName": "Название столбца в базе данных:",
+      "errorNegativeNumber": "Значение должно быть больше 0",
       "displayName": "Название столбца для отображения в таблице:",
       "dataType": "Тип данных столбца:",
       "defaultValue": "Значение по умолчанию:",
@@ -201,6 +202,7 @@
     "selectAllBtn": "Все категории",
     "selectText": "Категории:",
     "okMessage": "Операция успешна",
+    "noSubcategoriesAvailable": "Нет доступных наименований",
     "errorMessage": "Ошибка загрузки наименований",
     "table": {
       "name": "Название",
@@ -211,6 +213,8 @@
       "actions": "Действия",
       "editBtn": "Редактировать",
       "availability": "Наличие",
+      "crmAvailability": "Наличие в CRM",
+      "shopAvailability": "Наличие Shop",
       "enterBtn": "Вывести описание"
     },
     "modalCreate": {
@@ -242,6 +246,7 @@
     "modalCreateSet": {
       "title": "Создание набора",
       "description": "Для создания набора заполните все поля:",
+      "errorCategoryNotSelected": "Виберите категорию набора",
       "nameField": "Название набора (название наименования):",
       "nameCategory": "Название категории:",
       "setPrice": "Цена набора:",

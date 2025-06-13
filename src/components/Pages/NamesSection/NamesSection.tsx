@@ -47,7 +47,8 @@ interface TableSubcategory {
   description: string | null | undefined;
   output_separator: string | null | undefined;
   output_format_field: string[] | null | undefined;
-  available_accounts: number;
+  available_crm_accounts: number;
+  available_shop_accounts: number;
 }
 
 export default function NamesSection() {
@@ -203,7 +204,8 @@ export default function NamesSection() {
         description: subcategory.description,
         output_separator: subcategory.output_separator,
         output_format_field: subcategory.output_format_field,
-        available_accounts: subcategory.available_accounts,
+        available_crm_accounts: subcategory.available_crm_accounts,
+        available_shop_accounts: subcategory.available_shop_accounts,
       })),
     [subcategories]
   );
@@ -291,8 +293,13 @@ export default function NamesSection() {
         enableSorting: true,
       },
       {
-        accessorKey: 'available_accounts',
-        header: t('Names.table.availability'),
+        accessorKey: 'available_crm_accounts',
+        header: t('Names.table.crmAvailability'),
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'available_shop_accounts',
+        header: t('Names.table.shopAvailability'),
         enableSorting: true,
       },
     ];

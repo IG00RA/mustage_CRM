@@ -73,18 +73,19 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   );
 
   const filteredSubCategoryOptions = useMemo(() => {
-    if (selectedCategoryId === 0) return [];
-
-    const addedSubCategoryIds = subcategorySets.map(set => set.subcategory_id);
-
-    return subcategories
+    const filtered = subcategories
       .filter(
         sub =>
-          sub.account_category_id === selectedCategoryId &&
-          !addedSubCategoryIds.includes(sub.account_subcategory_id)
+          !subcategorySets.some(
+            set => set.subcategory_id === sub.account_subcategory_id
+          )
       )
       .map(sub => sub.account_subcategory_name);
-  }, [subcategories, selectedCategoryId, subcategorySets]);
+
+    return filtered.length > 0
+      ? filtered
+      : [t('Names.noSubcategoriesAvailable')];
+  }, [subcategories, subcategorySets, t]);
 
   const categoryMap = useMemo(
     () =>
@@ -181,6 +182,10 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   };
 
   const onSubmit = async (data: FormData) => {
+    if (selectedCategoryId === 0) {
+      toast.error(t('Names.modalCreateSet.errorCategoryNotSelected'));
+      return;
+    }
     if (subcategorySets.length === 0) {
       toast.error(t('Names.modalCreateSet.errorMessage'));
       return;
@@ -268,9 +273,14 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
               placeholder={t('DBSettings.form.placeholder')}
               type="number"
               step="any"
+              min="0"
               {...register('set_price', {
                 required: t('DBSettings.form.errorMessage'),
                 valueAsNumber: true,
+                min: {
+                  value: 0,
+                  message: t('DBSettings.form.errorNegativeNumber'),
+                },
               })}
             />
             {errors.set_price && (
@@ -318,10 +328,15 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
               }`}
               type="number"
               step="any"
+              min="0"
               placeholder={t('DBSettings.form.placeholder')}
               {...register('quantity', {
                 required: t('DBSettings.form.errorMessage'),
                 valueAsNumber: true,
+                min: {
+                  value: 0,
+                  message: t('DBSettings.form.errorNegativeNumber'),
+                },
               })}
             />
             {errors.quantity && (
@@ -351,9 +366,14 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
               placeholder={t('DBSettings.form.placeholder')}
               type="number"
               step="any"
+              min="0"
               {...register('cost', {
                 required: t('DBSettings.form.errorMessage'),
                 valueAsNumber: true,
+                min: {
+                  value: 0,
+                  message: t('DBSettings.form.errorNegativeNumber'),
+                },
               })}
             />
             {errors.cost && (

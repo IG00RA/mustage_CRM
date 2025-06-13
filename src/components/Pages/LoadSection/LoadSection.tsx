@@ -114,6 +114,7 @@ export default function LoadSection() {
       );
       if (subcategory) {
         setValue('cost', subcategory.cost_price.toString());
+        setValue('nameDescription', subcategory.price.toString()); // Set sellSum (nameDescription) to subcategory price
         fetchAccounts({
           subcategory_ids: [subcategory.account_subcategory_id],
           status: ['NOT SOLD'],

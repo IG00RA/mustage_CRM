@@ -10,6 +10,8 @@ export interface Subcategory {
   account_subcategory_name: string;
   account_category_id: number;
   available_accounts: number;
+  available_crm_accounts: number;
+  available_shop_accounts: number;
   is_accounts_set: boolean;
   price: number;
   cost_price: number;
