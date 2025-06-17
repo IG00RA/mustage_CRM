@@ -35,8 +35,11 @@ import { useUsersStore } from '@/store/usersStore';
 import { toast } from 'react-toastify';
 import { Subcategory } from '@/types/categoriesTypes';
 import { PaginationState } from '@/types/componentsTypes';
+import ViewSettings from '@/components/ModalComponent/ViewSettings/ViewSettings';
 
 const NAMES_PAGINATION_KEY = 'namesPaginationSettings';
+const NAMES_COLUMNS_KEY = 'namesColumnsSettings';
+const NAMES_COLUMN_WIDTHS_KEY = 'namesColumnWidths';
 
 interface TableSubcategory {
   account_subcategory_id: number;
@@ -68,6 +71,7 @@ export default function NamesSection() {
   const [globalFilter, setGlobalFilter] = useState('');
   const [isOpenCreate, setIsOpenCreate] = useState(false);
   const [isOpenUpdate, setIsOpenUpdate] = useState(false);
+  const [isOpenEdit, setIsOpenEdit] = useState(false);
   const [isOpenShowNamesDescription, setIsOpenShowNamesDescription] =
     useState(false);
   const [updateTitle, setUpdateTitle] = useState('');
@@ -85,6 +89,91 @@ export default function NamesSection() {
     return { pageIndex: 0, pageSize: 5 };
   });
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  const configurableColumns = useMemo<string[]>(
+    () => [
+      'Names.table.id',
+      'Names.table.name',
+      'Names.table.category',
+      'Names.table.cost',
+      'Names.table.price',
+      'Names.table.crmAvailability',
+      'Names.table.shopAvailability',
+    ],
+    []
+  );
+
+  const defaultColumns = useMemo<string[]>(
+    () => configurableColumns,
+    [configurableColumns]
+  );
+
+  const [selectedColumns, setSelectedColumns] =
+    useState<string[]>(defaultColumns);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(NAMES_COLUMNS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        setSelectedColumns(
+          parsed.filter(col => configurableColumns.includes(col))
+        );
+      }
+    }
+  }, [configurableColumns]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(NAMES_COLUMNS_KEY, JSON.stringify(selectedColumns));
+    }
+  }, [selectedColumns]);
+
+  const fieldMap = useMemo<Record<string, string>>(
+    () => ({
+      'Names.table.id': 'account_subcategory_id',
+      'Names.table.name': 'account_subcategory_name',
+      'Names.table.category': 'account_category_id',
+      'Names.table.cost': 'cost_price',
+      'Names.table.price': 'price',
+      'Names.table.crmAvailability': 'available_crm_accounts',
+      'Names.table.shopAvailability': 'available_shop_accounts',
+      'Names.table.actions': 'actions',
+    }),
+    []
+  );
+
+  const defaultColumnWidths = useMemo<Record<string, number>>(
+    () => ({
+      ...defaultColumns.reduce(
+        (acc, col) => ({ ...acc, [fieldMap[col]]: 150 }),
+        {}
+      ),
+      [fieldMap['Names.table.actions']]: 150,
+    }),
+    [defaultColumns, fieldMap]
+  );
+
+  const [columnWidths, setColumnWidths] =
+    useState<Record<string, number>>(defaultColumnWidths);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedWidths = localStorage.getItem(NAMES_COLUMN_WIDTHS_KEY);
+      if (savedWidths) {
+        setColumnWidths(JSON.parse(savedWidths));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        NAMES_COLUMN_WIDTHS_KEY,
+        JSON.stringify(columnWidths)
+      );
+    }
+  }, [columnWidths]);
 
   const isFunctionsEmpty = currentUser?.functions.length === 0;
   const subcategoryPermissions =
@@ -107,6 +196,8 @@ export default function NamesSection() {
     )?.operations || [];
   const hasReadCategories =
     isFunctionsEmpty || categoryPermissions.includes('READ');
+
+  const toggleEditModal = useCallback(() => setIsOpenEdit(prev => !prev), []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -254,17 +345,20 @@ export default function NamesSection() {
   const columns = useMemo<ColumnDef<TableSubcategory>[]>(() => {
     const baseColumns: ColumnDef<TableSubcategory>[] = [
       {
-        accessorKey: 'account_subcategory_id',
-        header: 'ID',
+        id: fieldMap['Names.table.id'],
+        accessorKey: fieldMap['Names.table.id'],
+        header: t('Names.table.id'),
         enableSorting: true,
       },
       {
-        accessorKey: 'account_subcategory_name',
+        id: fieldMap['Names.table.name'],
+        accessorKey: fieldMap['Names.table.name'],
         header: t('Names.table.name'),
         enableSorting: true,
       },
       {
-        accessorKey: 'account_category_id',
+        id: fieldMap['Names.table.category'],
+        accessorKey: fieldMap['Names.table.category'],
         header: t('Names.table.category'),
         cell: ({ row }) => {
           const categoryName = categoryMap.get(
@@ -281,24 +375,28 @@ export default function NamesSection() {
         enableSorting: true,
       },
       {
-        accessorKey: 'cost_price',
+        id: fieldMap['Names.table.cost'],
+        accessorKey: fieldMap['Names.table.cost'],
         header: t('Names.table.cost'),
         cell: ({ getValue }) => Number(getValue()).toFixed(2),
         enableSorting: true,
       },
       {
-        accessorKey: 'price',
+        id: fieldMap['Names.table.price'],
+        accessorKey: fieldMap['Names.table.price'],
         header: t('Names.table.price'),
         cell: ({ getValue }) => Number(getValue()).toFixed(2),
         enableSorting: true,
       },
       {
-        accessorKey: 'available_crm_accounts',
+        id: fieldMap['Names.table.crmAvailability'],
+        accessorKey: fieldMap['Names.table.crmAvailability'],
         header: t('Names.table.crmAvailability'),
         enableSorting: true,
       },
       {
-        accessorKey: 'available_shop_accounts',
+        id: fieldMap['Names.table.shopAvailability'],
+        accessorKey: fieldMap['Names.table.shopAvailability'],
         header: t('Names.table.shopAvailability'),
         enableSorting: true,
       },
@@ -306,7 +404,7 @@ export default function NamesSection() {
 
     if (hasUpdateSubcategories) {
       baseColumns.push({
-        id: 'actions',
+        id: fieldMap['Names.table.actions'],
         header: t('Names.table.actions'),
         cell: ({ row }) => (
           <div className={styles.table_buttons}>
@@ -337,15 +435,97 @@ export default function NamesSection() {
     openShowNamesDescription,
     openUpdateModal,
     hasUpdateSubcategories,
+    fieldMap,
   ]);
+
+  // Handle column resizing
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [startX, setStartX] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, columnId: string) => {
+      e.preventDefault();
+      setResizingColumn(columnId);
+      setStartX(e.clientX);
+      setStartWidth(columnWidths[columnId] || 150);
+      document.body.style.cursor = 'col-resize';
+    },
+    [columnWidths]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (resizingColumn) {
+        const delta = e.clientX - startX;
+        const newWidth = Math.max(30, startWidth + delta);
+        setColumnWidths(prev => ({
+          ...prev,
+          [resizingColumn]: newWidth,
+        }));
+      }
+    },
+    [resizingColumn, startX, startWidth]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setResizingColumn(null);
+    document.body.style.cursor = '';
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    if (resizingColumn) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingColumn, handleMouseMove, handleMouseUp]);
 
   const columnFilters = useMemo(
     () =>
       selectedCategoryIds.length > 0
-        ? [{ id: 'account_category_id', value: selectedCategoryIds }]
+        ? [{ id: fieldMap['Names.table.category'], value: selectedCategoryIds }]
         : [],
-    [selectedCategoryIds]
+    [selectedCategoryIds, fieldMap]
   );
+
+  const handleSaveColumns = useCallback(
+    (newSelectedColumns: string[]) => {
+      setSelectedColumns(newSelectedColumns);
+      toggleEditModal();
+    },
+    [toggleEditModal]
+  );
+
+  const initialColumnVisibility = useMemo(() => {
+    const visibility: Record<string, boolean> = {};
+    defaultColumns.forEach(col => {
+      visibility[fieldMap[col]] = selectedColumns.includes(col);
+    });
+    if (hasUpdateSubcategories) {
+      visibility[fieldMap['Names.table.actions']] = true;
+    }
+    return visibility;
+  }, [defaultColumns, selectedColumns, fieldMap, hasUpdateSubcategories]);
+
+  const columnOrder = useMemo(() => {
+    const selected = selectedColumns.filter(col =>
+      defaultColumns.includes(col)
+    );
+    const unselected = defaultColumns.filter(
+      col => !selectedColumns.includes(col)
+    );
+    const order = [...selected, ...unselected].map(col => fieldMap[col]);
+    if (hasUpdateSubcategories) {
+      order.push(fieldMap['Names.table.actions']);
+    }
+    return order;
+  }, [selectedColumns, defaultColumns, fieldMap, hasUpdateSubcategories]);
 
   const table = useReactTable({
     data,
@@ -354,7 +534,14 @@ export default function NamesSection() {
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: { globalFilter, pagination, columnFilters, sorting },
+    state: {
+      globalFilter,
+      pagination,
+      columnFilters,
+      sorting,
+      columnVisibility: initialColumnVisibility,
+      columnOrder,
+    },
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -379,7 +566,7 @@ export default function NamesSection() {
     <section className={styles.section}>
       <div className={styles.header_container}>
         <h2 className={styles.header}>{t('Sidebar.accParMenu.names')}</h2>
-        <p className={styles.header_text}>{t('Category.headerText')}</p>
+        <p className={styles.header_text}>{t('Names.headerText')}</p>
         {(hasCreateSubcategories || hasReadSubcategories) && (
           <div className={styles.buttons_wrap}>
             {hasCreateSubcategories && (
@@ -443,18 +630,26 @@ export default function NamesSection() {
                     <th
                       className={styles.th}
                       key={header.id}
-                      onClick={
-                        header.column.getCanSort()
-                          ? () => handleSort(header.column.id)
-                          : undefined
-                      }
                       style={{
                         cursor: header.column.getCanSort()
                           ? 'pointer'
                           : 'default',
+                        display: header.column.getIsVisible()
+                          ? 'table-cell'
+                          : 'none',
+                        width: columnWidths[header.id] || 150,
+                        minWidth: 30,
+                        maxWidth: 500,
                       }}
                     >
-                      <div className={styles.header_cell}>
+                      <div
+                        className={styles.header_cell}
+                        onClick={
+                          header.column.getCanSort()
+                            ? () => handleSort(header.column.id)
+                            : undefined
+                        }
+                      >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
@@ -463,6 +658,10 @@ export default function NamesSection() {
                           <span className={styles.sort_icons}>↕</span>
                         )}
                       </div>
+                      <div
+                        className={styles.resize_handle}
+                        onMouseDown={e => handleMouseDown(e, header.id)}
+                      />
                     </th>
                   ))}
                 </tr>
@@ -472,7 +671,15 @@ export default function NamesSection() {
               {table.getRowModel().rows.map(row => (
                 <tr key={row.id}>
                   {row.getVisibleCells().map(cell => (
-                    <td className={styles.td} key={cell.id}>
+                    <td
+                      className={styles.td}
+                      key={cell.id}
+                      style={{
+                        width: columnWidths[cell.column.id] || 150,
+                        minWidth: 30,
+                        maxWidth: 500,
+                      }}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -484,64 +691,86 @@ export default function NamesSection() {
             </tbody>
           </table>
         </div>
-        <div className={styles.pagination}>
-          <span className={styles.pagination_text}>
-            {t('Category.table.pagination')}
-          </span>
-          <select
-            className={styles.pagination_select}
-            value={pagination.pageSize}
-            onChange={e =>
-              setPagination(prev => ({
-                ...prev,
-                pageSize: Number(e.target.value),
-                pageIndex: 0,
-              }))
-            }
-          >
-            {[5, 10, 20, 50, 100].map(size => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-          <span className={styles.pagination_text}>
-            {pagination.pageIndex * pagination.pageSize + 1}-
-            {Math.min(
-              (pagination.pageIndex + 1) * pagination.pageSize,
-              table.getFilteredRowModel().rows.length
-            )}
-            {t('Category.table.pages')}
-            {table.getFilteredRowModel().rows.length}
-          </span>
-          <div className={styles.pagination_btn_wrap}>
-            <button
-              className={styles.pagination_btn}
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+        <div className={styles.bottom_wrap}>
+          <div className={styles.download_wrap}>
+            <WhiteBtn
+              onClick={toggleEditModal}
+              text={'AllAccounts.editBtn'}
+              icon="icon-palette"
+            />
+          </div>
+          <div className={styles.pagination}>
+            <span className={styles.pagination_text}>
+              {t('Category.table.pagination')}
+            </span>
+            <select
+              className={styles.pagination_select}
+              value={pagination.pageSize}
+              onChange={e =>
+                setPagination(prev => ({
+                  ...prev,
+                  pageSize: Number(e.target.value),
+                  pageIndex: 0,
+                }))
+              }
             >
-              <Icon
-                className={styles.icon_back}
-                name="icon-table_arrow"
-                width={20}
-                height={20}
-              />
-            </button>
-            <button
-              className={styles.pagination_btn}
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <Icon
-                className={styles.icon_forward}
-                name="icon-table_arrow"
-                width={20}
-                height={20}
-              />
-            </button>
+              {[5, 10, 20, 50, 100].map(size => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+            <span className={styles.pagination_text}>
+              {pagination.pageIndex * pagination.pageSize + 1}-
+              {Math.min(
+                (pagination.pageIndex + 1) * pagination.pageSize,
+                table.getFilteredRowModel().rows.length
+              )}
+              {t('Category.table.pages')}
+              {table.getFilteredRowModel().rows.length}
+            </span>
+            <div className={styles.pagination_btn_wrap}>
+              <button
+                className={styles.pagination_btn}
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <Icon
+                  className={styles.icon_back}
+                  name="icon-table_arrow"
+                  width={20}
+                  height={20}
+                />
+              </button>
+              <button
+                className={styles.pagination_btn}
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <Icon
+                  className={styles.icon_forward}
+                  name="icon-table_arrow"
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      <ModalComponent
+        isOpen={isOpenEdit}
+        onClose={toggleEditModal}
+        title="AllAccounts.modalUpdate.title"
+        text="AllAccounts.modalUpdate.description"
+      >
+        <ViewSettings
+          selectedColumns={selectedColumns}
+          defaultColumns={defaultColumns}
+          onClose={toggleEditModal}
+          onSave={handleSaveColumns}
+        />
+      </ModalComponent>
       <ModalComponent
         isOpen={isOpenCreate}
         onClose={toggleCreateModal}

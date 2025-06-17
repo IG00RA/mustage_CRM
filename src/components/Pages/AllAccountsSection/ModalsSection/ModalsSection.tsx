@@ -86,7 +86,6 @@ export const ModalsSection = ({
         onClose={onToggleAccHistoryModal}
         title="AllAccounts.historyTitle"
         editedTitle={selectedAccount?.name}
-        // maxWidth="440px"
       >
         <AccHistory
           onClose={onToggleAccHistoryModal}
