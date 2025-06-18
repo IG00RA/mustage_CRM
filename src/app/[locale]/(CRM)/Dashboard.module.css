@@ -14,5 +14,9 @@
   .main {
     padding: 24px 32px 48px 317px;
     max-width: 1600px;
+    transition: padding-left 0.3s ease;
+  }
+  .mainCollapsed {
+    padding-left: 110px;
   }
 }

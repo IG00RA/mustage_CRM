@@ -3,16 +3,38 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Header from '@/components/Header/Header';
+import styles from '../../app/[locale]/(CRM)/Dashboard.module.css';
 
-export default function ResponsiveNav() {
+export default function ResponsiveNav({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isMobile, setIsMobile] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    const savedCollapsed = localStorage.getItem('sidebarCollapsed');
+    if (savedCollapsed !== null) {
+      setIsCollapsed(savedCollapsed === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', isCollapsed.toString());
+  }, [isCollapsed]);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => !prev);
+  };
 
   const closeMenu = () => {
     setIsMenuOpen(false);
     document.body.style.overflow = 'auto';
     document.body.style.touchAction = 'auto';
   };
+
   const openMenu = () => {
     setIsMenuOpen(true);
     document.body.style.overflow = 'hidden';
@@ -29,9 +51,27 @@ export default function ResponsiveNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return isMobile ? (
-    <Header isMenuOpen={isMenuOpen} openMenu={openMenu} closeMenu={closeMenu} />
-  ) : (
-    <Sidebar closeMenu={closeMenu} />
+  return (
+    <div className={styles.main_wrap}>
+      {isMobile ? (
+        <Header
+          isMenuOpen={isMenuOpen}
+          openMenu={openMenu}
+          closeMenu={closeMenu}
+        />
+      ) : (
+        <Sidebar
+          closeMenu={closeMenu}
+          isCollapsed={isCollapsed}
+          toggleCollapse={toggleCollapse}
+        />
+      )}
+
+      <main
+        className={`${styles.main} ${isCollapsed ? styles.mainCollapsed : ''}`}
+      >
+        {children}
+      </main>
+    </div>
   );
 }
