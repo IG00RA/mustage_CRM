@@ -62,6 +62,8 @@ export interface FetchAllAccountsParams extends BaseRequest {
   sold_end_date?: string;
   upload_start_date?: string;
   upload_end_date?: string;
+  platform?: string;
+  set_item_id?: null;
 }
 
 export interface FetchAccountsParams extends BaseRequest {
@@ -77,6 +79,8 @@ export interface FetchAccountsParams extends BaseRequest {
   upload_start_date?: string;
   upload_end_date?: string;
   in_set?: boolean;
+  platform?: string;
+  set_item_id?: null;
 }
 
 export interface SearchResponse {

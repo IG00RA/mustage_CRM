@@ -63,6 +63,14 @@ export const useAccountsStore = create<AccountsState>(set => ({
       requestBody.in_set = params.in_set;
     }
 
+    if (params.platform === 'CRM') {
+      requestBody.platform = params.platform;
+    }
+
+    if (params.set_item_id === null) {
+      requestBody.set_item_id = params.set_item_id;
+    }
+
     const url = ENDPOINTS.ACCOUNTS;
     const data = await fetchWithErrorHandling<{
       items: Account[];

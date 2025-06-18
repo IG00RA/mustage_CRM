@@ -114,10 +114,12 @@ export default function LoadSection() {
       );
       if (subcategory) {
         setValue('cost', subcategory.cost_price.toString());
-        setValue('nameDescription', subcategory.price.toString()); // Set sellSum (nameDescription) to subcategory price
+        setValue('nameDescription', subcategory.price.toString());
         fetchAccounts({
           subcategory_ids: [subcategory.account_subcategory_id],
           status: ['NOT SOLD'],
+          platform: 'CRM',
+          set_item_id: null,
         }).then(data => {
           setTotalAvailableAccounts(data.total_rows);
           setValue('nameField', data.total_rows.toString());
