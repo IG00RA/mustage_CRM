@@ -43,6 +43,6 @@ export type MobMenuProps = {
 
 export type SidebarProps = {
   closeMenu: () => void;
-  isCollapsed: boolean;
-  toggleCollapse: () => void;
+  isCollapsed?: boolean;
+  toggleCollapse?: () => void;
 };
