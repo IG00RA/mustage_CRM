@@ -72,10 +72,10 @@ const menuFunctionMap: MenuFunctionMap = {
   roles: 'Должности',
   referrals_all: 'Все рефералы',
   referrals_stat: 'Статистика реферальной системы',
-  sets_create: 'Создание наборов',
-  sets_create_item: 'Создание единицы набора',
-  sets_view: 'Просмотр всех наборов',
-  sets_upload: 'Выгрузка наборов',
+  sets_create: 'Наборы акаунтов',
+  sets_create_item: 'Наборы акаунтов',
+  sets_view: 'Наборы акаунтов',
+  sets_upload: 'Наборы акаунтов',
 };
 
 export default function Sidebar({
@@ -193,8 +193,8 @@ export default function Sidebar({
     if (!currentUser || currentUser.is_admin) return true;
     if (!currentUser.functions || currentUser.functions.length === 0)
       return true;
-
     const functionName = menuFunctionMap[link];
+
     return currentUser.functions.some(
       func => func.function_name === functionName
     );
@@ -536,6 +536,137 @@ export default function Sidebar({
                   </Link>
                 </li>
               ))}
+              {/* {hasDistributionAccess && (
+                <li
+                  className={`${styles.nav_item} ${
+                    openMenus.distribution ? styles.active : ''
+                  }`}
+                  key={'distribution'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({
+                      ...prev,
+                      distribution: !prev.distribution,
+                    }))
+                  }
+                >
+                  <div className={styles.nav_item_link}>
+                    <Icon
+                      className={styles.logo}
+                      name={'icon-box-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <Icon
+                      className={styles.logo_hov}
+                      name={'icon-fill_box-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <span className={styles.nav_item_text}>
+                      {t('Sidebar.accParMenu.distribution')}
+                    </span>
+                    <Icon
+                      className={`${styles.arrow_down} ${
+                        openMenus.distribution ? styles.active : ''
+                      }`}
+                      name="icon-angle-down"
+                      width={16}
+                      height={16}
+                      color="#A9A9C1"
+                    />
+                  </div>
+                  <ul
+                    className={`${styles.select_options} ${
+                      openMenus.distribution ? styles.select_open : ''
+                    }`}
+                  >
+                    {isMenuAllowed('distribution_settings') && (
+                      <li
+                        key={'distributionSettings'}
+                        onClick={() =>
+                          setOpenMenus(prev => ({
+                            ...prev,
+                            distribution: false,
+                          }))
+                        }
+                      >
+                        <Link
+                        onClick={closeMenu} 
+                          className={`${styles.option_item} ${
+                            isActiveSub('distribution_settings')
+                              ? styles.active_sub_link
+                              : ''
+                          }`}
+                          href={`/ru/distribution_settings`}
+                        >
+                          <div className={styles.list_sub_mark_wrap}>
+                            <span className={styles.list_sub_mark}></span>
+                          </div>
+                          <p className={styles.list_sub_text}>
+                            {t('Sidebar.accParMenu.distributionSettings')}
+                          </p>
+                        </Link>
+                      </li>
+                    )}
+                    {isMenuAllowed('distribution_create') && (
+                      <li
+                        key={'distributionCreate'}
+                        onClick={() =>
+                          setOpenMenus(prev => ({
+                            ...prev,
+                            distribution: false,
+                          }))
+                        }
+                      >
+                        <Link
+                        onClick={closeMenu} 
+                          className={`${styles.option_item} ${
+                            isActiveSub('distribution_create')
+                              ? styles.active_sub_link
+                              : ''
+                          }`}
+                          href={`/ru/distribution_create`}
+                        >
+                          <div className={styles.list_sub_mark_wrap}>
+                            <span className={styles.list_sub_mark}></span>
+                          </div>
+                          <p className={styles.list_sub_text}>
+                            {t('Sidebar.accParMenu.distributionCreate')}
+                          </p>
+                        </Link>
+                      </li>
+                    )}
+                    {isMenuAllowed('distribution_all') && (
+                      <li
+                        key={'distributionAll'}
+                        onClick={() =>
+                          setOpenMenus(prev => ({
+                            ...prev,
+                            distribution: false,
+                          }))
+                        }
+                      >
+                        <Link
+                        onClick={closeMenu} 
+                          className={`${styles.option_item} ${
+                            isActiveSub('distribution_all')
+                              ? styles.active_sub_link
+                              : ''
+                          }`}
+                          href={`/ru/distribution_all`}
+                        >
+                          <div className={styles.list_sub_mark_wrap}>
+                            <span className={styles.list_sub_mark}></span>
+                          </div>
+                          <p className={styles.list_sub_text}>
+                            {t('Sidebar.accParMenu.distributionAll')}
+                          </p>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </li>
+              )} */}
               {filteredAccParMenuBottom.map((item, index) => (
                 <li
                   ref={el => {
@@ -899,6 +1030,29 @@ export default function Sidebar({
                     openMenus.sets ? styles.select_open : ''
                   }`}
                 >
+                  {/* {isMenuAllowed('sets_view') && (
+                <li
+                  key={'setsView'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({ ...prev, sets: false }))
+                  }
+                >
+                  <Link
+                    onClick={closeMenu}
+                    className={`${styles.option_item} ${
+                      isActiveSub('sets_view') ? styles.active_sub_link : ''
+                    }`}
+                    href={`/ru/sets_view`}
+                  >
+                    <div className={styles.list_sub_mark_wrap}>
+                      <span className={styles.list_sub_mark}></span>
+                    </div>
+                    <p className={styles.list_sub_text}>
+                      {t('Sidebar.setsParMenu.viewSets')}
+                    </p>
+                  </Link>
+                </li>
+              )} */}
                   {isMenuAllowed('sets_create') && (
                     <li
                       key={'setsCreate'}
