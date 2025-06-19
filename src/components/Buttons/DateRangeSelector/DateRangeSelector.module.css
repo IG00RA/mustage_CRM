@@ -116,43 +116,30 @@
   padding: 10px 12px;
 }
 
+/* Основний контейнер календаря */
 .custom_date_range {
   position: absolute;
-  bottom: 10px;
-  right: 2px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  border-radius: 12px;
-  background-color: #fff;
+  top: 10px;
+  left: -25px;
   z-index: 10;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(25, 57, 183, 0.08);
+  background: var(--background);
+  border: 1px solid var(--grey);
+  transition: all 0.3s ease;
 }
 
-.custom_date_range_input {
-  width: 110px;
-  border-radius: 12px;
-  border: 1px solid var(--Grey, #e1e1ec);
-  background: #fff;
-  box-shadow: 0px 4px 6px 0px rgba(109, 100, 197, 0.1);
-  color: var(--text_light);
-  font-size: var(--fs_small);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.37;
-  padding: 8px 16px;
-  transition: border 0.3s ease;
-  &:hover,
-  &:focus {
-    outline: none;
-    border: 1px solid var(--main_light);
-  }
-  &::placeholder {
-    color: var(--text_light);
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 1.37;
-  }
+.custom_date_range:hover {
+  box-shadow: 0 12px 40px rgba(25, 57, 183, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Стилі для календаря */
+.custom_datepicker {
+  border: none !important;
+  width: 100% !important;
+  background: var(--background) !important;
 }
 
 @media (min-width: 345px) {
@@ -186,8 +173,9 @@
     left: 172px;
   }
   .custom_date_range {
-    right: auto;
-    left: 84px;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 }
 
@@ -232,17 +220,9 @@
   }
 
   .custom_date_range {
-    left: auto;
-    bottom: -50px;
-    right: -5%;
-  }
-
-  .custom_date_range_input {
-    width: 125px;
-    font-size: var(--fs_xsmall);
-    &::placeholder {
-      font-size: var(--fs_xsmall);
-    }
+    position: absolute;
+    top: 70px;
+    left: -185px;
   }
 }
 
@@ -261,7 +241,9 @@
     font-size: 12px;
   }
   .custom_date_range {
-    right: -50%;
+    position: absolute;
+    top: 50px;
+    left: -155px;
   }
 }
 

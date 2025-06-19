@@ -44,7 +44,7 @@ export default function ResponsiveNav({
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 1024);
+      setIsMobile(window.innerWidth < 1024);
     };
 
     handleResize();

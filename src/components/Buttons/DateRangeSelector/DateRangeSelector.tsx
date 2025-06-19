@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import Icon from '@/helpers/Icon';
-import styles from './DateRangeSelector.module.css';
 import { useSalesStore } from '@/store/salesStore';
 import { DateRangeSelectorProps, AggregationType } from '@/types/salesTypes';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
+import DatePicker from 'react-datepicker';
+import styles from './DateRangeSelector.module.css';
 
 interface AggregationOption {
   value: AggregationType;
@@ -28,14 +30,17 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const t = useTranslations();
   const { minDate } = useSalesStore();
   const [isCustomDateOpen, setIsCustomDateOpen] = useState<boolean>(false);
-  const [customStartDate, setCustomStartDate] =
-    useState<string>(initialStartDate);
-  const [customEndDate, setCustomEndDate] = useState<string>(initialEndDate);
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(
+    initialStartDate ? new Date(initialStartDate) : null
+  );
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(
+    initialEndDate ? new Date(initialEndDate) : null
+  );
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const customDateRef = useRef<HTMLDivElement>(null);
 
-  const today = new Date().toISOString().split('T')[0];
-  const defaultMinDate = '2023-03-01';
+  const today = new Date();
+  const defaultMinDate = new Date('2023-03-01');
 
   useEffect(() => {
     const handleResize = () => {
@@ -110,127 +115,40 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     onDateRangeChange('all');
   };
 
-  const formatDateInput = (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 8);
-    let formatted = '';
-    if (numbers.length > 0) {
-      formatted = numbers.slice(0, 4);
-      if (numbers.length > 4) formatted += `-${numbers.slice(4, 6)}`;
-      if (numbers.length > 6) formatted += `-${numbers.slice(6, 8)}`;
-    }
-    return formatted;
-  };
-
-  const isValidDate = (dateStr: string): boolean => {
-    if (dateStr.length !== 10) return false;
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    return (
-      date.getDate() === day &&
-      date.getMonth() === month - 1 &&
-      date.getFullYear() === year &&
-      !isNaN(date.getTime())
-    );
-  };
-
-  const handleCustomDateInput = useCallback(
-    (type: 'start' | 'end', value: string) => {
-      const numbers = value.replace(/\D/g, '').slice(0, 8);
-      let formattedValue = formatDateInput(numbers);
-
-      if (formattedValue.length >= 4) {
-        let [year, month, day] = formattedValue.split('-');
-        if (year && year.length === 4) {
-          const yearNum = parseInt(year);
-          const minYear = minDate ? parseInt(minDate.split('-')[0]) : 2000;
-          const currentYear = new Date().getFullYear();
-          if (yearNum < minYear) year = minYear.toString();
-          else if (yearNum > currentYear) year = currentYear.toString();
-        }
-        if (month && month.length === 2) {
-          const monthNum = parseInt(month);
-          if (monthNum > 12) month = '12';
-          else if (monthNum < 1) month = '01';
-        }
-        if (day && day.length === 2) {
-          const dayNum = parseInt(day);
-          if (dayNum > 31) day = '31';
-          else if (dayNum < 1) day = '01';
-        }
-        formattedValue = [year, month, day].filter(Boolean).join('-');
-      }
-
-      if (type === 'start') {
-        const startDate =
-          formattedValue.length === 10 ? new Date(formattedValue) : null;
-        const effectiveMinDate = minDate || defaultMinDate;
-        if (startDate && startDate < new Date(effectiveMinDate)) {
-          formattedValue = effectiveMinDate;
-        }
-        setCustomStartDate(formattedValue);
-        if (
-          formattedValue.length === 10 &&
-          customEndDate.length === 10 &&
-          isValidDate(formattedValue) &&
-          isValidDate(customEndDate)
-        ) {
-          updateCustomDates(formattedValue, customEndDate);
-        }
-      } else {
-        const endDate =
-          formattedValue.length === 10 ? new Date(formattedValue) : null;
-        if (endDate && endDate > new Date(today)) {
-          formattedValue = today;
-        }
-        setCustomEndDate(formattedValue);
-        if (
-          formattedValue.length === 10 &&
-          customStartDate.length === 10 &&
-          isValidDate(formattedValue) &&
-          isValidDate(customStartDate)
-        ) {
-          updateCustomDates(customStartDate, formattedValue);
-        }
-      }
-    },
-    [customStartDate, customEndDate, minDate, today]
-  );
-
-  const updateCustomDates = (start: string, end: string) => {
-    if (isValidDate(start) && isValidDate(end)) {
-      const startDateObj = new Date(start);
-      const endDateObj = new Date(end);
-      const effectiveMinDate = minDate || defaultMinDate;
-      const minDateObj = new Date(effectiveMinDate);
-      const todayObj = new Date(today);
-
-      const adjustedStart =
-        startDateObj < minDateObj ? effectiveMinDate : start;
-      const adjustedEnd = endDateObj > todayObj ? today : end;
-
-      if (new Date(adjustedStart) <= new Date(adjustedEnd)) {
-        onCustomDatesChange(adjustedStart, adjustedEnd);
-        setIsCustomDateOpen(false);
-      } else {
-        const nextDay = new Date(adjustedStart);
-        nextDay.setDate(nextDay.getDate() + 1);
-        const nextDayStr = `${nextDay.getFullYear()}-${String(
-          nextDay.getMonth() + 1
-        ).padStart(2, '0')}-${String(nextDay.getDate()).padStart(2, '0')}`;
-        if (isValidDate(nextDayStr) && new Date(nextDayStr) <= todayObj) {
-          onCustomDatesChange(adjustedStart, nextDayStr);
-          setIsCustomDateOpen(false);
-        }
-      }
-    }
-  };
-
   const handleCustomButtonClick = () => {
     onDateRangeChange('custom');
     setIsCustomDateOpen(prev => !prev);
     if (isCustomDateOpen) {
-      setCustomStartDate('');
-      setCustomEndDate('');
+      setCustomStartDate(null);
+      setCustomEndDate(null);
+    }
+  };
+
+  const handleDateChange = (dates: [Date | null, Date | null]) => {
+    const [start, end] = dates;
+    const effectiveMinDate = minDate ? new Date(minDate) : defaultMinDate;
+
+    let adjustedStart = start;
+    let adjustedEnd = end;
+
+    if (start && start < effectiveMinDate) {
+      adjustedStart = effectiveMinDate;
+    }
+    if (end && end > today) {
+      adjustedEnd = today;
+    }
+
+    setCustomStartDate(adjustedStart);
+    setCustomEndDate(adjustedEnd);
+
+    if (adjustedStart && adjustedEnd && adjustedStart <= adjustedEnd) {
+      const formatDate = (date: Date) =>
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}-${String(date.getDate()).padStart(2, '0')}`;
+      onCustomDatesChange(formatDate(adjustedStart), formatDate(adjustedEnd));
+      setIsCustomDateOpen(false);
     }
   };
 
@@ -333,26 +251,19 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
           </button>
           {dateRange === 'custom' && isCustomDateOpen && (
             <div className={styles.custom_date_range}>
-              <input
-                type="text"
-                value={customStartDate}
-                className={styles.custom_date_range_input}
-                onChange={e => handleCustomDateInput('start', e.target.value)}
-                placeholder="yyyy-mm-dd"
-                maxLength={10}
-                min={minDate || defaultMinDate}
-                max={today}
-              />
-              -
-              <input
-                type="text"
-                value={customEndDate}
-                className={styles.custom_date_range_input}
-                onChange={e => handleCustomDateInput('end', e.target.value)}
-                placeholder="yyyy-mm-dd"
-                maxLength={10}
-                min={minDate || defaultMinDate}
-                max={today}
+              <DatePicker
+                selectsRange
+                startDate={customStartDate}
+                endDate={customEndDate}
+                onChange={handleDateChange}
+                minDate={minDate ? new Date(minDate) : defaultMinDate}
+                maxDate={today}
+                inline
+                calendarClassName={styles.custom_datepicker}
+                showYearDropdown
+                yearDropdownItemNumber={15}
+                scrollableYearDropdown
+                showMonthDropdown
               />
             </div>
           )}

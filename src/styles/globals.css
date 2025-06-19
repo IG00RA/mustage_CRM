@@ -105,3 +105,358 @@ div {
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+.react-datepicker__header {
+  background: var(--main_blue) !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  padding: 20px 16px 16px !important;
+  color: var(--background) !important;
+}
+
+/* Навігація місяців */
+.react-datepicker__navigation {
+  top: 24px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__navigation:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.1) !important;
+}
+
+.react-datepicker__navigation--previous {
+  left: 16px !important;
+}
+
+.react-datepicker__navigation--next {
+  right: 16px !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: var(--background) !important;
+  border-width: 2px 2px 0 0 !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+/* Поточний місяць і рік */
+.react-datepicker__current-month {
+  color: var(--background) !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  margin-bottom: 8px !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Дні тижня */
+.react-datepicker__day-names {
+  border-top: 1px solid var(--grey_light) !important;
+}
+
+.react-datepicker__day-name {
+  color: var(--foreground) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  margin: 2px !important;
+}
+
+/* Контейнер днів */
+.react-datepicker__month {
+  padding: 12px 8px 16px !important;
+  background: var(--background) !important;
+}
+
+/* Стилі для окремих днів */
+.react-datepicker__day {
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  margin: 2px !important;
+  border-radius: 8px !important;
+  color: var(--text_dark) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.react-datepicker__day:hover {
+  background: var(--blue_light) !important;
+  color: var(--main_blue) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Вибрані дні */
+.react-datepicker__day--selected {
+  background: var(--main_blue) !important;
+  color: var(--background) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(86, 113, 255, 0.3) !important;
+}
+
+.react-datepicker__day--selected:hover {
+  background: var(--main_dark) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Діапазон між датами */
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background: var(--main_lighter) !important;
+  color: var(--main_blue) !important;
+  border-radius: 0 !important;
+}
+
+.react-datepicker__day--range-start {
+  background: var(--main_blue) !important;
+  color: var(--background) !important;
+  border-radius: 8px 0 0 8px !important;
+}
+
+.react-datepicker__day--range-end {
+  background: var(--main_blue) !important;
+  color: var(--background) !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* Якщо початкова і кінцева дати однакові */
+
+.react-datepicker__day--range-start.react-datepicker__day--range-end {
+  border-radius: 8px !important;
+}
+
+/* Сьогоднішній день */
+.react-datepicker__day--today {
+  background: var(--grey_light) !important;
+  color: var(--main_blue) !important;
+  font-weight: 600 !important;
+  border: 2px solid var(--main_blue) !important;
+  box-sizing: border-box !important;
+}
+
+.react-datepicker__day--today:hover {
+  background: var(--blue_light) !important;
+}
+
+/* Неактивні дні (попередній/наступний місяць) */
+.react-datepicker__day--outside-month {
+  color: var(--disabled_grey) !important;
+  cursor: not-allowed !important;
+}
+
+.react-datepicker__day--outside-month:hover {
+  background: transparent !important;
+  transform: none !important;
+}
+
+/* Відключені дні */
+.react-datepicker__day--disabled {
+  color: var(--disabled_grey) !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
+}
+
+.react-datepicker__day--disabled:hover {
+  background: transparent !important;
+  transform: none !important;
+}
+
+/* Випадаючий список років */
+.react-datepicker__year-dropdown {
+  background: var(--background) !important;
+  border: 1px solid var(--grey) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(25, 57, 183, 0.12) !important;
+  padding: 8px 0 !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  width: 115px !important;
+}
+
+.react-datepicker__year-option {
+  padding: 8px 16px !important;
+  color: var(--text_dark) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__year-option:hover {
+  background: var(--blue_light) !important;
+  color: var(--main_blue) !important;
+}
+
+.react-datepicker__year-option--selected {
+  background: var(--main_blue) !important;
+  color: var(--background) !important;
+  font-weight: 600 !important;
+}
+
+/* Кнопка випадаючого списку років */
+.react-datepicker__year-dropdown-container {
+  position: relative !important;
+}
+
+.react-datepicker__year-read-view {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.react-datepicker__year-read-view:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.react-datepicker__year-read-view--down-arrow {
+  border-top: 4px solid var(--background) !important;
+  border-left: 4px solid transparent !important;
+  border-right: 4px solid transparent !important;
+  margin-left: 4px !important;
+}
+
+/* Випадаючий список місяців */
+.react-datepicker__month-dropdown {
+  background: var(--background) !important;
+  border: 1px solid var(--grey) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(25, 57, 183, 0.12) !important;
+  padding: 8px 0 !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  width: 115px !important;
+}
+
+.react-datepicker__month-option {
+  padding: 8px 16px !important;
+  color: var(--text_dark) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__month-option:hover {
+  background: var(--blue_light) !important;
+  color: var(--main_blue) !important;
+}
+
+.react-datepicker__month-option--selected {
+  background: var(--main_blue) !important;
+  color: var(--background) !important;
+  font-weight: 600 !important;
+}
+
+.react-datepicker__month-dropdown-container {
+  position: relative !important;
+}
+
+.react-datepicker__month-read-view {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.react-datepicker__month-read-view:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.react-datepicker__month-read-view--down-arrow {
+  border-top: 4px solid var(--background) !important;
+  border-left: 4px solid transparent !important;
+  border-right: 4px solid transparent !important;
+  margin-left: 4px !important;
+}
+
+.react-datepicker__year-read-view,
+.react-datepicker__month-read-view,
+.react-datepicker__month-year-read-view {
+  visibility: visible !important;
+}
+
+/* Анімації */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.react-datepicker__month {
+  animation: fadeIn 0.3s ease !important;
+}
+
+/* Скролбар для випадаючого списку років */
+.react-datepicker__year-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.react-datepicker__year-dropdown::-webkit-scrollbar-track {
+  background: var(--grey_light);
+  border-radius: 3px;
+}
+
+.react-datepicker__year-dropdown::-webkit-scrollbar-thumb {
+  background: var(--main_light);
+  border-radius: 3px;
+}
+
+.react-datepicker__year-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--main_blue);
+}
+
+.react-datepicker__navigation-icon::before {
+  top: 9px !important;
+}
+
+.react-datepicker__navigation-icon--previous::before {
+  right: -3px !important;
+}
+
+.react-datepicker__navigation-icon--next::before {
+  left: -3px !important;
+}
+
+@media (max-width: 480px) {
+  .custom_date_range {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .react-datepicker__day {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 13px !important;
+  }
+
+  .react-datepicker__day-name {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 11px !important;
+  }
+}

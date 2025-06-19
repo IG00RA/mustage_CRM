@@ -137,12 +137,7 @@
 
 .toggle_button_active {
   border-color: var(--main_light);
-  .toggle_button_icon_left,
-  .toggle_button_icon_right {
-    fill: var(--main_light);
-  }
 }
-
 
 .links_wrap {
   position: absolute;
