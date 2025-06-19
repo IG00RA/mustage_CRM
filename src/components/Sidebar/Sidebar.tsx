@@ -21,6 +21,23 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { SidebarProps } from '@/types/componentsTypes';
 import { DropdownPortal } from '@/helpers/DropdownPortal';
 
+// [
+//     name: 'Обзор',
+//     name: 'Категории',
+//     name: 'Подкатегории',
+//     name: 'Все аккаунты',
+//     name: 'Загрузка аккаунтов',
+//     name: 'Выгрузка аккаунтов',
+//     name: 'Раздача аккаунтов',
+//     name: 'Замена аккаунтов',
+//     name: 'Убрать аккаунты с продажи',
+//     name: 'Управление автофармом',
+//     name: 'Промокоды',
+//     name: 'Все рефералы',
+//     name: 'Статистика реферальной системы',
+//     name: 'Наборы акаунтов',
+// ];
+
 type OpenMenusState = {
   distribution: boolean;
   referrals: boolean;
@@ -82,7 +99,12 @@ export default function Sidebar({
   closeMenu,
   isCollapsed,
   toggleCollapse,
-}: SidebarProps) {
+  isHovered,
+  setIsHovered,
+}: SidebarProps & {
+  isHovered?: boolean;
+  setIsHovered?: (value: boolean) => void;
+}) {
   const t = useTranslations();
   const pathname = usePathname();
 
@@ -101,6 +123,7 @@ export default function Sidebar({
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const barRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const mainNavItemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const accNavItemRefs = useRef<(HTMLLIElement | null)[]>([]);
@@ -109,24 +132,6 @@ export default function Sidebar({
   const autoFarmRef = useRef<HTMLLIElement | null>(null);
   const setsRef = useRef<HTMLLIElement | null>(null);
   const usersRef = useRef<HTMLLIElement | null>(null);
-
-  const [hoveredIndex, setHoveredIndex] = useState<{
-    main: number | null;
-    acc: number | null;
-    accBottom: number | null;
-    other: number | null;
-    autoFarm: boolean;
-    sets: boolean;
-    users: boolean;
-  }>({
-    main: null,
-    acc: null,
-    accBottom: null,
-    other: null,
-    autoFarm: false,
-    sets: false,
-    users: false,
-  });
 
   const barToggler = () => {
     setIsBarOpen(!isBarOpen);
@@ -194,7 +199,6 @@ export default function Sidebar({
     if (!currentUser.functions || currentUser.functions.length === 0)
       return true;
     const functionName = menuFunctionMap[link];
-
     return currentUser.functions.some(
       func => func.function_name === functionName
     );
@@ -238,12 +242,20 @@ export default function Sidebar({
     isMenuAllowed('sets_create_item') ||
     isMenuAllowed('sets_view');
 
+  const effectiveIsHovered = isHovered ?? false;
+  const handleMouseEnter = () =>
+    isCollapsed && setIsHovered && setIsHovered(true);
+  const handleMouseLeave = () =>
+    isCollapsed && setIsHovered && setIsHovered(false);
+
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
       <aside
         className={`${styles.sidebar_skeleton} ${
-          isCollapsed ? styles.collapsed : ''
+          isCollapsed && !effectiveIsHovered ? styles.collapsed : ''
         }`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className={styles.logo_link_wrap}>
           <Link onClick={closeMenu} href="/" className={styles.logo_wrap}>
@@ -322,18 +334,39 @@ export default function Sidebar({
 
   return (
     <aside
+      ref={sidebarRef}
       className={`${styles.sidebar} ${isBarOpen ? styles.active : ''} ${
-        isCollapsed ? styles.collapsed : ''
+        isCollapsed && !effectiveIsHovered ? styles.collapsed : ''
       }`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      <button onClick={toggleCollapse} className={styles.toggle_button}>
-        <Icon
-          name={isCollapsed ? 'icon-arrow-right-rec' : 'icon-arrow-left-rec'}
-          width={16}
-          height={16}
-          color="#A9A9C1"
-        />
-      </button>
+      <DropdownPortal
+        anchorRef={sidebarRef}
+        isCollapsed={isCollapsed}
+        isHovered={effectiveIsHovered}
+      >
+        <button
+          onClick={toggleCollapse}
+          className={`${styles.toggle_button} ${
+            !isCollapsed ? styles.toggle_button_active : ''
+          }`}
+        >
+          <Icon
+            className={styles.toggle_button_icon_left}
+            name="icon-angle-down"
+            width={16}
+            height={16}
+          />
+          <Icon
+            className={styles.toggle_button_icon_right}
+            name="icon-angle-down"
+            width={16}
+            height={16}
+          />
+        </button>
+      </DropdownPortal>
+
       <div className={styles.logo_link_wrap}>
         <Link onClick={closeMenu} href="/" className={styles.logo_wrap}>
           <Image
@@ -439,12 +472,6 @@ export default function Sidebar({
                     isActive(item.link) ? styles.active : ''
                   }`}
                   key={index}
-                  onMouseEnter={() =>
-                    setHoveredIndex(prev => ({ ...prev, main: index }))
-                  }
-                  onMouseLeave={() =>
-                    setHoveredIndex(prev => ({ ...prev, main: null }))
-                  }
                 >
                   <Link
                     onClick={closeMenu}
@@ -466,14 +493,6 @@ export default function Sidebar({
                     <span className={styles.nav_item_text}>
                       {t(item.header)}
                     </span>
-                    {isCollapsed && (
-                      <DropdownPortal
-                        isOpen={hoveredIndex.main === index}
-                        anchorRef={{ current: mainNavItemRefs.current[index] }}
-                      >
-                        {t(item.header)}
-                      </DropdownPortal>
-                    )}
                   </Link>
                 </li>
               ))}
@@ -498,12 +517,6 @@ export default function Sidebar({
                     isActive(item.link) ? styles.active : ''
                   }`}
                   key={index}
-                  onMouseEnter={() =>
-                    setHoveredIndex(prev => ({ ...prev, acc: index }))
-                  }
-                  onMouseLeave={() =>
-                    setHoveredIndex(prev => ({ ...prev, acc: null }))
-                  }
                 >
                   <Link
                     onClick={closeMenu}
@@ -525,17 +538,142 @@ export default function Sidebar({
                     <span className={styles.nav_item_text}>
                       {t(item.header)}
                     </span>
-                    {isCollapsed && (
-                      <DropdownPortal
-                        isOpen={hoveredIndex.acc === index}
-                        anchorRef={{ current: accNavItemRefs.current[index] }}
-                      >
-                        {t(item.header)}
-                      </DropdownPortal>
-                    )}
                   </Link>
                 </li>
               ))}
+              {hasDistributionAccess && (
+                <li
+                  className={`${styles.nav_item} ${
+                    openMenus.distribution ? styles.active : ''
+                  }`}
+                  key={'distribution'}
+                  onClick={() =>
+                    setOpenMenus(prev => ({
+                      ...prev,
+                      distribution: !prev.distribution,
+                    }))
+                  }
+                >
+                  <div className={styles.nav_item_link}>
+                    <Icon
+                      className={styles.logo}
+                      name={'icon-box-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <Icon
+                      className={styles.logo_hov}
+                      name={'icon-fill_box-2'}
+                      width={22}
+                      height={22}
+                    />
+                    <span className={styles.nav_item_text}>
+                      {t('Sidebar.accParMenu.distribution')}
+                    </span>
+                    <Icon
+                      className={`${styles.arrow_down} ${
+                        openMenus.distribution ? styles.active : ''
+                      }`}
+                      name="icon-angle-down"
+                      width={16}
+                      height={16}
+                      color="#A9A9C1"
+                    />
+                  </div>
+                  {(!isCollapsed || effectiveIsHovered) && (
+                    <ul
+                      className={`${styles.select_options} ${
+                        openMenus.distribution ? styles.select_open : ''
+                      }`}
+                    >
+                      {isMenuAllowed('distribution_settings') && (
+                        <li
+                          key={'distributionSettings'}
+                          onClick={() =>
+                            setOpenMenus(prev => ({
+                              ...prev,
+                              distribution: false,
+                            }))
+                          }
+                        >
+                          <Link
+                            onClick={closeMenu}
+                            className={`${styles.option_item} ${
+                              isActiveSub('distribution_settings')
+                                ? styles.active_sub_link
+                                : ''
+                            }`}
+                            href={`/ru/distribution_settings`}
+                          >
+                            <div className={styles.list_sub_mark_wrap}>
+                              <span className={styles.list_sub_mark}></span>
+                            </div>
+                            <p className={styles.list_sub_text}>
+                              {t('Sidebar.accParMenu.distributionSettings')}
+                            </p>
+                          </Link>
+                        </li>
+                      )}
+                      {isMenuAllowed('distribution_create') && (
+                        <li
+                          key={'distributionCreate'}
+                          onClick={() =>
+                            setOpenMenus(prev => ({
+                              ...prev,
+                              distribution: false,
+                            }))
+                          }
+                        >
+                          <Link
+                            onClick={closeMenu}
+                            className={`${styles.option_item} ${
+                              isActiveSub('distribution_create')
+                                ? styles.active_sub_link
+                                : ''
+                            }`}
+                            href={`/ru/distribution_create`}
+                          >
+                            <div className={styles.list_sub_mark_wrap}>
+                              <span className={styles.list_sub_mark}></span>
+                            </div>
+                            <p className={styles.list_sub_text}>
+                              {t('Sidebar.accParMenu.distributionCreate')}
+                            </p>
+                          </Link>
+                        </li>
+                      )}
+                      {isMenuAllowed('distribution_all') && (
+                        <li
+                          key={'distributionAll'}
+                          onClick={() =>
+                            setOpenMenus(prev => ({
+                              ...prev,
+                              distribution: false,
+                            }))
+                          }
+                        >
+                          <Link
+                            onClick={closeMenu}
+                            className={`${styles.option_item} ${
+                              isActiveSub('distribution_all')
+                                ? styles.active_sub_link
+                                : ''
+                            }`}
+                            href={`/ru/distribution_all`}
+                          >
+                            <div className={styles.list_sub_mark_wrap}>
+                              <span className={styles.list_sub_mark}></span>
+                            </div>
+                            <p className={styles.list_sub_text}>
+                              {t('Sidebar.accParMenu.distributionAll')}
+                            </p>
+                          </Link>
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </li>
+              )}
               {/* {hasDistributionAccess && (
                 <li
                   className={`${styles.nav_item} ${
@@ -676,12 +814,6 @@ export default function Sidebar({
                     isActive(item.link) ? styles.active : ''
                   }`}
                   key={index}
-                  onMouseEnter={() =>
-                    setHoveredIndex(prev => ({ ...prev, accBottom: index }))
-                  }
-                  onMouseLeave={() =>
-                    setHoveredIndex(prev => ({ ...prev, accBottom: null }))
-                  }
                 >
                   <Link
                     onClick={closeMenu}
@@ -703,16 +835,6 @@ export default function Sidebar({
                     <span className={styles.nav_item_text}>
                       {t(item.header)}
                     </span>
-                    {isCollapsed && (
-                      <DropdownPortal
-                        isOpen={hoveredIndex.accBottom === index}
-                        anchorRef={{
-                          current: accBottomNavItemRefs.current[index],
-                        }}
-                      >
-                        {t(item.header)}
-                      </DropdownPortal>
-                    )}
                   </Link>
                 </li>
               ))}
@@ -728,12 +850,6 @@ export default function Sidebar({
                       ...prev,
                       autoFarm: !prev.autoFarm,
                     }))
-                  }
-                  onMouseEnter={() =>
-                    setHoveredIndex(prev => ({ ...prev, autoFarm: true }))
-                  }
-                  onMouseLeave={() =>
-                    setHoveredIndex(prev => ({ ...prev, autoFarm: false }))
                   }
                 >
                   <div className={styles.nav_item_link}>
@@ -762,74 +878,7 @@ export default function Sidebar({
                       color="#A9A9C1"
                     />
                   </div>
-                  {isCollapsed && (
-                    <DropdownPortal
-                      isOpen={hoveredIndex.autoFarm}
-                      anchorRef={autoFarmRef}
-                    >
-                      {openMenus.autoFarm ? (
-                        <ul
-                          className={`${styles.select_options} ${styles.select_open}`}
-                        >
-                          <li
-                            key={'autoFarm'}
-                            onClick={() =>
-                              setOpenMenus(prev => ({
-                                ...prev,
-                                autoFarm: false,
-                              }))
-                            }
-                          >
-                            <Link
-                              onClick={closeMenu}
-                              className={`${styles.option_item} ${
-                                isActiveSub('auto_farm')
-                                  ? styles.active_sub_link
-                                  : ''
-                              }`}
-                              href={`/ru/auto_farm`}
-                            >
-                              <div className={styles.list_sub_mark_wrap}>
-                                <span className={styles.list_sub_mark}></span>
-                              </div>
-                              <p className={styles.list_sub_text}>
-                                {t('Sidebar.accParMenu.autoFarmAcc')}
-                              </p>
-                            </Link>
-                          </li>
-                          <li
-                            key={'autoFarmServers'}
-                            onClick={() =>
-                              setOpenMenus(prev => ({
-                                ...prev,
-                                autoFarm: false,
-                              }))
-                            }
-                          >
-                            <Link
-                              onClick={closeMenu}
-                              className={`${styles.option_item} ${
-                                isActiveSub('auto_farm_servers')
-                                  ? styles.active_sub_link
-                                  : ''
-                              }`}
-                              href={`/ru/auto_farm_servers`}
-                            >
-                              <div className={styles.list_sub_mark_wrap}>
-                                <span className={styles.list_sub_mark}></span>
-                              </div>
-                              <p className={styles.list_sub_text}>
-                                {t('Sidebar.accParMenu.autoFarmServers')}
-                              </p>
-                            </Link>
-                          </li>
-                        </ul>
-                      ) : (
-                        t('Sidebar.accParMenu.autoFarmControl')
-                      )}
-                    </DropdownPortal>
-                  )}
-                  {!isCollapsed && (
+                  {(!isCollapsed || effectiveIsHovered) && (
                     <ul
                       className={`${styles.select_options} ${
                         openMenus.autoFarm ? styles.select_open : ''
@@ -904,12 +953,6 @@ export default function Sidebar({
                   sets: !prev.sets,
                 }))
               }
-              onMouseEnter={() =>
-                setHoveredIndex(prev => ({ ...prev, sets: true }))
-              }
-              onMouseLeave={() =>
-                setHoveredIndex(prev => ({ ...prev, sets: false }))
-              }
             >
               <div className={styles.nav_item_link}>
                 <Icon
@@ -937,94 +980,7 @@ export default function Sidebar({
                   color="#A9A9C1"
                 />
               </div>
-              {isCollapsed && (
-                <DropdownPortal isOpen={hoveredIndex.sets} anchorRef={setsRef}>
-                  {openMenus.sets ? (
-                    <ul
-                      className={`${styles.select_options} ${styles.select_open}`}
-                    >
-                      {isMenuAllowed('sets_create') && (
-                        <li
-                          key={'setsCreate'}
-                          onClick={() =>
-                            setOpenMenus(prev => ({ ...prev, sets: false }))
-                          }
-                        >
-                          <Link
-                            onClick={closeMenu}
-                            className={`${styles.option_item} ${
-                              isActiveSub('sets_create')
-                                ? styles.active_sub_link
-                                : ''
-                            }`}
-                            href={`/ru/sets_create`}
-                          >
-                            <div className={styles.list_sub_mark_wrap}>
-                              <span className={styles.list_sub_mark}></span>
-                            </div>
-                            <p className={styles.list_sub_text}>
-                              {t('Sidebar.setsParMenu.createSet')}
-                            </p>
-                          </Link>
-                        </li>
-                      )}
-                      {isMenuAllowed('sets_create_item') && (
-                        <li
-                          key={'setsCreateItem'}
-                          onClick={() =>
-                            setOpenMenus(prev => ({ ...prev, sets: false }))
-                          }
-                        >
-                          <Link
-                            onClick={closeMenu}
-                            className={`${styles.option_item} ${
-                              isActiveSub('sets_create_item')
-                                ? styles.active_sub_link
-                                : ''
-                            }`}
-                            href={`/ru/sets_create_item`}
-                          >
-                            <div className={styles.list_sub_mark_wrap}>
-                              <span className={styles.list_sub_mark}></span>
-                            </div>
-                            <p className={styles.list_sub_text}>
-                              {t('Sidebar.setsParMenu.createSetItem')}
-                            </p>
-                          </Link>
-                        </li>
-                      )}
-                      {isMenuAllowed('sets_upload') && (
-                        <li
-                          key={'setsUpload'}
-                          onClick={() =>
-                            setOpenMenus(prev => ({ ...prev, sets: false }))
-                          }
-                        >
-                          <Link
-                            onClick={closeMenu}
-                            className={`${styles.option_item} ${
-                              isActiveSub('sets_upload')
-                                ? styles.active_sub_link
-                                : ''
-                            }`}
-                            href={`/ru/sets_upload`}
-                          >
-                            <div className={styles.list_sub_mark_wrap}>
-                              <span className={styles.list_sub_mark}></span>
-                            </div>
-                            <p className={styles.list_sub_text}>
-                              {t('Sidebar.setsParMenu.setsUpload')}
-                            </p>
-                          </Link>
-                        </li>
-                      )}
-                    </ul>
-                  ) : (
-                    t('Sidebar.setsPar')
-                  )}
-                </DropdownPortal>
-              )}
-              {!isCollapsed && (
+              {(!isCollapsed || effectiveIsHovered) && (
                 <ul
                   className={`${styles.select_options} ${
                     openMenus.sets ? styles.select_open : ''
@@ -1154,12 +1110,6 @@ export default function Sidebar({
                       isActive(item.link) ? styles.active : ''
                     }`}
                     key={index}
-                    onMouseEnter={() =>
-                      setHoveredIndex(prev => ({ ...prev, other: index }))
-                    }
-                    onMouseLeave={() =>
-                      setHoveredIndex(prev => ({ ...prev, other: null }))
-                    }
                   >
                     <Link
                       onClick={closeMenu}
@@ -1181,16 +1131,6 @@ export default function Sidebar({
                       <span className={styles.nav_item_text}>
                         {t(item.header)}
                       </span>
-                      {isCollapsed && (
-                        <DropdownPortal
-                          isOpen={hoveredIndex.other === index}
-                          anchorRef={{
-                            current: otherNavItemRefs.current[index],
-                          }}
-                        >
-                          {t(item.header)}
-                        </DropdownPortal>
-                      )}
                     </Link>
                   </li>
                 );
@@ -1207,12 +1147,6 @@ export default function Sidebar({
                       ...prev,
                       users: !prev.users,
                     }))
-                  }
-                  onMouseEnter={() =>
-                    setHoveredIndex(prev => ({ ...prev, users: true }))
-                  }
-                  onMouseLeave={() =>
-                    setHoveredIndex(prev => ({ ...prev, users: false }))
                   }
                 >
                   <div className={styles.nav_item_link}>
@@ -1241,78 +1175,7 @@ export default function Sidebar({
                       color="#A9A9C1"
                     />
                   </div>
-                  {isCollapsed && (
-                    <DropdownPortal
-                      isOpen={hoveredIndex.users}
-                      anchorRef={usersRef}
-                    >
-                      {openMenus.users ? (
-                        <ul
-                          className={`${styles.select_options} ${styles.select_open}`}
-                        >
-                          {isMenuAllowed('users') && (
-                            <li
-                              key={'users'}
-                              onClick={() =>
-                                setOpenMenus(prev => ({
-                                  ...prev,
-                                  users: false,
-                                }))
-                              }
-                            >
-                              <Link
-                                onClick={closeMenu}
-                                className={`${styles.option_item} ${
-                                  isActiveSub('users')
-                                    ? styles.active_sub_link
-                                    : ''
-                                }`}
-                                href={`/ru/users`}
-                              >
-                                <div className={styles.list_sub_mark_wrap}>
-                                  <span className={styles.list_sub_mark}></span>
-                                </div>
-                                <p className={styles.list_sub_text}>
-                                  {t('Sidebar.otherParMenu.users')}
-                                </p>
-                              </Link>
-                            </li>
-                          )}
-                          {isMenuAllowed('roles') && (
-                            <li
-                              key={'roles'}
-                              onClick={() =>
-                                setOpenMenus(prev => ({
-                                  ...prev,
-                                  users: false,
-                                }))
-                              }
-                            >
-                              <Link
-                                onClick={closeMenu}
-                                className={`${styles.option_item} ${
-                                  isActiveSub('roles')
-                                    ? styles.active_sub_link
-                                    : ''
-                                }`}
-                                href={`/ru/roles`}
-                              >
-                                <div className={styles.list_sub_mark_wrap}>
-                                  <span className={styles.list_sub_mark}></span>
-                                </div>
-                                <p className={styles.list_sub_text}>
-                                  {t('Sidebar.otherParMenu.roles')}
-                                </p>
-                              </Link>
-                            </li>
-                          )}
-                        </ul>
-                      ) : (
-                        t('Sidebar.otherParMenu.users')
-                      )}
-                    </DropdownPortal>
-                  )}
-                  {!isCollapsed && (
+                  {(!isCollapsed || effectiveIsHovered) && (
                     <ul
                       className={`${styles.select_options} ${
                         openMenus.users ? styles.select_open : ''
@@ -1322,7 +1185,10 @@ export default function Sidebar({
                         <li
                           key={'users'}
                           onClick={() =>
-                            setOpenMenus(prev => ({ ...prev, users: false }))
+                            setOpenMenus(prev => ({
+                              ...prev,
+                              users: false,
+                            }))
                           }
                         >
                           <Link
@@ -1345,7 +1211,10 @@ export default function Sidebar({
                         <li
                           key={'roles'}
                           onClick={() =>
-                            setOpenMenus(prev => ({ ...prev, users: false }))
+                            setOpenMenus(prev => ({
+                              ...prev,
+                              users: false,
+                            }))
                           }
                         >
                           <Link

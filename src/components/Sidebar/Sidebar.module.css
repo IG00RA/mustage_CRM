@@ -5,6 +5,7 @@
   padding: 12px 20px 16px 18px;
   flex-shrink: 0;
   transition: width 0.3s ease;
+  position: relative;
 }
 
 .sidebar.active {
@@ -57,6 +58,7 @@
   font-weight: 700;
   line-height: normal;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .arrow_down_wrap {
@@ -90,8 +92,12 @@
 }
 
 .toggle_button {
-  width: 22px;
-  height: 22px;
+  z-index: 9999999999;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 40px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -99,12 +105,44 @@
   cursor: pointer;
   background: none;
   border: none;
-  transition: background-color 0.3s ease;
+  transition: border-color 0.3s ease;
+  border-radius: 100px;
+  border: 0.5px solid #e1e1ec;
+  background: #fff;
+  box-shadow: 0px 0px 2px 0px rgba(153, 159, 195, 0.2);
 }
 
 .toggle_button:hover {
-  background-color: #e8ecff;
+  border-color: var(--main_light);
+
+  .toggle_button_icon_left,
+  .toggle_button_icon_right {
+    fill: var(--main_light);
+  }
 }
+
+.toggle_button_icon_left {
+  transform: rotate(90deg);
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+  color: #a9a9c1;
+}
+
+.toggle_button_icon_right {
+  transform: rotate(270deg);
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+  color: #a9a9c1;
+}
+
+.toggle_button_active {
+  border-color: var(--main_light);
+  .toggle_button_icon_left,
+  .toggle_button_icon_right {
+    fill: var(--main_light);
+  }
+}
+
 
 .links_wrap {
   position: absolute;
@@ -208,6 +246,7 @@
   font-weight: 590;
   line-height: 1.57;
   text-transform: capitalize;
+  width: 125px;
 }
 
 .role {
@@ -309,6 +348,8 @@
   font-weight: 400;
   line-height: 1.57;
   transition: color 0.3s ease;
+  white-space: nowrap;
+  width: 187px;
 }
 
 .nav_item_referrer {
@@ -526,7 +567,7 @@
   }
 
   .sidebar.collapsed .nav_item_link {
-    padding: 17px 8px;
+    padding: 14px 8px;
     justify-content: center;
   }
 

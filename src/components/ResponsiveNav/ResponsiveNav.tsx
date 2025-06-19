@@ -13,6 +13,7 @@ export default function ResponsiveNav({
   const [isMobile, setIsMobile] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebarCollapsed');
@@ -61,6 +62,8 @@ export default function ResponsiveNav({
         />
       ) : (
         <Sidebar
+          setIsHovered={setIsHovered}
+          isHovered={isHovered}
           closeMenu={closeMenu}
           isCollapsed={isCollapsed}
           toggleCollapse={toggleCollapse}
@@ -68,7 +71,9 @@ export default function ResponsiveNav({
       )}
 
       <main
-        className={`${styles.main} ${isCollapsed ? styles.mainCollapsed : ''}`}
+        className={`${styles.main} ${
+          isCollapsed && !isHovered ? styles.mainCollapsed : ''
+        }`}
       >
         {children}
       </main>
