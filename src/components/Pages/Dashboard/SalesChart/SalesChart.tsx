@@ -97,12 +97,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
 
   useEffect(() => {
     if (hasReadSubcategories) {
-      if (selectedCategoryIds.length > 0) {
-        fetchSubcategories(selectedCategoryIds[0]);
-      } else {
-        fetchSubcategories();
-        setSelectedSubcategoryIds([]);
-      }
+      fetchSubcategories();
     }
   }, [selectedCategoryIds, fetchSubcategories, hasReadSubcategories]);
 
@@ -149,6 +144,8 @@ const SalesChart: React.FC<SalesChartProps> = ({
     currentUser,
     setsDisplay,
     aggregationType,
+    customStartDate,
+    customEndDate,
   ]);
 
   const toggleDownload = useCallback(
@@ -174,7 +171,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
     setCustomEndDate(end);
   };
 
-  const handleAggregationChange = (aggregation: AggregationType) => {
+  const handleAggregationChange = (aggregation: typeof aggregationType) => {
     setAggregationType(aggregation);
   };
 
@@ -202,7 +199,7 @@ const SalesChart: React.FC<SalesChartProps> = ({
           sub.account_subcategory_name,
         ])
       ),
-    [subcategories]
+    [subcategories, selectedCategoryIds]
   );
 
   const handleCategorySelect = (values: string[]) => {
@@ -226,24 +223,53 @@ const SalesChart: React.FC<SalesChartProps> = ({
     }
   };
 
-  const handleSubcategorySelect = (values: string[]) => {
-    const filteredValues = values.filter(
-      value => value !== t('Statistics.chart.toggler.togglerAllName')
-    );
-    if (filteredValues.length === 0) {
-      setSelectedSubcategoryIds([]);
-    } else {
-      const newSelectedIds = filteredValues
-        .map(value => {
-          const subcategory = subcategories.find(
-            sub => sub.account_subcategory_name === value
-          );
-          return subcategory ? subcategory.account_subcategory_id : null;
-        })
-        .filter((id): id is number => id !== null);
-      setSelectedSubcategoryIds(newSelectedIds);
-    }
-  };
+  // const handleSubcategorySelect = (values: string[]) => {
+  //   // if (selectedCategoryIds.length > 0) setSelectedCategoryIds([]);
+
+  //   const filteredValues = values.filter(
+  //     value => value !== t('Statistics.chart.toggler.togglerAllName')
+  //   );
+
+  //   if (filteredValues.length === 0) {
+  //     setSelectedSubcategoryIds([]);
+  //     setSelectedCategoryIds([]);
+  //   } else {
+  //     const newSelectedIds = filteredValues
+  //       .map(value => {
+  //         const subcategory = subcategories.find(
+  //           sub => sub.account_subcategory_name === value
+  //         );
+  //         return subcategory ? subcategory.account_subcategory_id : null;
+  //       })
+  //       .filter((id): id is number => id !== null);
+  //     setSelectedSubcategoryIds(newSelectedIds);
+  //     if (newSelectedIds.length > 0) setSelectedCategoryIds([]);
+  //   }
+  // };
+
+  const handleSubcategorySelect = useCallback(
+    (values: string[]) => {
+      const filteredValues = values.filter(
+        value => value !== t('AllAccounts.selects.allNames')
+      );
+      if (filteredValues.length === 0) {
+        setSelectedSubcategoryIds([]);
+        setSelectedCategoryIds([]);
+      } else {
+        const newSelectedIds = filteredValues
+          .map(value => {
+            const subcategory = subcategories.find(
+              sub => sub.account_subcategory_name === value
+            );
+            return subcategory ? subcategory.account_subcategory_id : null;
+          })
+          .filter((id): id is number => id !== null);
+        setSelectedSubcategoryIds(newSelectedIds);
+        if (newSelectedIds.length > 0) setSelectedCategoryIds([]);
+      }
+    },
+    [subcategories, t]
+  );
 
   const handleSetsDisplaySelect = (values: string[]) => {
     const selectedValue = values[0];

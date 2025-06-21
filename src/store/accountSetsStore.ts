@@ -11,6 +11,8 @@ import {
   SellSetItemResponse,
   FetchSetItemsParams,
   FetchSetItemsResponse,
+  UpdateSetResponse,
+  UpdateSetRequest,
 } from '../types/accountSetsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -194,6 +196,54 @@ export const useAccountSetsStore = create<AccountSetsState>(set => ({
 
       set({ loading: false });
       return data;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+  updateSet: async (data: UpdateSetRequest) => {
+    set({ loading: true, error: null });
+
+    try {
+      const url = `${ENDPOINTS.ACCOUNT_SETS}/${data.set_id}`;
+      const response = await fetchWithErrorHandling<UpdateSetResponse>(
+        url,
+        {
+          method: 'PUT',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        },
+        () => {}
+      );
+
+      set(state => ({
+        loading: false,
+        sets: state.sets.map(set =>
+          set.set_id === response.set_id
+            ? {
+                set_id: response.set_id,
+                name: response.set_name,
+                set_category_id: response.set_category_id,
+                price: response.set_price,
+                cost_price: response.set_cost_price,
+                description: response.set_description,
+                items_available: set.items_available, // Preserve if not updated
+                set_content: response.set_subcategories.map(sub => ({
+                  subcategory_id: sub.subcategory_id,
+                  accounts_quantity: sub.quantity,
+                })),
+              }
+            : set
+        ),
+      }));
+      return response;
     } catch (error) {
       set({
         loading: false,

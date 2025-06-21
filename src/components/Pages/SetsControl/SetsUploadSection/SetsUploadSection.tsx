@@ -17,6 +17,7 @@ import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
 import { AccountSet } from '@/types/accountSetsTypes';
 import { AccountDataWrapper } from '@/types/accountsTypes';
 import LoadSetsConfirm from '@/components/ModalComponent/LoadSetsConfirm/LoadSetsConfirm';
+import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 
 type FormData = {
   nameField: string;
@@ -32,7 +33,11 @@ type FormData = {
 
 const settingsOptions = ['Load.check'];
 
-export default function SetsUploadSection() {
+export default function SetsUploadSection({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const t = useTranslations();
   const { categories, fetchCategories, fetchSubcategories } =
     useCategoriesStore();
@@ -59,13 +64,11 @@ export default function SetsUploadSection() {
   } = useForm<FormData>();
 
   useEffect(() => {
-    if (categories.length === 0) {
       fetchCategories();
-    }
     fetchSets().then(data => {
       setAccountSets(data.items);
     });
-  }, [categories, fetchCategories, fetchSets]);
+  }, [fetchCategories, fetchSets]);
 
   useEffect(() => {
     let isMounted = true;
@@ -426,190 +429,201 @@ export default function SetsUploadSection() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sets.upload.header')}</h2>
-        <p className={styles.header_text}>{t('Sets.upload.headerText')}</p>
-        <div className={styles.selects_wrap}>
-          <CustomSelect
-            label={t('Sets.createItem.categorySet')}
-            options={[
-              t('Load.category'),
-              ...filteredCategories.map(cat => cat.account_category_name),
-            ]}
-            selected={selectedCategory}
-            onSelect={handleCategorySelect}
-            width={'100%'}
-            multiSelections={false}
-          />
-          <CustomSelect
-            label={t('Sets.createItem.namesSet')}
-            options={[t('Load.names'), ...filteredSets]}
-            selected={selectedSet}
-            onSelect={handleSetSelect}
-            width={'100%'}
-            multiSelections={false}
-          />
-        </div>
-        {selectedSet.length > 0 && selectedSet[0] !== t('Load.names') && (
-          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.upload.setQuantity')}
-                </label>
-                <input
-                  className={`${styles.input} ${
-                    errors.nameField ? styles.input_error : ''
-                  }`}
-                  readOnly
-                  {...register('nameField', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.nameField && (
-                <p className={styles.error}>{errors.nameField.message}</p>
-              )}
+      <div className={styles.selects_wrap}>
+        <p>{t('Sets.createItem.categorySet')}</p>
+        <CustomSelect
+          options={[
+            t('Load.category'),
+            ...filteredCategories.map(cat => cat.account_category_name),
+          ]}
+          selected={selectedCategory}
+          onSelect={handleCategorySelect}
+          width={'100%'}
+          multiSelections={false}
+          shortText={false}
+        />
+        <p className={styles.select_label}>{t('Sets.createItem.namesSet')}</p>
+        <CustomSelect
+          options={[t('Load.names'), ...filteredSets]}
+          selected={selectedSet}
+          onSelect={handleSetSelect}
+          width={'100%'}
+          multiSelections={false}
+          shortText={false}
+        />
+      </div>
+      {selectedSet.length > 0 && selectedSet[0] !== t('Load.names') ? (
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>
+                {t('Sets.upload.setQuantity')}
+              </label>
+              <input
+                className={`${styles.input} ${
+                  errors.nameField ? styles.input_error : ''
+                }`}
+                readOnly
+                {...register('nameField', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
+              />
             </div>
+            {errors.nameField && (
+              <p className={styles.error}>{errors.nameField.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>
+                {t('Sets.upload.uploadQuantity')}
+              </label>
+              <input
+                type="number"
+                className={`${styles.input} ${
+                  errors.accQuantity ? styles.input_error : ''
+                }`}
+                placeholder={t('DBSettings.form.placeholder')}
+                {...register('accQuantity', {
+                  required: t('DBSettings.form.errorMessage'),
+                  max: {
+                    value: totalAvailableAccounts,
+                    message: `${t(
+                      'Load.errorQuantityExceeds'
+                    )}${totalAvailableAccounts}${t(
+                      'Load.errorQuantityExceedsSec'
+                    )}`,
+                  },
+                })}
+              />
+            </div>
+            {errors.accQuantity && (
+              <p className={styles.error}>{errors.accQuantity.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>{t('Load.seller')}</label>
+              <input
+                className={`${styles.input} ${
+                  errors.seller_name ? styles.input_error : ''
+                }`}
+                readOnly
+                {...register('seller_name', {})}
+              />
+            </div>
+            {errors.seller_name && (
+              <p className={styles.error}>{errors.seller_name.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>
+                {t('Sets.upload.setPrice')}
+              </label>
+              <input
+                type="number"
+                step="any"
+                className={`${styles.input} ${
+                  errors.cost ? styles.input_error : ''
+                }`}
+                {...register('cost', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
+              />
+            </div>
+            {errors.cost && (
+              <p className={styles.error}>{errors.cost.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>{t('Sets.upload.setSum')}</label>
+              <input
+                type="number"
+                step="any"
+                className={`${styles.input} ${
+                  errors.nameDescription ? styles.input_error : ''
+                }`}
+                placeholder={t('DBSettings.form.placeholder')}
+                {...register('nameDescription', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
+              />
+            </div>
+            {errors.nameDescription && (
+              <p className={styles.error}>{errors.nameDescription.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>{t('Load.tgNick')}</label>
+              <input
+                className={`${styles.input} ${
+                  errors.tgNick ? styles.input_error : ''
+                }`}
+                placeholder={t('DBSettings.form.placeholder')}
+                {...register('tgNick', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
+              />
+            </div>
+            {errors.tgNick && (
+              <p className={styles.error}>{errors.tgNick.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <CustomCheckbox
+              checked={checkedSettings[settingsOptions[0]] || false}
+              onChange={() => toggleCheckbox(settingsOptions[0])}
+              label={t(settingsOptions[0])}
+            />
+          </div>
+          {checkedSettings[settingsOptions[0]] && (
             <div className={styles.field}>
               <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.upload.uploadQuantity')}
-                </label>
+                <label className={styles.label}>{t('Load.dolphinMail')}</label>
                 <input
-                  type="number"
                   className={`${styles.input} ${
-                    errors.accQuantity ? styles.input_error : ''
+                    errors.dolphinMail ? styles.input_error : ''
                   }`}
                   placeholder={t('DBSettings.form.placeholder')}
-                  {...register('accQuantity', {
+                  {...register('dolphinMail', {
                     required: t('DBSettings.form.errorMessage'),
-                    max: {
-                      value: totalAvailableAccounts,
-                      message: `${t(
-                        'Load.errorQuantityExceeds'
-                      )}${totalAvailableAccounts}${t(
-                        'Load.errorQuantityExceedsSec'
-                      )}`,
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: t('ReplacementSection.invalidEmail'),
                     },
                   })}
                 />
               </div>
-              {errors.accQuantity && (
-                <p className={styles.error}>{errors.accQuantity.message}</p>
+              {errors.dolphinMail && (
+                <p className={styles.error}>{errors.dolphinMail.message}</p>
               )}
             </div>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>{t('Load.seller')}</label>
-                <input
-                  className={`${styles.input} ${
-                    errors.seller_name ? styles.input_error : ''
-                  }`}
-                  readOnly
-                  {...register('seller_name', {})}
-                />
-              </div>
-              {errors.seller_name && (
-                <p className={styles.error}>{errors.seller_name.message}</p>
-              )}
-            </div>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.upload.setPrice')}
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  className={`${styles.input} ${
-                    errors.cost ? styles.input_error : ''
-                  }`}
-                  {...register('cost', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.cost && (
-                <p className={styles.error}>{errors.cost.message}</p>
-              )}
-            </div>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.upload.setSum')}
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  className={`${styles.input} ${
-                    errors.nameDescription ? styles.input_error : ''
-                  }`}
-                  placeholder={t('DBSettings.form.placeholder')}
-                  {...register('nameDescription', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.nameDescription && (
-                <p className={styles.error}>{errors.nameDescription.message}</p>
-              )}
-            </div>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>{t('Load.tgNick')}</label>
-                <input
-                  className={`${styles.input} ${
-                    errors.tgNick ? styles.input_error : ''
-                  }`}
-                  placeholder={t('DBSettings.form.placeholder')}
-                  {...register('tgNick', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.tgNick && (
-                <p className={styles.error}>{errors.tgNick.message}</p>
-              )}
-            </div>
-            <div className={styles.field}>
-              <CustomCheckbox
-                checked={checkedSettings[settingsOptions[0]] || false}
-                onChange={() => toggleCheckbox(settingsOptions[0])}
-                label={t(settingsOptions[0])}
-              />
-            </div>
-            {checkedSettings[settingsOptions[0]] && (
-              <div className={styles.field}>
-                <div className={styles.label_wrap}>
-                  <label className={styles.label}>
-                    {t('Load.dolphinMail')}
-                  </label>
-                  <input
-                    className={`${styles.input} ${
-                      errors.dolphinMail ? styles.input_error : ''
-                    }`}
-                    placeholder={t('DBSettings.form.placeholder')}
-                    {...register('dolphinMail', {
-                      required: t('DBSettings.form.errorMessage'),
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: t('ReplacementSection.invalidEmail'),
-                      },
-                    })}
-                  />
-                </div>
-                {errors.dolphinMail && (
-                  <p className={styles.error}>{errors.dolphinMail.message}</p>
-                )}
-              </div>
-            )}
-            <div className={styles.buttons_wrap}>
-              <SubmitBtn text="Load.button" />
-            </div>
-          </form>
-        )}
-      </div>
+          )}
+          <div className={styles.buttons_wrap}>
+            <CancelBtn
+              text="DBSettings.form.cancelBtn"
+              onClick={() => {
+                reset();
+                onClose();
+              }}
+            />
+            <SubmitBtn text="Load.button" />
+          </div>
+        </form>
+      ) : (
+        <div className={styles.buttons_wrap}>
+          <CancelBtn
+            text="DBSettings.form.cancelBtn"
+            onClick={() => {
+              onClose();
+            }}
+          />
+          <SubmitBtn text="Load.button" disabled={true} />
+        </div>
+      )}
 
       <ModalComponent
         isOpen={isOpenConfirm}

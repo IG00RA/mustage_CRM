@@ -55,7 +55,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>();
 
-  // Мапи для швидкого доступу
   const categoryMap = useMemo(
     () =>
       new Map(
@@ -78,7 +77,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     [subcategories]
   );
 
-  // Опції для категорій
   const categoryOptions = useMemo(
     () =>
       categories
@@ -92,7 +90,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     [categories, selectedCategories]
   );
 
-  // Фільтровані підкатегорії
   const subcategoryOptions = useMemo(() => {
     const selectedCategoryIds = selectedCategories.map(cat => cat.id);
     return subcategories
@@ -106,7 +103,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
       .map(sub => sub.account_subcategory_name);
   }, [subcategories, selectedCategories, selectedSubcategories]);
 
-  // Обробка вибору категорії
   const handleCategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedCat = categories.find(
@@ -119,7 +115,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Обробка вибору підкатегорії
   const handleSubcategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedSub = subcategories.find(
@@ -132,7 +127,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Додавання категорії
   const handleAddCategory = () => {
     if (!selectedCategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
@@ -149,7 +143,6 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Додавання підкатегорії
   const handleAddSubcategory = () => {
     if (!selectedSubcategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
@@ -166,19 +159,15 @@ export default function CreatePromoCode({ onClose }: { onClose: () => void }) {
     }
   };
 
-  // Видалення категорії
   const handleRemoveCategory = (name: string) => {
     setSelectedCategories(prev => prev.filter(cat => cat.name !== name));
   };
 
-  // Видалення підкатегорії
   const handleRemoveSubcategory = (name: string) => {
     setSelectedSubcategories(prev => prev.filter(sub => sub.name !== name));
   };
 
-  // Обробка відправки форми
   const onSubmit = async (data: FormData) => {
-    // Перевірка на наявність хоча б однієї підкатегорії
     if (selectedSubcategories.length === 0) {
       toast.error(t('PromoCodeSection.modal.noSubcategoriesError'));
       return;

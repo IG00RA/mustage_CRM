@@ -1,8 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import styles from '../ModalComponent.module.css';
-import ownStyles from './CreateNamesSet.module.css';
+import styles from '../../ModalComponent.module.css';
+import ownStyles from './UpdateNamesSet.module.css';
 import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import { useForm } from 'react-hook-form';
@@ -30,14 +30,49 @@ type SubcategorySet = {
   name: string;
 };
 
-export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
+type Props = {
+  onClose: () => void;
+  setId: number;
+  initialName: string;
+  initialCategoryId: number;
+  initialPrice: number;
+  initialCostPrice: number;
+  initialDescription: string;
+  initialSubcategories: { subcategory_id: number; quantity: number }[];
+};
+
+export default function UpdateNamesSet({
+  onClose,
+  setId,
+  initialName,
+  initialCategoryId,
+  initialPrice,
+  initialCostPrice,
+  initialDescription,
+  initialSubcategories,
+}: Props) {
   const t = useTranslations('');
-  const { categories, fetchCategories, subcategories, fetchSubcategories } =
-    useCategoriesStore();
-  const { createSet } = useAccountSetsStore();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+  const {
+    categories,
+    fetchCategories,
+    subcategoriesWithParams,
+    fetchSubcategories,
+  } = useCategoriesStore();
+  const { updateSet } = useAccountSetsStore();
+  const [selectedCategoryId, setSelectedCategoryId] =
+    useState<number>(initialCategoryId);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number>(0);
-  const [subcategorySets, setSubcategorySets] = useState<SubcategorySet[]>([]);
+  const [subcategorySets, setSubcategorySets] = useState<SubcategorySet[]>(
+    initialSubcategories.map(sub => ({
+      subcategory_id: sub.subcategory_id,
+      quantity: sub.quantity,
+      name: `${
+        subcategoriesWithParams.find(
+          s => s.account_subcategory_id === sub.subcategory_id
+        )?.account_subcategory_name || ''
+      } - ${sub.quantity} шт.`,
+    }))
+  );
 
   const {
     register,
@@ -48,19 +83,19 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      nameField: '',
-      setDescription: '',
+      nameField: initialName,
+      setDescription: initialDescription,
+      set_price: initialPrice,
+      cost: initialCostPrice,
+      account_category_id: initialCategoryId,
+      quantity: 0,
     },
   });
 
   useEffect(() => {
-    if (categories.length === 0) {
-      fetchCategories();
-    }
-    if (subcategories.length === 0) {
-      fetchSubcategories(undefined, false);
-    }
-  }, [categories, fetchCategories, subcategories, fetchSubcategories]);
+    fetchCategories();
+    fetchSubcategories(undefined, false);
+  }, [fetchCategories, fetchSubcategories]);
 
   const quantity = watch('quantity');
 
@@ -73,7 +108,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   );
 
   const filteredSubCategoryOptions = useMemo(() => {
-    const filtered = subcategories
+    const filtered = subcategoriesWithParams
       .filter(
         sub =>
           !subcategorySets.some(
@@ -85,7 +120,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
     return filtered.length > 0
       ? filtered
       : [t('Names.noSubcategoriesAvailable')];
-  }, [subcategories, subcategorySets, t]);
+  }, [subcategoriesWithParams, subcategorySets, t]);
 
   const categoryMap = useMemo(
     () =>
@@ -101,23 +136,23 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
   const subCategoryMap = useMemo(
     () =>
       new Map(
-        subcategories.map(subcategory => [
+        subcategoriesWithParams.map(subcategory => [
           subcategory.account_subcategory_id,
           subcategory.account_subcategory_name,
         ])
       ),
-    [subcategories]
+    [subcategoriesWithParams]
   );
 
   const subCategoryCostMap = useMemo(
     () =>
       new Map(
-        subcategories.map(subcategory => [
+        subcategoriesWithParams.map(subcategory => [
           subcategory.account_subcategory_id,
           subcategory.cost_price,
         ])
       ),
-    [subcategories]
+    [subcategoriesWithParams]
   );
 
   const calculatedCost = useMemo(() => {
@@ -147,7 +182,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
 
   const handleSubCategorySelect = (values: string[]) => {
     const selectedName = values[0];
-    const selectedSubCat = subcategories.find(
+    const selectedSubCat = subcategoriesWithParams.find(
       sub => sub.account_subcategory_name === selectedName
     );
     if (selectedSubCat) {
@@ -191,6 +226,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       return;
     }
     const requestBody = {
+      set_id: setId,
       set_name: data.nameField,
       set_category_id: data.account_category_id,
       set_price: data.set_price,
@@ -202,7 +238,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       })),
     };
     try {
-      await createSet(requestBody);
+      await updateSet(requestBody);
       toast.success(t('Names.okMessage'));
       reset();
       setSubcategorySets([]);
@@ -210,7 +246,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       setSelectedSubCategoryId(0);
       onClose();
     } catch (error) {
-      console.error('Error creating set:', error);
+      console.error('Error updating set:', error);
       toast.error(
         error instanceof Error
           ? error.message
@@ -410,7 +446,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
             onClose();
           }}
         />
-        <SubmitBtn text="Names.modalCreateSet.createBtn" />
+        <SubmitBtn text="Names.modalCreateSet.updateBtn" />
       </div>
     </form>
   );

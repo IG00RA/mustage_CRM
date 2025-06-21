@@ -151,10 +151,39 @@ export interface FetchSetItemsResponse {
   items: SetItem[];
 }
 
+export interface UpdateSetRequest {
+  set_id: number;
+  set_name: string;
+  set_category_id: number;
+  set_price: number;
+  set_cost_price: number;
+  set_description: string;
+  set_subcategories: {
+    subcategory_id: number;
+    quantity: number;
+  }[];
+}
+
+export interface UpdateSetResponse {
+  set_id: number;
+  set_name: string;
+  set_category_id: number;
+  set_price: number;
+  set_cost_price: number;
+  set_description: string;
+  set_subcategories: {
+    subcategory_id: number;
+    quantity: number;
+  }[];
+  status: string;
+  message: string;
+}
+
 export interface AccountSetsState {
   sets: AccountSet[];
   loading: boolean;
   error: string | null;
+  updateSet: (data: UpdateSetRequest) => Promise<UpdateSetResponse>;
   fetchSets: (params?: FetchSetsParams) => Promise<FetchSetsResponse>;
   createSet: (data: CreateSetRequest) => Promise<CreateSetResponse>;
   getSet: (setId: number) => Promise<GetSetResponse>;

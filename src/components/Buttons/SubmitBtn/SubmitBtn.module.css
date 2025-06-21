@@ -33,3 +33,16 @@
     padding: 12px 32px;
   }
 }
+
+.button:disabled {
+  color: #a9a9c1;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 22px;
+  border-radius: 16px;
+  border: 1px solid #e1e1ec;
+  background: #f1f1f6;
+  cursor: not-allowed;
+  pointer-events: none;
+}

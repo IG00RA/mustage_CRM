@@ -43,7 +43,6 @@ type OpenMenusState = {
   referrals: boolean;
   users: boolean;
   autoFarm: boolean;
-  sets: boolean;
 };
 
 type MenuFunctionMap = {
@@ -65,10 +64,7 @@ type MenuFunctionMap = {
   roles: string;
   referrals_all: string;
   referrals_stat: string;
-  sets_create: string;
-  sets_create_item: string;
-  sets_view: string;
-  sets_upload: string;
+  sets: string;
 };
 
 const menuFunctionMap: MenuFunctionMap = {
@@ -89,10 +85,7 @@ const menuFunctionMap: MenuFunctionMap = {
   roles: 'Должности',
   referrals_all: 'Все рефералы',
   referrals_stat: 'Статистика реферальной системы',
-  sets_create: 'Наборы акаунтов',
-  sets_create_item: 'Наборы акаунтов',
-  sets_view: 'Наборы акаунтов',
-  sets_upload: 'Наборы акаунтов',
+  sets: 'Наборы акаунтов',
 };
 
 export default function Sidebar({
@@ -115,7 +108,6 @@ export default function Sidebar({
     referrals: false,
     users: false,
     autoFarm: false,
-    sets: false,
   });
 
   const { currentUser, fetchCurrentUser, resetCurrentUser, loading } =
@@ -130,7 +122,6 @@ export default function Sidebar({
   const accBottomNavItemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const otherNavItemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const autoFarmRef = useRef<HTMLLIElement | null>(null);
-  const setsRef = useRef<HTMLLIElement | null>(null);
   const usersRef = useRef<HTMLLIElement | null>(null);
 
   const barToggler = () => {
@@ -170,12 +161,6 @@ export default function Sidebar({
     const referralsLinks = ['referrals_all', 'referrals_stat'];
     const usersLinks = ['users', 'roles'];
     const autoFarmLinks = ['auto_farm', 'auto_farm_servers'];
-    const setsLinks = [
-      'sets_create',
-      'sets_create_item',
-      'sets_view',
-      'sets_upload',
-    ];
 
     const isAnyDistributionActive = distributionLinks.some(link =>
       isActiveSub(link)
@@ -183,14 +168,12 @@ export default function Sidebar({
     const isAnyReferralsActive = referralsLinks.some(link => isActiveSub(link));
     const isAnyUsersActive = usersLinks.some(link => isActiveSub(link));
     const isAnyAutoFarmActive = autoFarmLinks.some(link => isActiveSub(link));
-    const isAnySetsActive = setsLinks.some(link => isActiveSub(link));
 
     setOpenMenus({
       distribution: isAnyDistributionActive,
       referrals: isAnyReferralsActive,
       users: isAnyUsersActive,
       autoFarm: isAnyAutoFarmActive,
-      sets: isAnySetsActive,
     });
   }, [pathname]);
 
@@ -237,10 +220,7 @@ export default function Sidebar({
     isMenuAllowed('referrals_all') || isMenuAllowed('referrals_stat');
   const hasUsersAccess = isMenuAllowed('users') || isMenuAllowed('roles');
   const hasAutoFarmAccess = isMenuAllowed('auto_farm');
-  const hasSetsAccess =
-    isMenuAllowed('sets_create') ||
-    isMenuAllowed('sets_create_item') ||
-    isMenuAllowed('sets_view');
+  const hasSetsAccess = isMenuAllowed('sets');
 
   const effectiveIsHovered = isHovered ?? false;
   const handleMouseEnter = () =>
@@ -251,7 +231,7 @@ export default function Sidebar({
   if (loading || (isInitialLoad && !currentUser) || !currentUser) {
     return (
       <aside
-        className={`${styles.sidebar_skeleton} ${
+        className={`${styles.sidebar} ${isBarOpen ? styles.active : ''} ${
           isCollapsed && !effectiveIsHovered ? styles.collapsed : ''
         }`}
         onMouseEnter={handleMouseEnter}
@@ -279,55 +259,107 @@ export default function Sidebar({
             color="#A9A9C1"
           />
         </div>
-        <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
-          <div className={styles.user_wrap}>
-            <div className={styles.user_image_wrap}>
-              <Skeleton circle width={40} height={40} />
-              <div className={styles.nick_wrap}>
-                <Skeleton width={100} height={16} />
-                <Skeleton width={60} height={12} style={{ marginTop: 8 }} />
+        {isCollapsed && !effectiveIsHovered ? (
+          <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
+            <div className={styles.user_wrap}>
+              <div className={styles.user_image_wrap}>
+                <Skeleton circle width={40} height={40} />
+                <div className={styles.nick_wrap}>
+                  <Skeleton width={50} height={16} />
+                  <Skeleton width={55} height={12} style={{ marginTop: 8 }} />
+                </div>
               </div>
+              <Skeleton circle width={24} height={24} />
             </div>
-            <Skeleton circle width={24} height={24} />
-          </div>
 
-          <Skeleton
-            width={120}
-            height={16}
-            style={{ marginBottom: 16, marginTop: 22 }}
-          />
-          <div className={styles.nav}>
-            {Array(3)
-              .fill(0)
-              .map((_, index) => (
-                <div key={index} style={{ marginBottom: 12 }}>
-                  <Skeleton height={40} />
-                </div>
-              ))}
-          </div>
+            <Skeleton
+              width={55}
+              height={16}
+              style={{ marginBottom: 16, marginTop: 22 }}
+            />
+            <div className={styles.nav}>
+              {Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
 
-          <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
-          <div className={styles.nav}>
-            {Array(2)
-              .fill(0)
-              .map((_, index) => (
-                <div key={index} style={{ marginBottom: 12 }}>
-                  <Skeleton height={40} />
-                </div>
-              ))}
-          </div>
+            <Skeleton width={60} height={16} style={{ marginBottom: 16 }} />
+            <div className={styles.nav}>
+              {Array(2)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
 
-          <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
-          <div className={styles.nav}>
-            {Array(2)
-              .fill(0)
-              .map((_, index) => (
-                <div key={index} style={{ marginBottom: 12 }}>
-                  <Skeleton height={40} />
+            <Skeleton width={55} height={16} style={{ marginBottom: 16 }} />
+            <div className={styles.nav}>
+              {Array(2)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
+          </SkeletonTheme>
+        ) : (
+          <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
+            <div className={styles.user_wrap}>
+              <div className={styles.user_image_wrap}>
+                <Skeleton circle width={40} height={40} />
+                <div className={styles.nick_wrap}>
+                  <Skeleton width={100} height={16} />
+                  <Skeleton width={60} height={12} style={{ marginTop: 8 }} />
                 </div>
-              ))}
-          </div>
-        </SkeletonTheme>
+              </div>
+              <Skeleton circle width={24} height={24} />
+            </div>
+
+            <Skeleton
+              width={120}
+              height={16}
+              style={{ marginBottom: 16, marginTop: 22 }}
+            />
+            <div className={styles.nav}>
+              {Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
+
+            <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
+            <div className={styles.nav}>
+              {Array(2)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
+
+            <Skeleton width={120} height={16} style={{ marginBottom: 16 }} />
+            <div className={styles.nav}>
+              {Array(2)
+                .fill(0)
+                .map((_, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <Skeleton height={40} />
+                  </div>
+                ))}
+            </div>
+          </SkeletonTheme>
+        )}
       </aside>
     );
   }
@@ -541,7 +573,7 @@ export default function Sidebar({
                   </Link>
                 </li>
               ))}
-              {hasDistributionAccess && (
+              {/* {hasDistributionAccess && (
                 <li
                   className={`${styles.nav_item} ${
                     openMenus.distribution ? styles.active : ''
@@ -672,137 +704,6 @@ export default function Sidebar({
                       )}
                     </ul>
                   )}
-                </li>
-              )}
-              {/* {hasDistributionAccess && (
-                <li
-                  className={`${styles.nav_item} ${
-                    openMenus.distribution ? styles.active : ''
-                  }`}
-                  key={'distribution'}
-                  onClick={() =>
-                    setOpenMenus(prev => ({
-                      ...prev,
-                      distribution: !prev.distribution,
-                    }))
-                  }
-                >
-                  <div className={styles.nav_item_link}>
-                    <Icon
-                      className={styles.logo}
-                      name={'icon-box-2'}
-                      width={22}
-                      height={22}
-                    />
-                    <Icon
-                      className={styles.logo_hov}
-                      name={'icon-fill_box-2'}
-                      width={22}
-                      height={22}
-                    />
-                    <span className={styles.nav_item_text}>
-                      {t('Sidebar.accParMenu.distribution')}
-                    </span>
-                    <Icon
-                      className={`${styles.arrow_down} ${
-                        openMenus.distribution ? styles.active : ''
-                      }`}
-                      name="icon-angle-down"
-                      width={16}
-                      height={16}
-                      color="#A9A9C1"
-                    />
-                  </div>
-                  <ul
-                    className={`${styles.select_options} ${
-                      openMenus.distribution ? styles.select_open : ''
-                    }`}
-                  >
-                    {isMenuAllowed('distribution_settings') && (
-                      <li
-                        key={'distributionSettings'}
-                        onClick={() =>
-                          setOpenMenus(prev => ({
-                            ...prev,
-                            distribution: false,
-                          }))
-                        }
-                      >
-                        <Link
-                        onClick={closeMenu} 
-                          className={`${styles.option_item} ${
-                            isActiveSub('distribution_settings')
-                              ? styles.active_sub_link
-                              : ''
-                          }`}
-                          href={`/ru/distribution_settings`}
-                        >
-                          <div className={styles.list_sub_mark_wrap}>
-                            <span className={styles.list_sub_mark}></span>
-                          </div>
-                          <p className={styles.list_sub_text}>
-                            {t('Sidebar.accParMenu.distributionSettings')}
-                          </p>
-                        </Link>
-                      </li>
-                    )}
-                    {isMenuAllowed('distribution_create') && (
-                      <li
-                        key={'distributionCreate'}
-                        onClick={() =>
-                          setOpenMenus(prev => ({
-                            ...prev,
-                            distribution: false,
-                          }))
-                        }
-                      >
-                        <Link
-                        onClick={closeMenu} 
-                          className={`${styles.option_item} ${
-                            isActiveSub('distribution_create')
-                              ? styles.active_sub_link
-                              : ''
-                          }`}
-                          href={`/ru/distribution_create`}
-                        >
-                          <div className={styles.list_sub_mark_wrap}>
-                            <span className={styles.list_sub_mark}></span>
-                          </div>
-                          <p className={styles.list_sub_text}>
-                            {t('Sidebar.accParMenu.distributionCreate')}
-                          </p>
-                        </Link>
-                      </li>
-                    )}
-                    {isMenuAllowed('distribution_all') && (
-                      <li
-                        key={'distributionAll'}
-                        onClick={() =>
-                          setOpenMenus(prev => ({
-                            ...prev,
-                            distribution: false,
-                          }))
-                        }
-                      >
-                        <Link
-                        onClick={closeMenu} 
-                          className={`${styles.option_item} ${
-                            isActiveSub('distribution_all')
-                              ? styles.active_sub_link
-                              : ''
-                          }`}
-                          href={`/ru/distribution_all`}
-                        >
-                          <div className={styles.list_sub_mark_wrap}>
-                            <span className={styles.list_sub_mark}></span>
-                          </div>
-                          <p className={styles.list_sub_text}>
-                            {t('Sidebar.accParMenu.distributionAll')}
-                          </p>
-                        </Link>
-                      </li>
-                    )}
-                  </ul>
                 </li>
               )} */}
               {filteredAccParMenuBottom.map((item, index) => (
@@ -942,19 +843,16 @@ export default function Sidebar({
         <nav className={styles.nav}>
           <ul role="menu">
             <li
-              ref={setsRef}
               className={`${styles.nav_item} ${
-                openMenus.sets ? styles.active : ''
+                isActive('sets') ? styles.active : ''
               }`}
               key={'sets'}
-              onClick={() =>
-                setOpenMenus(prev => ({
-                  ...prev,
-                  sets: !prev.sets,
-                }))
-              }
             >
-              <div className={styles.nav_item_link}>
+              <Link
+                onClick={closeMenu}
+                className={styles.nav_item_link}
+                href={`/ru/sets`}
+              >
                 <Icon
                   className={styles.logo}
                   name={'icon-elements'}
@@ -970,122 +868,7 @@ export default function Sidebar({
                 <span className={styles.nav_item_text}>
                   {t('Sidebar.setsPar')}
                 </span>
-                <Icon
-                  className={`${styles.arrow_down} ${
-                    openMenus.sets ? styles.active : ''
-                  }`}
-                  name="icon-angle-down"
-                  width={16}
-                  height={16}
-                  color="#A9A9C1"
-                />
-              </div>
-              {(!isCollapsed || effectiveIsHovered) && (
-                <ul
-                  className={`${styles.select_options} ${
-                    openMenus.sets ? styles.select_open : ''
-                  }`}
-                >
-                  {/* {isMenuAllowed('sets_view') && (
-                <li
-                  key={'setsView'}
-                  onClick={() =>
-                    setOpenMenus(prev => ({ ...prev, sets: false }))
-                  }
-                >
-                  <Link
-                    onClick={closeMenu}
-                    className={`${styles.option_item} ${
-                      isActiveSub('sets_view') ? styles.active_sub_link : ''
-                    }`}
-                    href={`/ru/sets_view`}
-                  >
-                    <div className={styles.list_sub_mark_wrap}>
-                      <span className={styles.list_sub_mark}></span>
-                    </div>
-                    <p className={styles.list_sub_text}>
-                      {t('Sidebar.setsParMenu.viewSets')}
-                    </p>
-                  </Link>
-                </li>
-              )} */}
-                  {isMenuAllowed('sets_create') && (
-                    <li
-                      key={'setsCreate'}
-                      onClick={() =>
-                        setOpenMenus(prev => ({ ...prev, sets: false }))
-                      }
-                    >
-                      <Link
-                        onClick={closeMenu}
-                        className={`${styles.option_item} ${
-                          isActiveSub('sets_create')
-                            ? styles.active_sub_link
-                            : ''
-                        }`}
-                        href={`/ru/sets_create`}
-                      >
-                        <div className={styles.list_sub_mark_wrap}>
-                          <span className={styles.list_sub_mark}></span>
-                        </div>
-                        <p className={styles.list_sub_text}>
-                          {t('Sidebar.setsParMenu.createSet')}
-                        </p>
-                      </Link>
-                    </li>
-                  )}
-                  {isMenuAllowed('sets_create_item') && (
-                    <li
-                      key={'setsCreateItem'}
-                      onClick={() =>
-                        setOpenMenus(prev => ({ ...prev, sets: false }))
-                      }
-                    >
-                      <Link
-                        onClick={closeMenu}
-                        className={`${styles.option_item} ${
-                          isActiveSub('sets_create_item')
-                            ? styles.active_sub_link
-                            : ''
-                        }`}
-                        href={`/ru/sets_create_item`}
-                      >
-                        <div className={styles.list_sub_mark_wrap}>
-                          <span className={styles.list_sub_mark}></span>
-                        </div>
-                        <p className={styles.list_sub_text}>
-                          {t('Sidebar.setsParMenu.createSetItem')}
-                        </p>
-                      </Link>
-                    </li>
-                  )}
-                  {isMenuAllowed('sets_upload') && (
-                    <li
-                      key={'setsUpload'}
-                      onClick={() =>
-                        setOpenMenus(prev => ({ ...prev, sets: false }))
-                      }
-                    >
-                      <Link
-                        onClick={closeMenu}
-                        className={`${styles.option_item} ${
-                          isActiveSub('sets_upload')
-                            ? styles.active_sub_link
-                            : ''
-                        }`}
-                        href={`/ru/sets_upload`}
-                      >
-                        <div className={styles.list_sub_mark_wrap}>
-                          <span className={styles.list_sub_mark}></span>
-                        </div>
-                        <p className={styles.list_sub_text}>
-                          {t('Sidebar.setsParMenu.setsUpload')}
-                        </p>
-                      </Link>
-                    </li>
-                  )}
-                </ul>
-              )}
+              </Link>
             </li>
           </ul>
         </nav>

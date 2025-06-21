@@ -243,16 +243,6 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
       }
     });
 
-    if (parameters.category_id) {
-      if (Array.isArray(parameters.category_id)) {
-        parameters.category_id.forEach(id => {
-          queryParameters.append('category_id', String(id));
-        });
-      } else {
-        queryParameters.append('category_id', String(parameters.category_id));
-      }
-    }
-
     if (parameters.subcategory_id) {
       if (Array.isArray(parameters.subcategory_id)) {
         parameters.subcategory_id.forEach(id => {
@@ -263,6 +253,14 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
           'subcategory_id',
           String(parameters.subcategory_id)
         );
+      }
+    } else if (parameters.category_id) {
+      if (Array.isArray(parameters.category_id)) {
+        parameters.category_id.forEach(id => {
+          queryParameters.append('category_id', String(id));
+        });
+      } else {
+        queryParameters.append('category_id', String(parameters.category_id));
       }
     }
 
@@ -300,7 +298,6 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
           queryString ? `?${queryString}` : ''
         }`;
     }
-
     try {
       const { setsDisplay } = useSalesStore.getState();
 

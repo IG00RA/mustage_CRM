@@ -135,7 +135,7 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
       }
     };
     loadData();
-  }, [
+  }, [t,
     categories.length,
     subcategories.length,
     fetchCategories,

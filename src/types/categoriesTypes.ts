@@ -24,11 +24,17 @@ export interface Subcategory {
 export interface CategoriesState {
   categories: Category[];
   subcategories: Subcategory[];
+
+  categoriesWithParams: Category[];
+  subcategoriesWithParams: Subcategory[];
+
   loading: boolean;
   error: string | null;
-  fetchCategories: () => Promise<void>;
+
+  fetchCategories: (params?: { is_set_category?: boolean }) => Promise<void>;
   fetchSubcategories: (
     categoryId?: number,
-    is_accounts_set?: boolean
+    is_accounts_set?: boolean,
+    limit?: number
   ) => Promise<void>;
 }

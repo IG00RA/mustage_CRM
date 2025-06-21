@@ -99,7 +99,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
       }
     };
     loadData();
-  }, [
+  }, [t,
     categories.length,
     subcategories.length,
     fetchCategories,

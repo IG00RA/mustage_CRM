@@ -49,6 +49,27 @@
     }
   },
   "Sets": {
+    "header": "Управление наборами",
+    "headerText": "Здесь вы можете создавать и просматривать наборы аккаунтов",
+    "errorMessage": "Не удалось получить наборы: {error}",
+    "table": {
+      "name": "Название",
+      "description": "Описание",
+      "itemsAvailable": "Наличие в CRM",
+      "category": "Категория",
+      "costPrice": "Себестоимость",
+      "price": "Цена",
+      "actions": "Действия",
+      "editBtn": "Редактировать",
+      "pagination": "Показать",
+      "pages": "из",
+      "subcategories": "Подкатегории",
+      "quantity": "шт"
+    },
+    "modalUpdate": {
+      "title": "Редактировать набор",
+      "description": "Обновить сведения о наборе."
+    },
     "create": {
       "categorySet": "Категория набора: ",
       "namesSet": "Наименование набора: ",
@@ -259,6 +280,10 @@
       "setSettingsDescription": "Описание набора:",
       "descriptionField": "Описание категории:",
       "createBtn": "Создать набор",
+      "createSetBtn": "Создать набор аккаунтов",
+      "createItemBtn": "Создать единицу набора",
+      "uploadBtn": "Выгрузка наборов",
+      "search": "Найти набор",
       "errorMessage": "Добавтe наименование в набор",
       "errorSetAddedMessage": "Виберите наименование и количество",
       "setAdded": "Наименование добавлено в набор"

@@ -30,8 +30,12 @@ export default function UploadAccounts({
 }: UploadAccountsProps) {
   const t = useTranslations('');
 
-  const { categories, subcategories, fetchCategories, fetchSubcategories } =
-    useCategoriesStore();
+  const {
+    categories,
+    subcategoriesWithParams: subcategories,
+    fetchCategories,
+    fetchSubcategories,
+  } = useCategoriesStore();
 
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string[]>([]);

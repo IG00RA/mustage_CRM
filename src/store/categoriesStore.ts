@@ -11,48 +11,97 @@ import { Response } from '@/types/globalTypes';
 export const useCategoriesStore = create<CategoriesState>(set => ({
   categories: [],
   subcategories: [],
+
+  categoriesWithParams: [],
+  subcategoriesWithParams: [],
+
   loading: false,
   error: null,
 
-  fetchCategories: async () => {
-    const data = await fetchWithErrorHandling<Response<Category>>(
-      `${ENDPOINTS.CATEGORIES}?limit=100`,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
+  fetchCategories: async (params?: { is_set_category?: boolean }) => {
+    set({ loading: true, error: null });
+
+    let url = `${ENDPOINTS.CATEGORIES}?limit=100`;
+    const hasParams = params?.is_set_category !== undefined;
+
+    if (hasParams) {
+      url += `&is_set_category=${params.is_set_category}`;
+    }
+
+    try {
+      const data = await fetchWithErrorHandling<Response<Category>>(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
         },
-        credentials: 'include',
-      },
-      () => {}
-    );
-    set({ categories: data.items });
+        () => {}
+      );
+
+      set(() => ({
+        loading: false,
+        ...(hasParams
+          ? { categoriesWithParams: data.items }
+          : { categories: data.items }),
+      }));
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 
   fetchSubcategories: async (
     categoryId?: number,
-    is_accounts_set?: boolean
+    is_accounts_set?: boolean,
+    limit?: number
   ) => {
-    let url = `${ENDPOINTS.SUBCATEGORIES}?limit=100`;
-    if (categoryId) {
-      url += `&category_id=${categoryId}`;
-    }
+    set({ loading: true, error: null });
+
+    let url = `${ENDPOINTS.SUBCATEGORIES}?`;
+    const hasParams =
+      categoryId !== undefined ||
+      is_accounts_set !== undefined ||
+      limit !== undefined;
+
+    if (categoryId) url += `category_id=${categoryId}&`;
+    if (limit) url += `limit=${limit}&`;
     if (is_accounts_set !== undefined) {
-      url += `&is_accounts_set=${is_accounts_set}`;
+      url += `is_accounts_set=${is_accounts_set}&`;
     }
-    const data = await fetchWithErrorHandling<Response<Subcategory>>(
-      url,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json',
+
+    try {
+      const data = await fetchWithErrorHandling<Response<Subcategory>>(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
         },
-        credentials: 'include',
-      },
-      () => {}
-    );
-    set({ subcategories: data.items });
+        () => {}
+      );
+
+      set(() => ({
+        loading: false,
+        ...(hasParams
+          ? { subcategoriesWithParams: data.items }
+          : { subcategories: data.items }),
+      }));
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 }));

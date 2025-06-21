@@ -79,16 +79,12 @@ export default function NamesSection() {
   const [selectedSubcategory, setSelectedSubcategory] =
     useState<Subcategory | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [pagination, setPagination] = useState<PaginationState>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(NAMES_PAGINATION_KEY);
-      return saved
-        ? (JSON.parse(saved) as PaginationState)
-        : { pageIndex: 0, pageSize: 5 };
-    }
-    return { pageIndex: 0, pageSize: 5 };
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   const configurableColumns = useMemo<string[]>(
     () => [
@@ -110,24 +106,6 @@ export default function NamesSection() {
 
   const [selectedColumns, setSelectedColumns] =
     useState<string[]>(defaultColumns);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(NAMES_COLUMNS_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as string[];
-        setSelectedColumns(
-          parsed.filter(col => configurableColumns.includes(col))
-        );
-      }
-    }
-  }, [configurableColumns]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(NAMES_COLUMNS_KEY, JSON.stringify(selectedColumns));
-    }
-  }, [selectedColumns]);
 
   const fieldMap = useMemo<Record<string, string>>(
     () => ({
@@ -157,23 +135,45 @@ export default function NamesSection() {
   const [columnWidths, setColumnWidths] =
     useState<Record<string, number>>(defaultColumnWidths);
 
+  // Set isMounted to true after component mounts
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    setIsMounted(true);
+  }, []);
+
+  // Load persisted settings from localStorage after mount
+  useEffect(() => {
+    if (isMounted && typeof window !== 'undefined') {
+      const savedPagination = localStorage.getItem(NAMES_PAGINATION_KEY);
+      if (savedPagination) {
+        setPagination(JSON.parse(savedPagination) as PaginationState);
+      }
+
+      const savedColumns = localStorage.getItem(NAMES_COLUMNS_KEY);
+      if (savedColumns) {
+        const parsed = JSON.parse(savedColumns) as string[];
+        setSelectedColumns(
+          parsed.filter(col => configurableColumns.includes(col))
+        );
+      }
+
       const savedWidths = localStorage.getItem(NAMES_COLUMN_WIDTHS_KEY);
       if (savedWidths) {
         setColumnWidths(JSON.parse(savedWidths));
       }
     }
-  }, []);
+  }, [isMounted, configurableColumns]);
 
+  // Save settings to localStorage when they change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isMounted && typeof window !== 'undefined') {
+      localStorage.setItem(NAMES_COLUMNS_KEY, JSON.stringify(selectedColumns));
       localStorage.setItem(
         NAMES_COLUMN_WIDTHS_KEY,
         JSON.stringify(columnWidths)
       );
+      localStorage.setItem(NAMES_PAGINATION_KEY, JSON.stringify(pagination));
     }
-  }, [columnWidths]);
+  }, [isMounted, selectedColumns, columnWidths, pagination]);
 
   const isFunctionsEmpty = currentUser?.functions.length === 0;
   const subcategoryPermissions =
@@ -237,12 +237,6 @@ export default function NamesSection() {
     }
   }, [subcategories, showLoader]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(NAMES_PAGINATION_KEY, JSON.stringify(pagination));
-    }
-  }, [pagination]);
-
   const toggleCreateModal = useCallback(
     () => setIsOpenCreate(prev => !prev),
     []
@@ -276,7 +270,7 @@ export default function NamesSection() {
         ? [
             {
               id: columnId,
-              desc: currentSort.desc ? false : true,
+              desc: !currentSort.desc,
             },
           ]
         : [{ id: columnId, desc: true }];

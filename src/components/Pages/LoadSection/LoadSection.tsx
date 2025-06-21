@@ -35,8 +35,12 @@ const settingsOptions = ['Load.check'];
 
 export default function LoadSection() {
   const t = useTranslations();
-  const { categories, fetchCategories, subcategories, fetchSubcategories } =
-    useCategoriesStore();
+  const {
+    categories,
+    fetchCategories,
+    subcategoriesWithParams: subcategories,
+    fetchSubcategories,
+  } = useCategoriesStore();
   const { fetchAccounts, sellAccounts } = useAccountsStore();
   const { currentUser, fetchCurrentUser } = useUsersStore();
   const [formData, setFormData] = useState<FormData | null>(null);

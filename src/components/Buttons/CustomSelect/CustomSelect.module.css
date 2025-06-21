@@ -116,6 +116,8 @@
   font-weight: 400;
   line-height: 1.57;
   white-space: nowrap;
+  max-width: 90%;
+  overflow-x: auto;
 }
 
 .list_icon {

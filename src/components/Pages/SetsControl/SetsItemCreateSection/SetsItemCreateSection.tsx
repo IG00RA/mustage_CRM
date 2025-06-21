@@ -10,6 +10,7 @@ import { useAccountsStore } from '@/store/accountsStore';
 import { useAccountSetsStore } from '@/store/accountSetsStore';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
+import CancelBtn from '@/components/Buttons/CancelBtn/CancelBtn';
 
 type FormData = {
   namesPrice: number;
@@ -27,7 +28,11 @@ type AccountSet = {
   set_content: { subcategory_id: number; accounts_quantity: number }[];
 };
 
-export default function SetsItemCreateSection() {
+export default function SetsItemCreateSection({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const t = useTranslations();
   const { categories, fetchCategories } = useCategoriesStore();
   const { fetchAccounts } = useAccountsStore();
@@ -46,13 +51,11 @@ export default function SetsItemCreateSection() {
   } = useForm<FormData>();
 
   useEffect(() => {
-    if (categories.length === 0) {
-      fetchCategories();
-    }
+    fetchCategories();
     fetchSets().then(data => {
       setAccountSets(data.items);
     });
-  }, [categories, fetchCategories, fetchSets]);
+  }, [fetchCategories, fetchSets]);
 
   useEffect(() => {
     if (
@@ -160,81 +163,92 @@ export default function SetsItemCreateSection() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sets.createItem.header')}</h2>
-        <p className={styles.header_text}>{t('Sets.createItem.headerText')}</p>
-        <div className={styles.selects_wrap}>
-          <CustomSelect
-            label={t('Sets.createItem.categorySet')}
-            options={[
-              t('Load.category'),
-              ...filteredCategories.map(cat => cat.account_category_name),
-            ]}
-            selected={selectedCategory}
-            onSelect={handleCategorySelect}
-            width={'100%'}
-            multiSelections={false}
-          />
-          <CustomSelect
-            label={t('Sets.createItem.namesSet')}
-            options={[t('Load.names'), ...filteredSets]}
-            selected={selectedSet}
-            onSelect={handleSetSelect}
-            width={'100%'}
-            multiSelections={false}
-          />
-        </div>
-        {selectedSet.length > 0 && selectedSet[0] !== t('Load.names') && (
-          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.createItem.accPrice')}
-                </label>
-                <input
-                  type="number"
-                  className={`${styles.input} ${
-                    errors.namesPrice ? styles.input_error : ''
-                  }`}
-                  readOnly
-                  {...register('namesPrice', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.namesPrice && (
-                <p className={styles.error}>{errors.namesPrice.message}</p>
-              )}
-            </div>
-            <div className={styles.field}>
-              <div className={styles.label_wrap}>
-                <label className={styles.label}>
-                  {t('Sets.createItem.setsQuantity')}
-                </label>
-                <input
-                  type="number"
-                  className={`${styles.input} ${
-                    errors.accQuantity ? styles.input_error : ''
-                  }`}
-                  placeholder={t('DBSettings.form.placeholder')}
-                  {...register('accQuantity', {
-                    required: t('DBSettings.form.errorMessage'),
-                  })}
-                />
-              </div>
-              {errors.accQuantity && (
-                <p className={styles.error}>{errors.accQuantity.message}</p>
-              )}
-            </div>
-            <div className={styles.buttons_wrap}>
-              <SubmitBtn
-                text="Sets.createItem.createBtn"
-                disabled={isLoading}
+      <div className={styles.selects_wrap}>
+        <p>{t('Sets.createItem.categorySet')}</p>
+        <CustomSelect
+          options={[
+            t('Load.category'),
+            ...filteredCategories.map(cat => cat.account_category_name),
+          ]}
+          selected={selectedCategory}
+          onSelect={handleCategorySelect}
+          width={'100%'}
+          multiSelections={false}
+        />
+        <p className={styles.select_label}>{t('Sets.createItem.namesSet')}</p>
+        <CustomSelect
+          options={[t('Load.names'), ...filteredSets]}
+          selected={selectedSet}
+          onSelect={handleSetSelect}
+          width={'100%'}
+          multiSelections={false}
+        />
+      </div>
+      {selectedSet.length > 0 && selectedSet[0] !== t('Load.names') ? (
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>
+                {t('Sets.createItem.accPrice')}
+              </label>
+              <input
+                type="number"
+                className={`${styles.input} ${
+                  errors.namesPrice ? styles.input_error : ''
+                }`}
+                readOnly
+                {...register('namesPrice', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
               />
             </div>
-          </form>
-        )}
-      </div>
+            {errors.namesPrice && (
+              <p className={styles.error}>{errors.namesPrice.message}</p>
+            )}
+          </div>
+          <div className={styles.field}>
+            <div className={styles.label_wrap}>
+              <label className={styles.label}>
+                {t('Sets.createItem.setsQuantity')}
+              </label>
+              <input
+                type="number"
+                className={`${styles.input} ${
+                  errors.accQuantity ? styles.input_error : ''
+                }`}
+                placeholder={t('DBSettings.form.placeholder')}
+                {...register('accQuantity', {
+                  required: t('DBSettings.form.errorMessage'),
+                })}
+              />
+            </div>
+            {errors.accQuantity && (
+              <p className={styles.error}>{errors.accQuantity.message}</p>
+            )}
+          </div>
+          <div className={styles.buttons_wrap}>
+            <CancelBtn
+              text="DBSettings.form.cancelBtn"
+              onClick={() => {
+                reset();
+                onClose();
+              }}
+            />
+            <SubmitBtn text="Sets.createItem.createBtn" disabled={isLoading} />
+          </div>
+        </form>
+      ) : (
+        <div className={styles.buttons_wrap}>
+          <CancelBtn
+            text="DBSettings.form.cancelBtn"
+            onClick={() => {
+              reset();
+              onClose();
+            }}
+          />
+          <SubmitBtn text="Sets.createItem.createBtn" disabled={true} />
+        </div>
+      )}
     </section>
   );
 }
