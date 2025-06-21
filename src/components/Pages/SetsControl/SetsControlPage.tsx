@@ -25,7 +25,7 @@ import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import CreateNamesSet from '@/components/ModalComponent/SetModals/CreateNamesSet/CreateNamesSet';
 import UpdateNamesSet from '@/components/ModalComponent/SetModals/UpdateNamesSet/UpdateNamesSet';
 import AddBtn from '@/components/Buttons/AddBtn/AddBtn';
-import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
+// import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
 import { useAccountSetsStore } from '@/store/accountSetsStore';
 import { useUsersStore } from '@/store/usersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -176,10 +176,10 @@ export default function SetsControlPage() {
     []
   );
 
-  const openUpdateModal = (set: AccountSet) => {
-    setSelectedSet(set);
-    setIsOpenUpdateNamesSet(true);
-  };
+  // const openUpdateModal = (set: AccountSet) => {
+  //   setSelectedSet(set);
+  //   setIsOpenUpdateNamesSet(true);
+  // };
 
   const closeUpdateModal = () => {
     setIsOpenUpdateNamesSet(false);
@@ -256,20 +256,20 @@ export default function SetsControlPage() {
       },
     ];
 
-    if (hasUpdate) {
-      baseColumns.push({
-        id: 'actions',
-        header: t('Sets.table.actions'),
-        cell: ({ row }) => (
-          <WhiteBtn
-            onClick={() => openUpdateModal(row.original)}
-            text={'Sets.table.editBtn'}
-            icon="icon-edit-pencil"
-            iconFill="icon-edit-pencil"
-          />
-        ),
-      });
-    }
+    // if (hasUpdate) {
+    //   baseColumns.push({
+    //     id: 'actions',
+    //     header: t('Sets.table.actions'),
+    //     cell: ({ row }) => (
+    //       <WhiteBtn
+    //         onClick={() => openUpdateModal(row.original)}
+    //         text={'Sets.table.editBtn'}
+    //         icon="icon-edit-pencil"
+    //         iconFill="icon-edit-pencil"
+    //       />
+    //     ),
+    //   });
+    // }
 
     return baseColumns;
   }, [t, hasUpdate, categoryMap]);
@@ -295,10 +295,10 @@ export default function SetsControlPage() {
     },
   });
 
-  const setNames = useMemo(
-    () => [...new Set(data.map(set => set.name))],
-    [data]
-  );
+  // const setNames = useMemo(
+  //   () => [...new Set(data.map(set => set.name))],
+  //   [data]
+  // );
 
   console.log('hasCreate', hasCreate);
   console.log('hasRead', hasRead);
@@ -332,20 +332,20 @@ export default function SetsControlPage() {
                   />
                 </>
               )}
-              <SearchInput
+              {/* <SearchInput
                 onSearch={query => setGlobalFilter(query)}
                 text={'Names.modalCreateSet.search'}
                 options={setNames}
-              />
+              /> */}
             </>
           )}
-          {!hasRead && hasUpdate && (
+          {/* {!hasRead && hasUpdate && (
             <SearchInput
               onSearch={query => setGlobalFilter(query)}
               text={'Names.modalCreateSet.search'}
               options={setNames}
             />
-          )}
+          )} */}
         </div>
       </div>
 
