@@ -160,6 +160,17 @@
   line-height: 22px;
 }
 
+.subcategory_list .subcategory_list_price {
+  color: var(--text_dark);
+  width: 45px;
+}
+
+.subcategory_list .subcategory_list_cost_price {
+  margin-left: auto;
+  color: var(--text_dark);
+  width: 85px;
+}
+
 .table_container {
   border-radius: 24px;
   background: var(--background);

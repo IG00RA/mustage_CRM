@@ -25,7 +25,6 @@ import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import CreateNamesSet from '@/components/ModalComponent/SetModals/CreateNamesSet/CreateNamesSet';
 import UpdateNamesSet from '@/components/ModalComponent/SetModals/UpdateNamesSet/UpdateNamesSet';
 import AddBtn from '@/components/Buttons/AddBtn/AddBtn';
-// import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
 import { useAccountSetsStore } from '@/store/accountSetsStore';
 import { useUsersStore } from '@/store/usersStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
@@ -173,11 +172,6 @@ export default function SetsControlPage() {
     []
   );
 
-  // const openUpdateModal = (set: AccountSet) => {
-  //   setSelectedSet(set);
-  //   setIsOpenUpdateNamesSet(true);
-  // };
-
   const closeUpdateModal = () => {
     setIsOpenUpdateNamesSet(false);
     setSelectedSet(null);
@@ -188,7 +182,7 @@ export default function SetsControlPage() {
       new Map(
         subcategories.map(subcategory => [
           subcategory.account_subcategory_id,
-          subcategory.account_subcategory_name,
+          subcategory,
         ])
       ),
     [subcategories]
@@ -253,21 +247,6 @@ export default function SetsControlPage() {
       },
     ];
 
-    // if (hasUpdate) {
-    //   baseColumns.push({
-    //     id: 'actions',
-    //     header: t('Sets.table.actions'),
-    //     cell: ({ row }) => (
-    //       <WhiteBtn
-    //         onClick={() => openUpdateModal(row.original)}
-    //         text={'Sets.table.editBtn'}
-    //         icon="icon-edit-pencil"
-    //         iconFill="icon-edit-pencil"
-    //       />
-    //     ),
-    //   });
-    // }
-
     return baseColumns;
   }, [t, hasUpdate, categoryMap]);
 
@@ -291,11 +270,6 @@ export default function SetsControlPage() {
       },
     },
   });
-
-  // const setNames = useMemo(
-  //   () => [...new Set(data.map(set => set.name))],
-  //   [data]
-  // );
 
   return (
     <section className={styles.section}>
@@ -325,20 +299,8 @@ export default function SetsControlPage() {
                   />
                 </>
               )}
-              {/* <SearchInput
-                onSearch={query => setGlobalFilter(query)}
-                text={'Names.modalCreateSet.search'}
-                options={setNames}
-              /> */}
             </>
           )}
-          {/* {!hasRead && hasUpdate && (
-            <SearchInput
-              onSearch={query => setGlobalFilter(query)}
-              text={'Names.modalCreateSet.search'}
-              options={setNames}
-            />
-          )} */}
         </div>
       </div>
 
@@ -378,18 +340,50 @@ export default function SetsControlPage() {
                       <td colSpan={columns.length}>
                         <div className={styles.subcategory_list}>
                           <ul>
-                            {row.original.set_content.map(sub => (
-                              <li key={sub.subcategory_id}>
-                                <p>
-                                  {subCategoryMap.get(sub.subcategory_id) ||
-                                    'N/A'}
-                                </p>
-                                <span>
-                                  {sub.accounts_quantity}{' '}
-                                  {t('Sets.table.quantity')}
-                                </span>
-                              </li>
-                            ))}
+                            {row.original.set_content.map(sub => {
+                              const subcategory = subcategories.find(
+                                sc =>
+                                  sc.account_subcategory_id ===
+                                  sub.subcategory_id
+                              );
+                              return (
+                                <li key={sub.subcategory_id}>
+                                  <p>
+                                    {subCategoryMap.get(sub.subcategory_id)
+                                      ?.account_subcategory_name || 'N/A'}
+                                  </p>
+                                  <span>
+                                    {sub.accounts_quantity}{' '}
+                                    {t('Sets.table.quantity')}
+                                  </span>
+                                  <p
+                                    className={
+                                      styles.subcategory_list_cost_price
+                                    }
+                                  >
+                                    {typeof subcategory?.cost_price ===
+                                      'number' &&
+                                    typeof sub.accounts_quantity === 'number'
+                                      ? (
+                                          subcategory.cost_price *
+                                          sub.accounts_quantity
+                                        ).toFixed(2)
+                                      : 'N/A'}
+                                  </p>
+                                  <span
+                                    className={styles.subcategory_list_price}
+                                  >
+                                    {typeof subcategory?.price === 'number' &&
+                                    typeof sub.accounts_quantity === 'number'
+                                      ? (
+                                          subcategory.price *
+                                          sub.accounts_quantity
+                                        ).toFixed(2)
+                                      : 'N/A'}
+                                  </span>
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       </td>
