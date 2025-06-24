@@ -73,11 +73,7 @@ export default function EditProxyModal({
       toast.success(t('ServersProxiesSection.updateSuccess'));
       onClose();
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('ServersProxiesSection.updateError')
-      );
+      toast.error(`${t('ServersProxiesSection.updateError')} : ${error}`);
     }
   };
 

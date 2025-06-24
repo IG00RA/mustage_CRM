@@ -104,8 +104,7 @@ export default function SetsControlPage() {
       ) {
         didFetchCategoriesRef.current = true;
         fetchCategories({ is_set_category: true }).catch(err => {
-          toast.error(t('Sets.errorMessage', { error: err.message }));
-          console.error('Fetch categories failed:', err);
+          toast.error(`${t('Sets.errorMessage')} : ${err}`);
           didFetchCategoriesRef.current = false;
         });
       }
@@ -122,8 +121,7 @@ export default function SetsControlPage() {
       ) {
         didFetchSubcategoriesRef.current = true;
         fetchSubcategories().catch(err => {
-          toast.error(t('Sets.errorMessage', { error: err.message }));
-          console.error('Fetch subcategories failed:', err);
+          toast.error(t('Sets.errorMessage', { err }));
           didFetchSubcategoriesRef.current = false;
         });
       }
@@ -143,9 +141,8 @@ export default function SetsControlPage() {
         fetchSets({
           limit: pagination.pageSize,
           offset: pagination.pageIndex * pagination.pageSize,
-        }).catch(err => {
-          toast.error(t('Sets.errorMessage', { error: err.message }));
-          console.error('Fetch sets failed:', err);
+        }).catch(error => {
+          toast.error(`${t('Sets.errorMessage')} : ${error}`);
           didFetchSetsRef.current = false;
         });
       }
@@ -299,10 +296,6 @@ export default function SetsControlPage() {
   //   () => [...new Set(data.map(set => set.name))],
   //   [data]
   // );
-
-  console.log('hasCreate', hasCreate);
-  console.log('hasRead', hasRead);
-  console.log('hasUpdate', hasUpdate);
 
   return (
     <section className={styles.section}>

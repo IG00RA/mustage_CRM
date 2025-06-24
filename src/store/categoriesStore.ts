@@ -28,33 +28,25 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
       url += `&is_set_category=${params.is_set_category}`;
     }
 
-    try {
-      const data = await fetchWithErrorHandling<Response<Category>>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<Response<Category>>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      set(() => ({
-        loading: false,
-        ...(hasParams
-          ? { categoriesWithParams: data.items }
-          : { categories: data.items }),
-      }));
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set(() => ({
+      loading: false,
+      ...(hasParams
+        ? { categoriesWithParams: data.items }
+        : { categories: data.items }),
+    }));
   },
 
   fetchSubcategories: async (
@@ -76,32 +68,24 @@ export const useCategoriesStore = create<CategoriesState>(set => ({
       url += `is_accounts_set=${is_accounts_set}&`;
     }
 
-    try {
-      const data = await fetchWithErrorHandling<Response<Subcategory>>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<Response<Subcategory>>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      set(() => ({
-        loading: false,
-        ...(hasParams
-          ? { subcategoriesWithParams: data.items }
-          : { subcategories: data.items }),
-      }));
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set(() => ({
+      loading: false,
+      ...(hasParams
+        ? { subcategoriesWithParams: data.items }
+        : { subcategories: data.items }),
+    }));
   },
 }));

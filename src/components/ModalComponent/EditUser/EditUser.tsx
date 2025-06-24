@@ -119,9 +119,9 @@ export default function EditUser({
               .map(sub => sub.account_subcategory_name);
             setAddedSubcategories([...new Set(initialSubs)]);
           }
-        } catch {
+        } catch (error) {
           toast.error(
-            t('UserSection.modalCreate.dataLoadError') || 'Failed to load data'
+            `${t('UserSection.modalCreate.dataLoadError')} : ${error}`
           );
         } finally {
           hasLoadedRef.current = true;
@@ -178,12 +178,11 @@ export default function EditUser({
       onClose();
     } catch (error) {
       if (
-        error instanceof Error &&
-        error.message === 'Such user already exists'
+        error === 'Such user already exists'
       ) {
         toast.error(t('UserSection.modalCreate.errorMessageUserExist'));
       } else {
-        toast.error(t('UserSection.modalEdit.errorMessage'));
+        toast.error(`${t('UserSection.modalEdit.errorMessage')} : ${error}`);
       }
     }
   };

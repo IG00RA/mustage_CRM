@@ -82,36 +82,28 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       queryParams.toString() ? `?${queryParams.toString()}` : ''
     }`;
 
-    try {
-      const data = await fetchWithErrorHandling<AutofarmStatsResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<AutofarmStatsResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      const stats: AutofarmStats[] = Object.entries(data).flatMap(
-        ([geo, modes]) =>
-          modes.map(mode => ({
-            ...mode,
-            geo: GEO_MAPPING[geo.toLowerCase()] || geo,
-          }))
-      );
+    const stats: AutofarmStats[] = Object.entries(data).flatMap(
+      ([geo, modes]) =>
+        modes.map(mode => ({
+          ...mode,
+          geo: GEO_MAPPING[geo.toLowerCase()] || geo,
+        }))
+    );
 
-      set({ stats, loading: false });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch statistics error:', error);
-      throw error;
-    }
+    set({ stats, loading: false });
   },
 
   fetchMissing: async (params = {}) => {
@@ -144,39 +136,31 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       queryParams.toString() ? `?${queryParams.toString()}` : ''
     }`;
 
-    try {
-      const data = await fetchWithErrorHandling<AutofarmMissingResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<AutofarmMissingResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      const missing: AutofarmMissing[] = Object.entries(data).flatMap(
-        ([geo, modes]) =>
-          Object.entries(modes)
-            .filter(([, missingData]) => missingData.total_missing > 0)
-            .map(([mode_name, missingData]) => ({
-              ...missingData,
-              mode_name,
-              geo: GEO_MAPPING[geo.toLowerCase()] || geo,
-            }))
-      );
+    const missing: AutofarmMissing[] = Object.entries(data).flatMap(
+      ([geo, modes]) =>
+        Object.entries(modes)
+          .filter(([, missingData]) => missingData.total_missing > 0)
+          .map(([mode_name, missingData]) => ({
+            ...missingData,
+            mode_name,
+            geo: GEO_MAPPING[geo.toLowerCase()] || geo,
+          }))
+    );
 
-      set({ missing, loading: false });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch missing error:', error);
-      throw error;
-    }
+    set({ missing, loading: false });
   },
 
   fetchStatisticsByDay: async (params: AutofarmRequestParams = {}) => {
@@ -209,28 +193,20 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       ENDPOINTS.AUTO_FARM_STATISTICS_BY_DAY || '/autofarm/statistics-by-day'
     }${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
-    try {
-      const data = await fetchWithErrorHandling<AutofarmStatsByDay[]>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<AutofarmStatsByDay[]>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      return data;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch statistics by day error:', error);
-      throw error;
-    }
+    return data;
   },
 
   fetchHistoryByDay: async (params: AutofarmRequestParams = {}) => {
@@ -257,91 +233,67 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
       queryParams.toString() ? `?${queryParams.toString()}` : ''
     }`;
 
-    try {
-      const data = await fetchWithErrorHandling<AutofarmHistoryByDay>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<AutofarmHistoryByDay>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+      set
+    );
 
-      set({ historyByDay: data, loading: false });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch history by day error:', error);
-      throw error;
-    }
+    set({ historyByDay: data, loading: false });
   },
 
   dumpReadyAccounts: async (params: AutofarmDumpParams) => {
     set({ loading: true, error: null });
     const url = ENDPOINTS.AUTO_FARM_DUMP_READY_ACCOUNTS;
 
-    try {
-      const data = await fetchWithErrorHandling<AutofarmDumpResponse>(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            geo: params.geo,
-            activity_mode: params.activity_mode,
-            fp_number: params.fp_number,
-            subcategory_id: params.subcategory_id,
-            to_dump: params.to_dump,
-            target_platform: params.target_platform ?? 'CRM',
-          }),
+    const data = await fetchWithErrorHandling<AutofarmDumpResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set({ loading: false });
-      return data;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Dump ready accounts error:', error);
-      throw error;
-    }
+        credentials: 'include',
+        body: JSON.stringify({
+          geo: params.geo,
+          activity_mode: params.activity_mode,
+          fp_number: params.fp_number,
+          subcategory_id: params.subcategory_id,
+          to_dump: params.to_dump,
+          target_platform: params.target_platform ?? 'CRM',
+        }),
+      },
+      set
+    );
+    set({ loading: false });
+    return data;
   },
 
   fetchGeosModesStatuses: async () => {
     set({ loading: true, error: null });
     const url = ENDPOINTS.AUTO_FARM_GEOS_MODES_STATUSES;
 
-    try {
-      const data = await fetchWithErrorHandling<GeosModesStatusesResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<GeosModesStatusesResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set({ geosModesStatuses: data, loading: false });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch geos modes statuses error:', error);
-      throw error;
-    }
+        credentials: 'include',
+      },
+      set
+    );
+    set({ geosModesStatuses: data, loading: false });
   },
   fetchServers: async (params: AutofarmRequestParams = {}) => {
     set({ loading: true, error: null });
@@ -370,32 +322,24 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
 
     const url = `${ENDPOINTS.AUTO_FARM_SERVERS}?${queryParams.toString()}`;
 
-    try {
-      const data = await fetchWithErrorHandling<ServersResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<ServersResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set({
-        servers: data.items,
-        totalServers: data.total_rows,
-        loading: false,
-      });
-      return { total_rows: data.total_rows };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch servers error:', error);
-      throw error;
-    }
+        credentials: 'include',
+      },
+      set
+    );
+    set({
+      servers: data.items,
+      totalServers: data.total_rows,
+      loading: false,
+    });
+    return { total_rows: data.total_rows };
   },
 
   fetchProxies: async (params: AutofarmRequestParams = {}) => {
@@ -419,95 +363,71 @@ export const useAutofarmStore = create<AutofarmStore>((set, get) => ({
 
     const url = `${ENDPOINTS.AUTO_FARM_PROXIES}?${queryParams.toString()}`;
 
-    try {
-      const data = await fetchWithErrorHandling<ProxiesResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const data = await fetchWithErrorHandling<ProxiesResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set({
-        proxies: data.items,
-        totalProxies: data.total_rows,
-        loading: false,
-      });
-      return { total_rows: data.total_rows };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Fetch proxies error:', error);
-      throw error;
-    }
+        credentials: 'include',
+      },
+      set
+    );
+    set({
+      proxies: data.items,
+      totalProxies: data.total_rows,
+      loading: false,
+    });
+    return { total_rows: data.total_rows };
   },
 
   updateProxy: async (proxyId: number, data: UpdateProxyRequest) => {
     set({ loading: true, error: null });
     const url = `${ENDPOINTS.AUTO_FARM_PROXIES}/${proxyId}`;
 
-    try {
-      const response = await fetchWithErrorHandling<Proxy>(
-        url,
-        {
-          method: 'PATCH',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-          credentials: 'include',
+    const response = await fetchWithErrorHandling<Proxy>(
+      url,
+      {
+        method: 'PATCH',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set(state => ({
-        proxies: state.proxies.map(proxy =>
-          proxy.proxy_id === proxyId ? response : proxy
-        ),
-        loading: false,
-      }));
-      return response;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Update proxy error:', error);
-      throw error;
-    }
+        body: JSON.stringify(data),
+        credentials: 'include',
+      },
+      set
+    );
+    set(state => ({
+      proxies: state.proxies.map(proxy =>
+        proxy.proxy_id === proxyId ? response : proxy
+      ),
+      loading: false,
+    }));
+    return response;
   },
 
   deleteProxy: async (proxyId: number) => {
     set({ loading: true, error: null });
     const url = `${ENDPOINTS.AUTO_FARM_PROXIES}/${proxyId}`;
 
-    try {
-      await fetchWithErrorHandling(
-        url,
-        {
-          method: 'DELETE',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    await fetchWithErrorHandling(
+      url,
+      {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
-      set(state => ({
-        proxies: state.proxies.filter(proxy => proxy.proxy_id !== proxyId),
-        loading: false,
-      }));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      console.error('Delete proxy error:', error);
-      throw error;
-    }
+        credentials: 'include',
+      },
+      set
+    );
+    set(state => ({
+      proxies: state.proxies.filter(proxy => proxy.proxy_id !== proxyId),
+      loading: false,
+    }));
   },
 }));

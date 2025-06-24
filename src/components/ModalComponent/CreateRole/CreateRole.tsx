@@ -99,7 +99,8 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
       }
     };
     loadData();
-  }, [t,
+  }, [
+    t,
     categories.length,
     subcategories.length,
     fetchCategories,
@@ -177,13 +178,10 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
       reset();
       onClose();
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'Role with this name already exists'
-      ) {
-        toast.error(t('UserSection.modalRoles.errorMessageRoleExist'));
+      if (error === 'Role with this name already exists') {
+        toast.error(`${t('UserSection.modalRoles.errorMessageRoleExist')}`);
       } else {
-        toast.error(t('UserSection.modalCreate.errorMessage'));
+        toast.error(`${t('UserSection.modalRoles.errorMessage')} : ${error}`);
       }
     }
   };

@@ -84,7 +84,6 @@ export default function EditPromoCode({
     },
   });
 
-  // Мапи для швидкого доступу
   const categoryMap = useMemo(
     () =>
       new Map(
@@ -107,7 +106,6 @@ export default function EditPromoCode({
     [subcategories]
   );
 
-  // Ініціалізація вибраних категорій і підкатегорій
   useEffect(() => {
     if (promoCode.subcategory_ids && promoCode.subcategory_ids.length > 0) {
       const initialSubcategories = subcategories
@@ -139,7 +137,6 @@ export default function EditPromoCode({
     }
   }, [promoCode.subcategory_ids, categories, subcategories]);
 
-  // Опції для категорій
   const categoryOptions = useMemo(
     () =>
       categories
@@ -153,7 +150,6 @@ export default function EditPromoCode({
     [categories, selectedCategories]
   );
 
-  // Фільтровані підкатегорії
   const subcategoryOptions = useMemo(() => {
     const selectedCategoryIds = selectedCategories.map(cat => cat.id);
     return subcategories
@@ -167,7 +163,6 @@ export default function EditPromoCode({
       .map(sub => sub.account_subcategory_name);
   }, [subcategories, selectedCategories, selectedSubcategories]);
 
-  // Опції для статусу
   const statusOptions = useMemo(
     () => [
       t('PromoCodeSection.selects.activeOne'),
@@ -176,7 +171,6 @@ export default function EditPromoCode({
     [t]
   );
 
-  // Обробка вибору категорії
   const handleCategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedCat = categories.find(
@@ -185,7 +179,6 @@ export default function EditPromoCode({
     setSelectedCategoryId(selectedCat ? selectedCat.account_category_id : 0);
   };
 
-  // Обробка вибору підкатегорії
   const handleSubcategorySelect = (values: string[]) => {
     const selectedName = values[0];
     const selectedSub = subcategories.find(
@@ -206,7 +199,6 @@ export default function EditPromoCode({
     setValue('promocode_status', status);
   };
 
-  // Додавання категорії
   const handleAddCategory = () => {
     if (!selectedCategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
@@ -223,7 +215,6 @@ export default function EditPromoCode({
     }
   };
 
-  // Додавання підкатегорії
   const handleAddSubcategory = () => {
     if (!selectedSubcategoryId) {
       toast.error(t('DBSettings.form.errorMessage'));
@@ -240,17 +231,14 @@ export default function EditPromoCode({
     }
   };
 
-  // Видалення категорії
   const handleRemoveCategory = (name: string) => {
     setSelectedCategories(prev => prev.filter(cat => cat.name !== name));
   };
 
-  // Видалення підкатегорії
   const handleRemoveSubcategory = (name: string) => {
     setSelectedSubcategories(prev => prev.filter(sub => sub.name !== name));
   };
 
-  // Обробка відправки форми
   const onSubmit = async (data: FormData) => {
     if (selectedSubcategories.length === 0) {
       toast.error(t('PromoCodeSection.modal.noSubcategoriesError'));
@@ -295,12 +283,7 @@ export default function EditPromoCode({
       fetchPromoCodes();
       onClose();
     } catch (error) {
-      console.error('Error editing promocode:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('PromoCodeSection.modal.error')
-      );
+      toast.error(`${t('PromoCodeSection.modal.error')} : ${error}`);
     }
   };
 

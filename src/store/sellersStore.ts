@@ -16,7 +16,7 @@ export const useSellersStore = create<SellersState>(set => ({
     const data = await fetchWithErrorHandling<Seller[]>(
       url,
       { method: 'GET', headers: getAuthHeaders(), credentials: 'include' },
-      () => {}
+      set
     );
     set({ sellers: data });
   },

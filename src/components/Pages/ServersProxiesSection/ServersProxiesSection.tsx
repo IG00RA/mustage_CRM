@@ -92,9 +92,8 @@ export default function ServersProxiesSection() {
     if (!currentUser && !loading && !hasFetchedUser) {
       setHasFetchedUser(true);
       fetchCurrentUser().catch(error => {
-        console.error('Failed to fetch current user:', error);
-        toast.error(t('Errors.fetchUserFailed'));
-        router.push('/ru');
+        toast.error(`${t('Errors.fetchUserFailed')} : ${error}`);
+              router.push('/ru');
       });
     }
   }, [currentUser, loading, hasFetchedUser, fetchCurrentUser, router, t]);
@@ -174,8 +173,7 @@ export default function ServersProxiesSection() {
         };
         await fetchProxies(proxyParams);
       } catch (error) {
-        toast.error(t('ServersProxiesSection.deleteError'));
-        console.error('Delete proxy error:', error);
+        toast.error(`${t('ServersProxiesSection.deleteError')} : ${error}`);
       }
     },
     [
@@ -423,11 +421,8 @@ export default function ServersProxiesSection() {
 
       toast.success(t('Upload.downloadError.success'));
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t('Upload.downloadError.error')
-      );
-      console.error('Download error:', error);
-    }
+      toast.error(`${t('Upload.downloadError.error')} : ${error}`);
+       }
   };
 
   const toggleErrorModal = () => {

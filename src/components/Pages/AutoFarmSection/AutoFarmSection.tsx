@@ -76,8 +76,7 @@ export default function AutoFarmSection() {
     if (!currentUser && !loading && !hasFetchedUser) {
       setHasFetchedUser(true);
       fetchCurrentUser().catch(error => {
-        console.error('Failed to fetch current user:', error);
-        toast.error(t('Errors.fetchUserFailed'));
+        toast.error(`${t('Errors.fetchUserFailed')} : ${error}`);
         router.push('/ru');
       });
     }
@@ -216,11 +215,8 @@ export default function AutoFarmSection() {
 
       toast.success(t('Upload.downloadError.success'));
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t('Upload.downloadError.error')
-      );
-      console.error('Download error:', error);
-    }
+      toast.error(`${t('Upload.downloadError.error')} : ${error}`);
+        }
   };
 
   const downloadTemplate = () => {

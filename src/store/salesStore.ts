@@ -68,135 +68,127 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
     }
 
     set({ loading: true, error: null });
-    try {
-      const queryParameters = new URLSearchParams();
-      if (sellerIds && sellerIds.length > 0) {
-        queryParameters.append('seller_id', String(sellerIds[0]));
-      } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
-        queryParameters.append(
-          'seller_id',
-          String(currentUser.seller.seller_id)
-        );
-      }
 
-      const summaryEndpoint = `${ENDPOINTS.SALES_SUMMARY}${
-        queryParameters.toString() ? `?${queryParameters.toString()}` : ''
-      }`;
-
-      const summaryData = await fetchWithErrorHandling<SalesSummaryResponse>(
-        summaryEndpoint,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        },
-        () => {}
-      );
-
-      const allTimeQueryParameters = new URLSearchParams();
-      if (sellerIds && sellerIds.length > 0) {
-        allTimeQueryParameters.append('seller_id', String(sellerIds[0]));
-      } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
-        allTimeQueryParameters.append(
-          'seller_id',
-          String(currentUser.seller.seller_id)
-        );
-      }
-
-      const allTimeEndpoint = `${ENDPOINTS.SALES_ALL_TIME}${
-        allTimeQueryParameters.toString()
-          ? `?${allTimeQueryParameters.toString()}`
-          : ''
-      }`;
-
-      const allTimeData = await fetchWithErrorHandling<AllTimeReportResponse>(
-        allTimeEndpoint,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        },
-        () => {}
-      );
-
-      const { setsDisplay } = useSalesStore.getState();
-
-      let allTimeQuantity = 0;
-      let allTimeAmount = 0;
-      Object.entries(allTimeData).forEach(([, months]) => {
-        Object.entries(months).forEach(([month, report]) => {
-          if (month !== 'total' && report) {
-            const quantity =
-              setsDisplay === 'setsDisplayAcc'
-                ? (report.solo_accounts?.sales_count || 0) +
-                  (report.sets?.accounts_sales_count || 0)
-                : (report.solo_accounts?.sales_count || 0) +
-                  (report.sets?.sets_sales_count || 0);
-            const amount =
-              (report.solo_accounts?.total_profit || 0) +
-              (report.sets?.total_profit || 0);
-            allTimeQuantity += quantity;
-            allTimeAmount += amount;
-          }
-        });
-      });
-
-      const sales: Sale[] = [
-        {
-          period: 'Today',
-          amount:
-            (summaryData.today.solo_accounts?.total_profit || 0) +
-            (summaryData.today.sets?.total_profit || 0),
-          quantity:
-            setsDisplay === 'setsDisplayAcc'
-              ? (summaryData.today.solo_accounts?.sales_count || 0) +
-                (summaryData.today.sets?.accounts_sales_count || 0)
-              : (summaryData.today.solo_accounts?.sales_count || 0) +
-                (summaryData.today.sets?.sets_sales_count || 0),
-        },
-        {
-          period: 'Week',
-          amount:
-            (summaryData.week.solo_accounts?.total_profit || 0) +
-            (summaryData.week.sets?.total_profit || 0),
-          quantity:
-            setsDisplay === 'setsDisplayAcc'
-              ? (summaryData.week.solo_accounts?.sales_count || 0) +
-                (summaryData.week.sets?.accounts_sales_count || 0)
-              : (summaryData.week.solo_accounts?.sales_count || 0) +
-                (summaryData.week.sets?.sets_sales_count || 0),
-        },
-        {
-          period: 'Month',
-          amount:
-            (summaryData.month.solo_accounts?.total_profit || 0) +
-            (summaryData.month.sets?.total_profit || 0),
-          quantity:
-            setsDisplay === 'setsDisplayAcc'
-              ? (summaryData.month.solo_accounts?.sales_count || 0) +
-                (summaryData.month.sets?.accounts_sales_count || 0)
-              : (summaryData.month.solo_accounts?.sales_count || 0) +
-                (summaryData.month.sets?.sets_sales_count || 0),
-        },
-        {
-          period: 'AllTime',
-          amount: allTimeAmount,
-          quantity: allTimeQuantity,
-        },
-      ];
-
-      set({ sales, loading: false });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
+    const queryParameters = new URLSearchParams();
+    if (sellerIds && sellerIds.length > 0) {
+      queryParameters.append('seller_id', String(sellerIds[0]));
+    } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+      queryParameters.append('seller_id', String(currentUser.seller.seller_id));
     }
+
+    const summaryEndpoint = `${ENDPOINTS.SALES_SUMMARY}${
+      queryParameters.toString() ? `?${queryParameters.toString()}` : ''
+    }`;
+
+    const summaryData = await fetchWithErrorHandling<SalesSummaryResponse>(
+      summaryEndpoint,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    const allTimeQueryParameters = new URLSearchParams();
+    if (sellerIds && sellerIds.length > 0) {
+      allTimeQueryParameters.append('seller_id', String(sellerIds[0]));
+    } else if (!currentUser.is_admin && currentUser.seller?.seller_id) {
+      allTimeQueryParameters.append(
+        'seller_id',
+        String(currentUser.seller.seller_id)
+      );
+    }
+
+    const allTimeEndpoint = `${ENDPOINTS.SALES_ALL_TIME}${
+      allTimeQueryParameters.toString()
+        ? `?${allTimeQueryParameters.toString()}`
+        : ''
+    }`;
+
+    const allTimeData = await fetchWithErrorHandling<AllTimeReportResponse>(
+      allTimeEndpoint,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    const { setsDisplay } = useSalesStore.getState();
+
+    let allTimeQuantity = 0;
+    let allTimeAmount = 0;
+    Object.entries(allTimeData).forEach(([, months]) => {
+      Object.entries(months).forEach(([month, report]) => {
+        if (month !== 'total' && report) {
+          const quantity =
+            setsDisplay === 'setsDisplayAcc'
+              ? (report.solo_accounts?.sales_count || 0) +
+                (report.sets?.accounts_sales_count || 0)
+              : (report.solo_accounts?.sales_count || 0) +
+                (report.sets?.sets_sales_count || 0);
+          const amount =
+            (report.solo_accounts?.total_profit || 0) +
+            (report.sets?.total_profit || 0);
+          allTimeQuantity += quantity;
+          allTimeAmount += amount;
+        }
+      });
+    });
+
+    const sales: Sale[] = [
+      {
+        period: 'Today',
+        amount:
+          (summaryData.today.solo_accounts?.total_profit || 0) +
+          (summaryData.today.sets?.total_profit || 0),
+        quantity:
+          setsDisplay === 'setsDisplayAcc'
+            ? (summaryData.today.solo_accounts?.sales_count || 0) +
+              (summaryData.today.sets?.accounts_sales_count || 0)
+            : (summaryData.today.solo_accounts?.sales_count || 0) +
+              (summaryData.today.sets?.sets_sales_count || 0),
+      },
+      {
+        period: 'Week',
+        amount:
+          (summaryData.week.solo_accounts?.total_profit || 0) +
+          (summaryData.week.sets?.total_profit || 0),
+        quantity:
+          setsDisplay === 'setsDisplayAcc'
+            ? (summaryData.week.solo_accounts?.sales_count || 0) +
+              (summaryData.week.sets?.accounts_sales_count || 0)
+            : (summaryData.week.solo_accounts?.sales_count || 0) +
+              (summaryData.week.sets?.sets_sales_count || 0),
+      },
+      {
+        period: 'Month',
+        amount:
+          (summaryData.month.solo_accounts?.total_profit || 0) +
+          (summaryData.month.sets?.total_profit || 0),
+        quantity:
+          setsDisplay === 'setsDisplayAcc'
+            ? (summaryData.month.solo_accounts?.sales_count || 0) +
+              (summaryData.month.sets?.accounts_sales_count || 0)
+            : (summaryData.month.solo_accounts?.sales_count || 0) +
+              (summaryData.month.sets?.sets_sales_count || 0),
+      },
+      {
+        period: 'AllTime',
+        amount: allTimeAmount,
+        quantity: allTimeQuantity,
+      },
+    ];
+
+    set({ sales, loading: false });
   },
 
   fetchReport: async (
@@ -207,14 +199,7 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
     let { currentUser } = usersStore;
 
     if (!currentUser) {
-      try {
-        currentUser = await usersStore.fetchCurrentUser();
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        set({ loading: false, error: errorMessage });
-        return [];
-      }
+      currentUser = await usersStore.fetchCurrentUser();
     }
 
     if (
@@ -298,53 +283,10 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
           queryString ? `?${queryString}` : ''
         }`;
     }
-    try {
-      const { setsDisplay } = useSalesStore.getState();
+    const { setsDisplay } = useSalesStore.getState();
 
-      if (reportType === 'all') {
-        const data = await fetchWithErrorHandling<AllTimeReportResponse>(
-          endpoint,
-          {
-            method: 'GET',
-            headers: {
-              ...getAuthHeaders(),
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          },
-          () => {}
-        );
-
-        const sales: Sale[] = [];
-        Object.entries(data).forEach(([year, months]) => {
-          Object.entries(months).forEach(([month, report]) => {
-            if (
-              month !== 'total' &&
-              report &&
-              report.solo_accounts &&
-              report.sets
-            ) {
-              const quantity =
-                setsDisplay === 'setsDisplayAcc'
-                  ? (report.solo_accounts.sales_count || 0) +
-                    (report.sets.accounts_sales_count || 0)
-                  : (report.solo_accounts.sales_count || 0) +
-                    (report.sets.sets_sales_count || 0);
-              const amount =
-                (report.solo_accounts.total_profit || 0) +
-                (report.sets.total_profit || 0);
-              sales.push({
-                period: `${year}-${month.padStart(2, '0')}`,
-                amount,
-                quantity,
-              });
-            }
-          });
-        });
-        return sales.sort((a, b) => a.period.localeCompare(b.period));
-      }
-
-      const data = await fetchWithErrorHandling<ReportResponse>(
+    if (reportType === 'all') {
+      const data = await fetchWithErrorHandling<AllTimeReportResponse>(
         endpoint,
         {
           method: 'GET',
@@ -354,12 +296,18 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
           },
           credentials: 'include',
         },
-        () => {}
+        set
       );
 
-      return Object.entries(data)
-        .map(([period, report]) => {
-          if (report && report.solo_accounts && report.sets) {
+      const sales: Sale[] = [];
+      Object.entries(data).forEach(([year, months]) => {
+        Object.entries(months).forEach(([month, report]) => {
+          if (
+            month !== 'total' &&
+            report &&
+            report.solo_accounts &&
+            report.sets
+          ) {
             const quantity =
               setsDisplay === 'setsDisplayAcc'
                 ? (report.solo_accounts.sales_count || 0) +
@@ -369,22 +317,52 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
             const amount =
               (report.solo_accounts.total_profit || 0) +
               (report.sets.total_profit || 0);
-            return {
-              period,
+            sales.push({
+              period: `${year}-${month.padStart(2, '0')}`,
               amount,
               quantity,
-            };
+            });
           }
-          return null;
-        })
-        .filter((sale): sale is Sale => sale !== null)
-        .sort((a, b) => a.period.localeCompare(b.period));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage });
-      return [];
+        });
+      });
+      return sales.sort((a, b) => a.period.localeCompare(b.period));
     }
+
+    const data = await fetchWithErrorHandling<ReportResponse>(
+      endpoint,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+      set
+    );
+
+    return Object.entries(data)
+      .map(([period, report]) => {
+        if (report && report.solo_accounts && report.sets) {
+          const quantity =
+            setsDisplay === 'setsDisplayAcc'
+              ? (report.solo_accounts.sales_count || 0) +
+                (report.sets.accounts_sales_count || 0)
+              : (report.solo_accounts.sales_count || 0) +
+                (report.sets.sets_sales_count || 0);
+          const amount =
+            (report.solo_accounts.total_profit || 0) +
+            (report.sets.total_profit || 0);
+          return {
+            period,
+            amount,
+            quantity,
+          };
+        }
+        return null;
+      })
+      .filter((sale): sale is Sale => sale !== null)
+      .sort((a, b) => a.period.localeCompare(b.period));
   },
 
   fetchSalesAndYearlyChange: async (
@@ -402,12 +380,9 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
     if (!currentUser) {
       try {
         currentUser = await usersStore.fetchCurrentUser();
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+      } catch {
         set({
           loading: false,
-          error: errorMessage,
           chartSales: [],
           yearlyChange: null,
         });
@@ -567,10 +542,8 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
           yearlyChange !== null ? Number(yearlyChange.toFixed(1)) : null,
         loading: false,
       });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      set({ loading: false, error: errorMessage, chartSales: [] });
+    } catch {
+      set({ chartSales: [] });
     }
   },
 }));

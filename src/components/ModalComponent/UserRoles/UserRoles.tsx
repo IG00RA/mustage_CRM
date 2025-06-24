@@ -76,10 +76,9 @@ export default function UserRoles({
         );
         setFunctions(data);
         hasFetchedFunctions.current = true;
-      } catch {
+      } catch (error) {
         toast.error(
-          t('UserSection.modalRoles.fetchFunctionsError') ||
-            'Failed to fetch functions'
+          `${t('UserSection.modalRoles.fetchFunctionsError')} : ${error}`
         );
       } finally {
         setLoading(false);

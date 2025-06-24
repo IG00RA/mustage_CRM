@@ -210,12 +210,7 @@ export default function CreateNamesSet({ onClose }: { onClose: () => void }) {
       setSelectedSubCategoryId(0);
       onClose();
     } catch (error) {
-      console.error('Error creating set:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Names.modalCreateSet.errorMessage')
-      );
+      toast.error(`${t('Names.modalCreateSet.errorMessage')} : ${error}`);
     }
   };
 

@@ -34,7 +34,7 @@ export default function SetsItemCreateSection({
   onClose: () => void;
 }) {
   const t = useTranslations();
-  const { categories, fetchCategories } = useCategoriesStore();
+  const { categories, subcategories, fetchCategories } = useCategoriesStore();
   const { fetchAccounts } = useAccountsStore();
   const { createSetItem, fetchSets } = useAccountSetsStore();
   const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
@@ -113,11 +113,23 @@ export default function SetsItemCreateSection({
         });
         setSelectedSet([]);
       } else {
-        toast.error(response.message || t('Sets.createItem.errorMessage'));
+        const shortageInfo = response.shortage_info?.[0];
+        if (shortageInfo && subcategories) {
+          const subcategory = subcategories.find(
+            sub => sub.account_subcategory_id === shortageInfo.subcategory_id
+          );
+          if (subcategory) {
+            const errorMessage = `Недостаточно аккаунтов в подкатегории ${subcategory.account_subcategory_name} в количестве ${shortageInfo.missing} для формирования едениц набора`;
+            toast.error(errorMessage);
+          } else {
+            toast.error(response.message || t('Sets.createItem.errorMessage'));
+          }
+        } else {
+          toast.error(response.message || t('Sets.createItem.errorMessage'));
+        }
       }
     } catch (error) {
-      console.error('Error creating set item:', error);
-      toast.error(t('Sets.createItem.errorMessage'));
+      toast.error(`${t('Sets.createItem.errorMessage')} : ${error}`);
     } finally {
       setIsLoading(false);
     }

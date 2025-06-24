@@ -88,6 +88,13 @@ export interface CreateSetItemResponse {
   set_items_ids: number[];
   status: string;
   message: string;
+  shortage_info?: [
+    {
+      subcategory_id: number;
+      needed_accounts: number;
+      missing: number;
+    }
+  ];
 }
 
 export interface SellSetItemRequest {

@@ -128,14 +128,13 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
 
         if (categories.length === 0) await fetchCategories();
         if (subcategories.length === 0) await fetchSubcategories();
-      } catch {
-        toast.error(
-          t('RoleSection.modalCreate.fetchError') || 'Failed to load data'
-        );
+      } catch (error) {
+        toast.error(`${t('RoleSection.modalCreate.fetchError')} : ${error}`);
       }
     };
     loadData();
-  }, [t,
+  }, [
+    t,
     categories.length,
     subcategories.length,
     fetchCategories,
@@ -228,14 +227,13 @@ export default function EditRole({ onClose, role, pagination }: EditRoleProps) {
       onClose();
     } catch (error) {
       if (
-        error instanceof Error &&
-        error.message.includes(
+        String(error).includes(
           'повторювані значення ключа порушують обмеження унікальності'
         )
       ) {
         toast.error(t('UserSection.modalRoles.errorMessageRoleExist'));
       } else {
-        toast.error(t('UserSection.modalCreate.errorMessage'));
+        toast.error(`${t('UserSection.modalCreate.errorMessage')} : ${error}`);
       }
     }
   };

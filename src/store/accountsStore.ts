@@ -86,13 +86,13 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(requestBody),
       },
-      () => {}
+     set
     );
 
     if (updateState) {
       set({ accounts: data.items });
     }
-
+    set({ loading: false });
     return { items: data.items, total_rows: data.total_rows };
   },
 
@@ -103,61 +103,45 @@ export const useAccountsStore = create<AccountsState>(set => ({
       account_names: accountNames,
     };
 
-    try {
-      const url = ENDPOINTS.ACCOUNTS_SEARCH || '/accounts/search';
-      const data = await fetchWithErrorHandling<SearchResponse>(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(requestBody),
+    const url = ENDPOINTS.ACCOUNTS_SEARCH || '/accounts/search';
+    const data = await fetchWithErrorHandling<SearchResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+        body: JSON.stringify(requestBody),
+      },
+     set
+    );
 
-      set({ loading: false });
-      return data;
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set({ loading: false });
+    return data;
   },
 
   replaceAccounts: async (data: ReplaceRequest) => {
     set({ loading: true, error: null });
 
-    try {
-      const url = ENDPOINTS.ACCOUNTS_REPLACE || '/accounts/replace';
-      const response = await fetchWithErrorHandling<ReplaceResponse>(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(data),
+    const url = ENDPOINTS.ACCOUNTS_REPLACE || '/accounts/replace';
+    const response = await fetchWithErrorHandling<ReplaceResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+        body: JSON.stringify(data),
+      },
+     set
+    );
 
-      set({ loading: false });
-      return response;
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set({ loading: false });
+    return response;
   },
 
   stopSellingAccounts: async (accountIds: number[]) => {
@@ -167,89 +151,65 @@ export const useAccountsStore = create<AccountsState>(set => ({
       account_ids: accountIds,
     };
 
-    try {
-      const url = ENDPOINTS.ACCOUNTS_STOP_SELLING || '/accounts/stop-selling';
-      const response = await fetchWithErrorHandling<StopSellingResponse>(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(requestBody),
+    const url = ENDPOINTS.ACCOUNTS_STOP_SELLING || '/accounts/stop-selling';
+    const response = await fetchWithErrorHandling<StopSellingResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+        body: JSON.stringify(requestBody),
+      },
+     set
+    );
 
-      set({ loading: false });
-      return response;
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set({ loading: false });
+    return response;
   },
 
   sellAccounts: async (request: SellAccountsRequest) => {
     set({ loading: true, error: null });
 
-    try {
-      const url = ENDPOINTS.ACCOUNTS_SELL || '/accounts/sell';
-      const data = await fetchWithErrorHandling<SellAccountsResponse>(
-        url,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(request),
+    const url = ENDPOINTS.ACCOUNTS_SELL || '/accounts/sell';
+    const data = await fetchWithErrorHandling<SellAccountsResponse>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+        body: JSON.stringify(request),
+      },
+     set
+    );
 
-      set({ loading: false });
-      return data;
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set({ loading: false });
+    return data;
   },
 
   fetchAccountHistory: async (accountId: number) => {
     set({ loading: true, error: null });
 
-    try {
-      const url = `${ENDPOINTS.ACCOUNTS}/history/${accountId}`;
-      const data = await fetchWithErrorHandling<AccountHistoryResponse>(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+    const url = `${ENDPOINTS.ACCOUNTS}/history/${accountId}`;
+    const data = await fetchWithErrorHandling<AccountHistoryResponse>(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
         },
-        () => {}
-      );
+        credentials: 'include',
+      },
+     set
+    );
 
-      set({ loading: false });
-      return data;
-    } catch (error) {
-      set({
-        loading: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    set({ loading: false });
+    return data;
   },
 }));

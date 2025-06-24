@@ -160,9 +160,9 @@ export default function UploadAccountsAutoFarm({
         fpNumber: '',
         target_platform: 'CRM',
       });
-    } catch {
+    } catch (error) {
       toast.dismiss(toastId.current);
-      toast.error(t('AutoFarmSection.modalLoad.errorMessage'));
+      toast.error(`${t('AutoFarmSection.modalLoad.errorMessage')} : ${error}`);
     }
   };
 

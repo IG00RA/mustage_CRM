@@ -209,13 +209,13 @@ export default function NamesSection() {
       ) {
         didFetchRef.current = true;
         fetchSubcategories().catch(err => {
-          toast.error(t('Names.errorMessage'), err || '');
+            toast.error(`${t('Names.errorMessage')} : ${err}`);
           didFetchRef.current = false;
         });
       }
       if (hasReadCategories && categories.length === 0 && !loading && !error) {
         fetchCategories().catch(err => {
-          toast.error(t('Category.errorMessage'), err || '');
+          toast.error(`${t('Category.errorMessage')} : ${err}`);
         });
       }
     }, 0);

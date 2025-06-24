@@ -181,11 +181,7 @@ export default function ReplenishmentAccountsFarm({
         onClose();
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Upload.modalUpload.uploadError')
-      );
+      toast.error(`${t('Upload.modalUpload.uploadError')} : ${error}`);
     }
   };
 

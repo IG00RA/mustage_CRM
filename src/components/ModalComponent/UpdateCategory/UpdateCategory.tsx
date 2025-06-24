@@ -71,7 +71,7 @@ export default function UpdateCategory({
       setIsSetCategory(initialIsSetCategory);
       onClose();
     } catch (error) {
-      toast.error(t('Category.modalUpdate.errorMessage'), error || '');
+      toast.error(`${t('Category.modalUpdate.errorMessage')} : ${error}`);
     }
   };
 

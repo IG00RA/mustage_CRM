@@ -205,8 +205,7 @@ export default function LoadSection() {
         toast.error(t('Load.errorMessage'));
       }
     } catch (error) {
-      console.log(error);
-      toast.error(t('Load.errorMessage'));
+      toast.error(`${t('Load.errorMessage')} : ${error}`);
     } finally {
       setIsLoading(false);
     }

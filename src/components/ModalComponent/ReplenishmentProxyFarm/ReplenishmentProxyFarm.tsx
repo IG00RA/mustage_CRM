@@ -149,11 +149,7 @@ export default function ReplenishmentProxyFarm({
         onClose();
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('Upload.modalUpload.uploadError')
-      );
+      toast.error(`${t('Upload.modalUpload.uploadError')} : ${error}`);
     }
   };
 

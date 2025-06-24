@@ -55,8 +55,7 @@ export default function CategorySection() {
       ) {
         didFetchRef.current = true;
         fetchCategories().catch(err => {
-          toast.error(t('Category.errorMessage', err));
-          console.error('Fetch failed:', err);
+          toast.error(`${t('Category.errorMessage')} : ${err}`);
           didFetchRef.current = false;
         });
       }

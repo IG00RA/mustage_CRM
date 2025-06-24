@@ -285,12 +285,12 @@ export default function ResultReplace({
       }
 
       toast.success(t('ReplacementSection.modalReplace.success'));
-      generateFiles(response); // Генерація та завантаження файлів
+      generateFiles(response); 
       reset();
-      setCheckedSettings({}); // Очищення чекбоксу
+      setCheckedSettings({}); 
       onClose();
     } catch (error) {
-      toast.error(String(error) || t('ReplacementSection.modalReplace.error'));
+      toast.error(`${t('ReplacementSection.modalReplace.error')} : ${error}`);
     } finally {
       setIsSubmitting(false);
     }

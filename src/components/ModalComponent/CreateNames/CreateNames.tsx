@@ -165,7 +165,7 @@ export default function CreateNames({ onClose }: { onClose: () => void }) {
       setSelectedCategoryId(0);
       onClose();
     } catch (error) {
-      toast.error(t('Names.modalCreate.errorMessage'), error || '');
+      toast.error(`${t('Names.modalCreate.errorMessage')} : ${error}`);
     }
   };
   return (

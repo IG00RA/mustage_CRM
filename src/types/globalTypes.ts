@@ -16,3 +16,17 @@ export interface BaseResponse {
   success?: boolean;
   message?: string;
 }
+
+export interface ValidationErrorDetail {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+}
+
+export interface ValidationErrorResponse {
+  detail: ValidationErrorDetail[];
+}
+
+export interface ClientErrorResponse {
+  detail: string;
+}

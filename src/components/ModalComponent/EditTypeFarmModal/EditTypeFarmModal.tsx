@@ -194,8 +194,7 @@ export default function EditTypeFarmModal({
 
       toast.success(t('AutoFarmSection.modalEditType.reportGenerated'));
     } catch (err) {
-      console.error('Export error:', err);
-      toast.error(t('AutoFarmSection.modalEditType.reportError'));
+      toast.error(`${t('AutoFarmSection.modalEditType.reportError')} : ${err}`);
     } finally {
       setIsExportFilteredLoading(false);
     }

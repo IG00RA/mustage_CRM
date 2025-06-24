@@ -128,12 +128,8 @@ export default function CreateReferral({ onClose }: { onClose: () => void }) {
       );
       reset();
     } catch (error) {
-      console.log('error', error);
-      toast.error(
-        t('ReferralsAll.modalCreate.errorMessage') ||
-          'Failed to create referral'
-      );
-    }
+      toast.error(`${t('ReferralsAll.modalCreate.errorMessage')} : ${error}`);
+       }
   };
 
   const isSellChecked = checkedSettings['ReferralsAll.modalCreate.sellCheck'];

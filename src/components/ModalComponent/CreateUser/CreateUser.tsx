@@ -87,11 +87,8 @@ export default function CreateUser({
           if (subcategories.length === 0) await fetchSubcategories();
           await fetchRoles({ limit: 100 });
           hasLoadedRef.current = true;
-        } catch {
-          toast.error(
-            t('UserSection.modalCreate.dataLoadError') ||
-              'Failed to load initial data'
-          );
+        } catch (err) {
+          toast.error(`${t('UserSection.modalCreate.dataLoadError')} : ${err}`);
         }
       }
     };
@@ -148,13 +145,10 @@ export default function CreateUser({
       reset();
       onClose();
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'Such user already exists'
-      ) {
+      if (error === 'Such user already exists') {
         toast.error(t('UserSection.modalCreate.errorMessageUserExist'));
       } else {
-        toast.error(t('UserSection.modalCreate.errorMessage'));
+        toast.error(`${t('UserSection.modalCreate.errorMessage')} : ${error}`);
       }
     }
   };

@@ -43,7 +43,7 @@ export default function SearchResult({
         onClose();
       }
     } catch (error) {
-      toast.error(String(error));
+      toast.error(`${error}`);
     }
   };
 

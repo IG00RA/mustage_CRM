@@ -82,10 +82,7 @@ export default function UploadSection() {
 
       toast.success(t('Upload.downloadError.success'));
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t('Upload.downloadError.error')
-      );
-      console.error('Download error:', error);
+      toast.error(`${t('Upload.downloadError.error')} : ${error}`);
     }
   };
 

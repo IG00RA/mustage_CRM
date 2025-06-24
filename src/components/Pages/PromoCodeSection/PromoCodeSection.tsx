@@ -170,12 +170,8 @@ export default function PromoCodeSection() {
         toast.success(t('PromoCodeSection.modal.deactivateSuccess'));
         loadPromoCodes(pagination);
       } catch (error) {
-        console.error('Error deactivating promocode:', error);
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : t('PromoCodeSection.modal.error')
-        );
+        toast.error(`${t('PromoCodeSection.modal.error')} : ${error}`);
+     
       }
     },
     [loadPromoCodes, pagination, t]

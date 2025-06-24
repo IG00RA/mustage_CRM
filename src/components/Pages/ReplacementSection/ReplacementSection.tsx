@@ -51,8 +51,7 @@ export default function ReplacementSection() {
       setIsOpenSearch(true);
       toast.success(t('ReplacementSection.searchSuccess'));
     } catch (error) {
-      console.error(error);
-      toast.error(t('ReplacementSection.searchError'));
+      toast.error(`${t('ReplacementSection.searchError')} : ${error}`);
     } finally {
       setIsLoading(false);
     }
