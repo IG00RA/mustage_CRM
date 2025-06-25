@@ -73,7 +73,7 @@ export default function LoadSection() {
           setValue('seller_name', currentUser.seller.seller_name);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        toast.error(`Error fetching data: ${error}`);
       }
     };
 

@@ -6,6 +6,7 @@ import { useUsersStore } from '@/store/usersStore';
 import styles from './Statistics.module.css';
 import SalesSummary from './SalesSummary/SalesSummary';
 import SalesChart from './SalesChart/SalesChart';
+import { toast } from 'react-toastify';
 
 export default function Statistics() {
   const { sales, fetchSalesSummary } = useSalesStore();
@@ -18,15 +19,16 @@ export default function Statistics() {
         try {
           await fetchCurrentUser();
         } catch (error) {
-          console.error('Failed to fetch current user:', error);
+          toast.error(`Failed to fetch current user: ${error}`);
           return;
         }
       }
-      fetchSalesSummary(
-        currentUser?.is_admin && selectedSellerIds.length > 0
-          ? selectedSellerIds
-          : undefined
-      );
+      currentUser &&
+        fetchSalesSummary(
+          currentUser?.is_admin && selectedSellerIds?.length > 0
+            ? selectedSellerIds
+            : undefined
+        );
     };
 
     initialize();

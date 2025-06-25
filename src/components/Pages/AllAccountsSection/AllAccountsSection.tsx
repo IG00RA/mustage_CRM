@@ -5,7 +5,13 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import styles from './AllAccountsSection.module.css';
 import { useTranslations } from 'next-intl';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   ColumnDef,
   getCoreRowModel,
@@ -145,11 +151,10 @@ export default function AllAccountsSection() {
           selectedSellerIds.length > 0
             ? selectedSellerIds.map(Number)
             : undefined,
+        like_query: globalFilter,
         limit: updatedPagination.pageSize,
         offset: updatedPagination.pageIndex * updatedPagination.pageSize,
-        like_query: globalFilter.length >= 2 ? globalFilter : undefined,
       };
-
       if (selectedInSet.length === 1) {
         fetchParams.in_set =
           selectedInSet[0] === t('AllAccounts.selects.inSetYes')
@@ -158,7 +163,6 @@ export default function AllAccountsSection() {
             ? false
             : undefined;
       }
-
       if (
         sellDateRange === 'custom' &&
         sellCustomStartDate &&
@@ -171,7 +175,6 @@ export default function AllAccountsSection() {
         fetchParams.sold_start_date = formatDate(start);
         fetchParams.sold_end_date = formatDate(end);
       }
-
       if (
         loadDateRange === 'custom' &&
         loadCustomStartDate &&
@@ -184,12 +187,10 @@ export default function AllAccountsSection() {
         fetchParams.upload_start_date = formatDate(start);
         fetchParams.upload_end_date = formatDate(end);
       }
-
       if (selectedTransfers.length === 1) {
         fetchParams.with_destination =
           selectedTransfers[0] === t('AllAccounts.selects.transferYes');
       }
-
       const { total_rows } = await fetchAccounts(fetchParams, updateState);
       setTotalRows(total_rows);
     },
@@ -214,24 +215,36 @@ export default function AllAccountsSection() {
     ]
   );
 
-  const debouncedLoadAccounts = useCallback(
-    debounce((query: string) => {
-      if (query.length < 2) {
-        loadAccounts(pagination);
-        return;
-      }
-      loadAccounts(pagination);
-    }, 300),
-    [loadAccounts, pagination]
-  );
+  const debouncedLoadAccounts = useRef(
+    debounce(
+      (
+        query: string,
+        loadAccountsFn: (
+          pagination: PaginationState,
+          updateState: boolean
+        ) => Promise<void>,
+        pagination: PaginationState
+      ) => {
+        console.log('debouncedLoadAccounts triggered with query:', query);
+        loadAccountsFn(pagination, true);
+      },
+      100
+    )
+  ).current;
 
   const handleSearch = useCallback(
     (query: string) => {
       if (query === globalFilter) return;
+      console.log('handleSearch called with query:', query);
+      debouncedLoadAccounts.cancel(); // Cancel any pending debounced calls
       setGlobalFilter(query);
-      debouncedLoadAccounts(query);
+      setPagination(prev => ({
+        ...prev,
+        pageIndex: 0,
+      }));
+      debouncedLoadAccounts(query, loadAccounts, pagination);
     },
-    [debouncedLoadAccounts, globalFilter]
+    [debouncedLoadAccounts, globalFilter, loadAccounts, pagination]
   );
 
   const fetchTotalAllRows = useCallback(async () => {
@@ -267,7 +280,7 @@ export default function AllAccountsSection() {
 
   useEffect(() => {
     if (!isInitialLoad) {
-      debouncedLoadAccounts(globalFilter);
+      debouncedLoadAccounts(globalFilter, loadAccounts, pagination);
     }
   }, [
     selectedCategoryIds,
@@ -284,7 +297,7 @@ export default function AllAccountsSection() {
     loadCustomEndDate,
     pagination,
     globalFilter,
-    debouncedLoadAccounts,
+    loadAccounts,
     isInitialLoad,
   ]);
 

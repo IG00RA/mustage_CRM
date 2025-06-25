@@ -100,7 +100,7 @@ export default function ResultReplace({
           setValue('seller_name', currentUser.seller.seller_name);
         }
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        toast.error(`Error fetching current user: ${error}`);
       }
     };
 

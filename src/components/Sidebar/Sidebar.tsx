@@ -148,7 +148,11 @@ export default function Sidebar({
 
   useEffect(() => {
     if (isInitialLoad && !currentUser && !loading) {
-      fetchCurrentUser().finally(() => setIsInitialLoad(false));
+      fetchCurrentUser()
+        .catch(() => {
+          handleLogout();
+        })
+        .finally(() => setIsInitialLoad(false));
     }
   }, [currentUser, fetchCurrentUser, isInitialLoad, loading]);
 

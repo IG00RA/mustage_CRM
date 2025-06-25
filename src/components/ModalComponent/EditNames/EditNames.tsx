@@ -184,7 +184,7 @@ export default function EditNames({ onClose, subcategory }: EditNamesProps) {
       setCheckedSettings({});
       onClose();
     } catch (error) {
-      console.error('Error updating subcategory:', error);
+      toast.error(`Error updating subcategory: ${error}`);
     }
   };
 
