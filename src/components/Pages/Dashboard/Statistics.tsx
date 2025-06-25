@@ -23,12 +23,13 @@ export default function Statistics() {
           return;
         }
       }
-      currentUser &&
+      if (currentUser) {
         fetchSalesSummary(
-          currentUser?.is_admin && selectedSellerIds?.length > 0
+          currentUser.is_admin && selectedSellerIds.length > 0
             ? selectedSellerIds
             : undefined
         );
+      }
     };
 
     initialize();
