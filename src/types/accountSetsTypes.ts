@@ -160,12 +160,12 @@ export interface FetchSetItemsResponse {
 
 export interface UpdateSetRequest {
   set_id: number;
-  set_name: string;
-  set_category_id: number;
-  set_price: number;
-  set_cost_price: number;
-  set_description: string;
-  set_subcategories: {
+  set_name?: string;
+  set_category_id?: number;
+  set_price?: number;
+  set_cost_price?: number;
+  set_description?: string;
+  set_subcategories?: {
     subcategory_id: number;
     quantity: number;
   }[];
@@ -184,6 +184,12 @@ export interface UpdateSetResponse {
   }[];
   status: string;
   message: string;
+}
+
+export interface FetchSetsParams {
+  limit?: number;
+  offset?: number;
+  like_query?: string;
 }
 
 export interface AccountSetsState {

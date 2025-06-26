@@ -13,6 +13,7 @@ import {
   FetchSetItemsResponse,
   UpdateSetResponse,
   UpdateSetRequest,
+  FetchSetsParams,
 } from '../types/accountSetsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -22,12 +23,13 @@ export const useAccountSetsStore = create<AccountSetsState>(set => ({
   loading: false,
   error: null,
 
-  fetchSets: async (params = {}) => {
+  fetchSets: async (params: FetchSetsParams & { like_query?: string } = {}) => {
     set({ loading: true, error: null });
 
     const queryParams = new URLSearchParams();
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.offset) queryParams.append('offset', params.offset.toString());
+    if (params.like_query) queryParams.append('like_query', params.like_query);
 
     const url = `${ENDPOINTS.ACCOUNT_SETS}?${queryParams.toString()}`;
 
@@ -159,22 +161,34 @@ export const useAccountSetsStore = create<AccountSetsState>(set => ({
     set({ loading: true, error: null });
 
     const url = `${ENDPOINTS.ACCOUNT_SETS}/${data.set_id}`;
+
+    const requestBody: Partial<UpdateSetRequest> = { set_id: data.set_id };
+    if (data.set_name !== undefined) requestBody.set_name = data.set_name;
+    if (data.set_category_id !== undefined)
+      requestBody.set_category_id = data.set_category_id;
+    if (data.set_price !== undefined) requestBody.set_price = data.set_price;
+    if (data.set_cost_price !== undefined)
+      requestBody.set_cost_price = data.set_cost_price;
+    if (data.set_description !== undefined)
+      requestBody.set_description = data.set_description;
+    if (data.set_subcategories !== undefined)
+      requestBody.set_subcategories = data.set_subcategories;
+
     const response = await fetchWithErrorHandling<UpdateSetResponse>(
       url,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestBody),
       },
       set
     );
 
     set(state => ({
-      loading: false,
       sets: state.sets.map(set =>
         set.set_id === response.set_id
           ? {
@@ -192,7 +206,9 @@ export const useAccountSetsStore = create<AccountSetsState>(set => ({
             }
           : set
       ),
+      loading: false,
     }));
+
     return response;
   },
 }));

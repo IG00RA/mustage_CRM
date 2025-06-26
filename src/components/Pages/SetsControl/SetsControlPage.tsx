@@ -13,7 +13,6 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
   getExpandedRowModel,
@@ -32,6 +31,8 @@ import { toast } from 'react-toastify';
 import Loader from '@/components/Loader/Loader';
 import Icon from '@/helpers/Icon';
 import { AccountSet } from '@/types/accountSetsTypes';
+import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
+import { debounce } from 'lodash';
 
 const SETS_PAGINATION_KEY = 'setsPaginationSettings';
 
@@ -55,13 +56,16 @@ export default function SetsControlPage() {
   const didFetchSetsRef = useRef(false);
   const didFetchCategoriesRef = useRef(false);
   const didFetchSubcategoriesRef = useRef(false);
-  const [showLoader, setShowLoader] = useState<boolean>(true);
+  const isFetchingSetsRef = useRef(false);
+  const [showLoader, setShowLoader] = useState(true);
   const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenSetsItemCreate, setIsOpenSetsItemCreate] = useState(false);
   const [isOpenSetsUpload, setIsOpenSetsUpload] = useState(false);
   const [isOpenUpdateNamesSet, setIsOpenUpdateNamesSet] = useState(false);
   const [selectedSet, setSelectedSet] = useState<AccountSet | null>(null);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const prevPaginationRef = useRef({ pageIndex: 0, pageSize: 5 });
+  const prevSearchQueryRef = useRef('');
 
   const isFunctionsEmpty = currentUser?.functions.length === 0;
   const setPermissions =
@@ -95,69 +99,121 @@ export default function SetsControlPage() {
   }, [pagination]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (
-        !didFetchCategoriesRef.current &&
-        !categoriesLoading &&
-        !categoriesError
-      ) {
-        didFetchCategoriesRef.current = true;
-        fetchCategories({ is_set_category: true }).catch(err => {
-          toast.error(`${t('Sets.errorMessage')} : ${err}`);
-          didFetchCategoriesRef.current = false;
-        });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    if (
+      !didFetchCategoriesRef.current &&
+      !categoriesLoading &&
+      !categoriesError
+    ) {
+      didFetchCategoriesRef.current = true;
+      fetchCategories({ is_set_category: true }).catch(err => {
+        toast.error(`${t('Sets.errorMessage')} : ${err}`);
+        didFetchCategoriesRef.current = false;
+      });
+    }
   }, [fetchCategories, categoriesLoading, categoriesError, t]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (
-        !didFetchSubcategoriesRef.current &&
-        !categoriesLoading &&
-        !categoriesError
-      ) {
-        didFetchSubcategoriesRef.current = true;
-        fetchSubcategories().catch(err => {
-          toast.error(t('Sets.errorMessage', { err }));
-          didFetchSubcategoriesRef.current = false;
-        });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    if (
+      !didFetchSubcategoriesRef.current &&
+      !categoriesLoading &&
+      !categoriesError
+    ) {
+      didFetchSubcategoriesRef.current = true;
+      fetchSubcategories().catch(err => {
+        toast.error(t('Sets.errorMessage', { err }));
+        didFetchSubcategoriesRef.current = false;
+      });
+    }
   }, [fetchSubcategories, categoriesLoading, categoriesError, t]);
 
+  const debouncedFetchSets = useMemo(
+    () =>
+      debounce(
+        (params: { limit: number; offset: number; like_query?: string }) => {
+          if (isFetchingSetsRef.current) {
+            return;
+          }
+          isFetchingSetsRef.current = true;
+          fetchSets(params)
+            .then(() => {
+              isFetchingSetsRef.current = false;
+            })
+            .catch(error => {
+              toast.error(`${t('Sets.errorMessage')} : ${error}`);
+              isFetchingSetsRef.current = false;
+            });
+        },
+        300
+      ),
+    [fetchSets, t]
+  );
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (
-        !didFetchSetsRef.current &&
-        sets.length === 0 &&
-        !setsLoading &&
-        !setsError
-      ) {
-        didFetchSetsRef.current = true;
-        fetchSets({
-          limit: pagination.pageSize,
-          offset: pagination.pageIndex * pagination.pageSize,
-        }).catch(error => {
+    if (!didFetchSetsRef.current && !isFetchingSetsRef.current) {
+      didFetchSetsRef.current = true;
+      isFetchingSetsRef.current = true;
+      fetchSets({
+        limit: pagination.pageSize,
+        offset: pagination.pageIndex * pagination.pageSize,
+      })
+        .then(() => {
+          isFetchingSetsRef.current = false;
+        })
+        .catch(error => {
           toast.error(`${t('Sets.errorMessage')} : ${error}`);
           didFetchSetsRef.current = false;
+          isFetchingSetsRef.current = false;
         });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchSets, sets, setsLoading, setsError, t, pagination]);
+    }
+  }, [fetchSets, pagination, t]);
 
   useEffect(() => {
     if (
-      sets.length !== 0 &&
-      categoriesWithParams.length !== 0 &&
-      subcategories.length !== 0
+      didFetchSetsRef.current &&
+      !isFetchingSetsRef.current &&
+      (searchQuery !== prevSearchQueryRef.current ||
+        pagination.pageIndex !== prevPaginationRef.current.pageIndex ||
+        pagination.pageSize !== prevPaginationRef.current.pageSize)
+    ) {
+      debouncedFetchSets({
+        limit: pagination.pageSize,
+        offset: pagination.pageIndex * pagination.pageSize,
+        like_query: searchQuery || undefined,
+      });
+      prevSearchQueryRef.current = searchQuery;
+      prevPaginationRef.current = { ...pagination };
+    }
+    return () => {
+      debouncedFetchSets.cancel();
+    };
+  }, [debouncedFetchSets, searchQuery, pagination]);
+
+  useEffect(() => {
+    if (
+      !setsLoading &&
+      !categoriesLoading &&
+      !setsError &&
+      !categoriesError &&
+      didFetchSetsRef.current &&
+      didFetchCategoriesRef.current &&
+      didFetchSubcategoriesRef.current
     ) {
       setShowLoader(false);
     }
-  }, [sets, categoriesWithParams, subcategories]);
+  }, [
+    setsLoading,
+    categoriesLoading,
+    setsError,
+    categoriesError,
+    didFetchSetsRef,
+    didFetchCategoriesRef,
+    didFetchSubcategoriesRef,
+  ]);
+
+  const openUpdateModal = useCallback((set: AccountSet) => {
+    setSelectedSet(set);
+    setIsOpenUpdateNamesSet(true);
+  }, []);
 
   const toggleSetsUpload = useCallback(
     () => setIsOpenSetsUpload(prev => !prev),
@@ -172,10 +228,15 @@ export default function SetsControlPage() {
     []
   );
 
-  const closeUpdateModal = () => {
+  const closeUpdateModal = useCallback(() => {
     setIsOpenUpdateNamesSet(false);
     setSelectedSet(null);
-  };
+  }, []);
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+  }, []);
 
   const subCategoryMap = useMemo(
     () =>
@@ -232,7 +293,10 @@ export default function SetsControlPage() {
         cell: ({ row }) =>
           categoryMap.get(row.original.set_category_id) || 'N/A',
       },
-      { accessorKey: 'description', header: t('Sets.table.description') },
+      {
+        accessorKey: 'description',
+        header: t('Sets.table.description'),
+      },
       {
         accessorKey: 'items_available',
         header: t('Sets.table.itemsAvailable'),
@@ -247,28 +311,39 @@ export default function SetsControlPage() {
       },
     ];
 
+    if (hasUpdate) {
+      baseColumns.push({
+        id: 'actions',
+        header: t('Sets.table.actions'),
+        cell: ({ row }) => (
+          <WhiteBtn
+            onClick={() => openUpdateModal(row.original)}
+            text={'Sets.table.editBtn'}
+            icon="icon-edit-pencil"
+            iconFill="icon-edit-pencil"
+          />
+        ),
+      });
+    }
+
     return baseColumns;
-  }, [t, hasUpdate, categoryMap]);
+  }, [t, hasUpdate, categoryMap, openUpdateModal]);
 
   const data = useMemo(() => sets, [sets]);
+
+  const setNames = useMemo(
+    () => [...new Set(data.map(set => set.name))],
+    [data]
+  );
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    state: { globalFilter, pagination },
-    onGlobalFilterChange: setGlobalFilter,
+    state: { pagination },
     onPaginationChange: setPagination,
-    filterFns: {
-      global: (row, columnId, filterValue) => {
-        if (!filterValue) return true;
-        const cellValue = String(row.getValue(columnId) ?? '').toLowerCase();
-        return cellValue.includes(filterValue.toLowerCase());
-      },
-    },
   });
 
   return (
@@ -299,13 +374,28 @@ export default function SetsControlPage() {
                   />
                 </>
               )}
+              <SearchInput
+                onSearch={handleSearch}
+                text={'Names.modalCreateSet.search'}
+                options={setNames}
+              />
             </>
+          )}
+          {!hasRead && hasUpdate && (
+            <SearchInput
+              onSearch={handleSearch}
+              text={'Names.modalCreateSet.search'}
+              options={setNames}
+            />
           )}
         </div>
       </div>
 
       <div className={styles.table_container}>
         {showLoader && <Loader error={setsError || categoriesError} />}
+        {!showLoader && data.length === 0 && (
+          <div className={styles.empty_state}>{t('Sets.table.noResults')}</div>
+        )}
         <div className={styles.table_wrap}>
           <table className={styles.table}>
             <thead className={styles.thead}>

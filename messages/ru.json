@@ -64,6 +64,7 @@
       "pagination": "Показать",
       "pages": "из",
       "subcategories": "Подкатегории",
+      "noResults": "Наборов не найдено",
       "quantity": "шт"
     },
     "modalUpdate": {
@@ -280,6 +281,7 @@
       "setSettingsDescription": "Описание набора:",
       "descriptionField": "Описание категории:",
       "createBtn": "Создать набор",
+      "updateBtn": "Обновить набор",
       "createSetBtn": "Создать набор аккаунтов",
       "createItemBtn": "Создать единицу набора",
       "uploadBtn": "Выгрузка наборов",
@@ -292,6 +294,8 @@
       "title": "Редактировать наименования ",
       "description": "Отредактируйте нужные поля:",
       "createBtn": "Применить",
+      "updateBtn": "Обновить набор",
+      "errorMessage": "Ошибка обновления",
       "closeBtn": "Закрыть"
     },
     "modalShowNamesDescription": {

@@ -13,6 +13,7 @@ import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import { useMemo, useState, useEffect } from 'react';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useAccountSetsStore } from '@/store/accountSetsStore';
+import { UpdateSetRequest } from '@/types/accountSetsTypes';
 
 type FormData = {
   nameField: string;
@@ -225,18 +226,39 @@ export default function UpdateNamesSet({
       toast.error(t('Names.modalCreateSet.errorMessage'));
       return;
     }
-    const requestBody = {
-      set_id: setId,
-      set_name: data.nameField,
-      set_category_id: data.account_category_id,
-      set_price: data.set_price,
-      set_cost_price: data.cost,
-      set_description: data.setDescription,
-      set_subcategories: subcategorySets.map(set => ({
+
+    const requestBody: UpdateSetRequest = { set_id: setId };
+
+    if (data.nameField !== initialName) requestBody.set_name = data.nameField;
+    if (data.account_category_id !== initialCategoryId)
+      requestBody.set_category_id = data.account_category_id;
+    if (data.set_price !== initialPrice) requestBody.set_price = data.set_price;
+    if (data.cost !== initialCostPrice) requestBody.set_cost_price = data.cost;
+    if (data.setDescription !== initialDescription)
+      requestBody.set_description = data.setDescription;
+
+    const initialSubcategoriesMap = new Map(
+      initialSubcategories.map(sub => [sub.subcategory_id, sub.quantity])
+    );
+    const currentSubcategoriesMap = new Map(
+      subcategorySets.map(sub => [sub.subcategory_id, sub.quantity])
+    );
+    const subcategoriesChanged = Array.from(currentSubcategoriesMap).some(
+      ([id, qty]) =>
+        !initialSubcategoriesMap.has(id) ||
+        initialSubcategoriesMap.get(id) !== qty
+    );
+
+    if (
+      subcategoriesChanged ||
+      initialSubcategories.length !== subcategorySets.length
+    ) {
+      requestBody.set_subcategories = subcategorySets.map(set => ({
         subcategory_id: set.subcategory_id,
         quantity: set.quantity,
-      })),
-    };
+      }));
+    }
+
     try {
       await updateSet(requestBody);
       toast.success(t('Names.okMessage'));
@@ -246,8 +268,8 @@ export default function UpdateNamesSet({
       setSelectedSubCategoryId(0);
       onClose();
     } catch (error) {
-      toast.error(`${t('Names.modalCreateSet.errorMessage')} : ${error}`);
-       }
+      toast.error(`${t('Names.modalUpdate.errorMessage')} : ${error}`);
+    }
   };
 
   return (
