@@ -77,7 +77,6 @@ export default function SetsControlPage() {
   const hasRead =
     isFunctionsEmpty || setPermissions.includes('READ') || hasCreate;
   const hasUpdate = currentUser?.is_admin || setPermissions.includes('UPDATE');
-
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
@@ -304,10 +303,18 @@ export default function SetsControlPage() {
       {
         accessorKey: 'cost_price',
         header: t('Sets.table.costPrice'),
+        cell: ({ row }) =>
+          typeof row.original.cost_price === 'number'
+            ? row.original.cost_price.toFixed(1)
+            : 'N/A',
       },
       {
         accessorKey: 'price',
         header: t('Sets.table.price'),
+        cell: ({ row }) =>
+          typeof row.original.price === 'number'
+            ? row.original.price.toFixed(1)
+            : 'N/A',
       },
     ];
 
@@ -437,7 +444,12 @@ export default function SetsControlPage() {
                                   sub.subcategory_id
                               );
                               return (
-                                <li key={sub.subcategory_id}>
+                                <li
+                                  className={
+                                    hasUpdate ? styles.subcategory_edit : ''
+                                  }
+                                  key={sub.subcategory_id}
+                                >
                                   <p>
                                     {subCategoryMap.get(sub.subcategory_id)
                                       ?.account_subcategory_name || 'N/A'}
@@ -447,9 +459,11 @@ export default function SetsControlPage() {
                                     {t('Sets.table.quantity')}
                                   </span>
                                   <p
-                                    className={
+                                    className={`${
                                       styles.subcategory_list_cost_price
-                                    }
+                                    } ${
+                                      hasUpdate ? styles.subcategory_edit : ''
+                                    }`}
                                   >
                                     {typeof subcategory?.cost_price ===
                                       'number' &&
@@ -457,7 +471,7 @@ export default function SetsControlPage() {
                                       ? (
                                           subcategory.cost_price *
                                           sub.accounts_quantity
-                                        ).toFixed(2)
+                                        ).toFixed(1)
                                       : 'N/A'}
                                   </p>
                                   <span
@@ -468,7 +482,7 @@ export default function SetsControlPage() {
                                       ? (
                                           subcategory.price *
                                           sub.accounts_quantity
-                                        ).toFixed(2)
+                                        ).toFixed(1)
                                       : 'N/A'}
                                   </span>
                                 </li>

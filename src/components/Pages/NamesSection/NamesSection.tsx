@@ -209,7 +209,7 @@ export default function NamesSection() {
       ) {
         didFetchRef.current = true;
         fetchSubcategories().catch(err => {
-            toast.error(`${t('Names.errorMessage')} : ${err}`);
+          toast.error(`${t('Names.errorMessage')} : ${err}`);
           didFetchRef.current = false;
         });
       }
@@ -432,7 +432,6 @@ export default function NamesSection() {
     fieldMap,
   ]);
 
-  // Handle column resizing
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const [startX, setStartX] = useState(0);
   const [startWidth, setStartWidth] = useState(0);

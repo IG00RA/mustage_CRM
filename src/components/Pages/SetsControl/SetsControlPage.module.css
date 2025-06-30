@@ -143,6 +143,10 @@
   border-bottom: var(--grey) 1px solid;
 }
 
+.subcategory_list li.subcategory_edit {
+  padding-right: 205px;
+}
+
 .subcategory_list p {
   color: var(--text_light);
   font-size: 14px;
@@ -168,7 +172,7 @@
 .subcategory_list .subcategory_list_cost_price {
   margin-left: auto;
   color: var(--text_dark);
-  width: 85px;
+  width: 80px;
 }
 
 .table_container {
