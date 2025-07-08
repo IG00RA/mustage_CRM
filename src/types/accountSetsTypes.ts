@@ -47,6 +47,7 @@ export interface CreateSetResponse {
 export interface FetchSetsParams {
   limit?: number;
   offset?: number;
+  like_query?: string;
 }
 
 export interface FetchSetsResponse {
@@ -186,10 +187,14 @@ export interface UpdateSetResponse {
   message: string;
 }
 
-export interface FetchSetsParams {
-  limit?: number;
-  offset?: number;
-  like_query?: string;
+export interface DeleteSetItemRequest {
+  set_id: number;
+  quantity: number;
+}
+
+export interface DeleteSetItemResponse {
+  status: string;
+  message: string;
 }
 
 export interface AccountSetsState {
@@ -208,4 +213,5 @@ export interface AccountSetsState {
   fetchSetItems: (
     params: FetchSetItemsParams
   ) => Promise<FetchSetItemsResponse>;
+  deleteSetItem: (data: DeleteSetItemRequest) => Promise<DeleteSetItemResponse>;
 }

@@ -47,7 +47,6 @@ export const useSalesStore = create<ExtendedSalesState>(set => ({
   fetchSalesSummary: async (sellerIds?: string[]) => {
     const usersStore = useUsersStore.getState();
     let { currentUser } = usersStore;
-
     if (!currentUser) {
       try {
         currentUser = await usersStore.fetchCurrentUser();

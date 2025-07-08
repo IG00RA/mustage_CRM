@@ -64,7 +64,7 @@ export default function SetsUploadSection({
   } = useForm<FormData>();
 
   useEffect(() => {
-      fetchCategories();
+    fetchCategories();
     fetchSets().then(data => {
       setAccountSets(data.items);
     });
@@ -90,7 +90,12 @@ export default function SetsUploadSection({
     return () => {
       isMounted = false;
     };
-  }, [fetchCategories, fetchCurrentUser, setValue]);
+  }, [
+    fetchCategories,
+    fetchCurrentUser,
+    setValue,
+    currentUser?.seller?.seller_name,
+  ]);
 
   useEffect(() => {
     if (
@@ -179,6 +184,8 @@ export default function SetsUploadSection({
         ? formData?.dolphinMail
         : undefined,
     };
+    console.log('requestBody', requestBody);
+    return;
 
     try {
       const data = await sellSetItem(requestBody);
@@ -200,7 +207,7 @@ export default function SetsUploadSection({
         toast.error(t('Load.errorMessage'));
       }
     } catch (error) {
-       toast.error(`${t('Load.errorMessage')} : ${error}`);
+      toast.error(`${t('Load.errorMessage')} : ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -638,7 +645,7 @@ export default function SetsUploadSection({
           category={selectedCategory[0] || ''}
           names={selectedSet[0] || ''}
           accQuantity={formData?.accQuantity || ''}
-          seller={formData?.price || ''}
+          seller={currentUser?.seller?.seller_name || ''}
           sellSum={formData?.nameDescription || ''}
           tgNick={formData?.tgNick || ''}
           onConfirm={handleConfirmSubmit}

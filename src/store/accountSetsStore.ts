@@ -14,6 +14,8 @@ import {
   UpdateSetResponse,
   UpdateSetRequest,
   FetchSetsParams,
+  DeleteSetItemRequest,
+  DeleteSetItemResponse,
 } from '../types/accountSetsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -203,6 +205,46 @@ export const useAccountSetsStore = create<AccountSetsState>(set => ({
                 subcategory_id: sub.subcategory_id,
                 accounts_quantity: sub.quantity,
               })),
+            }
+          : set
+      ),
+      loading: false,
+    }));
+
+    return response;
+  },
+
+  deleteSetItem: async (data: DeleteSetItemRequest) => {
+    set({ loading: true, error: null });
+
+    const { set_id, quantity } = data;
+    const response = {
+      status: 'success',
+      message: 'Items deleted successfully',
+    };
+
+    for (let i = 0; i < quantity; i++) {
+      const url = `${ENDPOINTS.ACCOUNT_SETS}/${set_id}`;
+      await fetchWithErrorHandling<DeleteSetItemResponse>(
+        url,
+        {
+          method: 'DELETE',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+        set
+      );
+    }
+
+    set(state => ({
+      sets: state.sets.map(set =>
+        set.set_id === set_id
+          ? {
+              ...set,
+              items_available: Math.max(0, set.items_available - quantity),
             }
           : set
       ),

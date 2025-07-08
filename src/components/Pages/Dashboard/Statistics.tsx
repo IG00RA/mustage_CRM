@@ -30,6 +30,12 @@ export default function Statistics() {
             : undefined
         );
       }
+      // if (!currentUser?.is_admin) {
+      //   console.log('seller_id', currentUser?.seller?.seller_id);
+
+      //   console.log('currentUser', currentUser);
+      //   await fetchSalesSummary([String(currentUser?.seller?.seller_id)]);
+      // }
     };
 
     initialize();

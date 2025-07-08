@@ -33,6 +33,7 @@ import Icon from '@/helpers/Icon';
 import { AccountSet } from '@/types/accountSetsTypes';
 import SearchInput from '@/components/Buttons/SearchInput/SearchInput';
 import { debounce } from 'lodash';
+import SetsItemDeleteModal from './SetsItemDeleteModal/SetsItemDeleteModal';
 
 const SETS_PAGINATION_KEY = 'setsPaginationSettings';
 
@@ -60,6 +61,7 @@ export default function SetsControlPage() {
   const [showLoader, setShowLoader] = useState(true);
   const [isOpenCreateNamesSet, setIsOpenCreateNamesSet] = useState(false);
   const [isOpenSetsItemCreate, setIsOpenSetsItemCreate] = useState(false);
+  const [isOpenSetsItemDelete, setIsOpenSetsItemDelete] = useState(false);
   const [isOpenSetsUpload, setIsOpenSetsUpload] = useState(false);
   const [isOpenUpdateNamesSet, setIsOpenUpdateNamesSet] = useState(false);
   const [selectedSet, setSelectedSet] = useState<AccountSet | null>(null);
@@ -222,6 +224,11 @@ export default function SetsControlPage() {
     () => setIsOpenSetsItemCreate(prev => !prev),
     []
   );
+
+  const toggleSetsItemDelete = useCallback(
+    () => setIsOpenSetsItemDelete(prev => !prev),
+    []
+  );
   const toggleCreateNamesSet = useCallback(
     () => setIsOpenCreateNamesSet(prev => !prev),
     []
@@ -367,11 +374,18 @@ export default function SetsControlPage() {
                     onClick={toggleCreateNamesSet}
                     text={'Names.modalCreateSet.createSetBtn'}
                   />
+
                   <AddBtn
                     onClick={toggleSetsItemCreate}
                     icon="icon-user-add"
                     iconFill="icon-user-add"
                     text={'Names.modalCreateSet.createItemBtn'}
+                  />
+                  <AddBtn
+                    onClick={toggleSetsItemDelete}
+                    icon="icon-fill_minus-rec"
+                    iconFill="icon-minus-rec"
+                    text={'Names.modalCreateSet.deleteItemBtn'}
                   />
                   <WhiteBtn
                     onClick={toggleSetsUpload}
@@ -572,6 +586,13 @@ export default function SetsControlPage() {
         text="Sets.createItem.headerText"
       >
         <SetsItemCreateSection onClose={toggleSetsItemCreate} />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenSetsItemDelete}
+        onClose={toggleSetsItemDelete}
+        title="Sets.deleteItem.header"
+      >
+        <SetsItemDeleteModal onClose={toggleSetsItemDelete} />
       </ModalComponent>
       <ModalComponent
         isOpen={isOpenSetsUpload}
