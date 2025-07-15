@@ -8,6 +8,7 @@ import { getAuthHeaders } from '@/utils/apiUtils';
 import WhiteBtn from '@/components/Buttons/WhiteBtn/WhiteBtn';
 import ModalComponent from '@/components/ModalComponent/ModalComponent';
 import UploadAccounts from '@/components/ModalComponent/UploadAccounts/UploadAccounts';
+import UploadSoldAccounts from '@/components/ModalComponent/UploadSoldAccounts/UploadSoldAccounts';
 
 export interface UploadResponse {
   status: 'success' | 'failed';
@@ -19,6 +20,7 @@ export default function UploadSection() {
   const t = useTranslations();
 
   const [isOpenUpload, setIsOpenUpload] = useState(false);
+  const [isOpenSoldUpload, setIsOpenSoldUpload] = useState(false);
   const [isOpenError, setIsOpenError] = useState(false);
   const [responseData, setResponseData] = useState<UploadResponse | null>(null);
 
@@ -26,15 +28,28 @@ export default function UploadSection() {
     setIsOpenUpload(!isOpenUpload);
   };
 
+  const toggleSoldUploadModal = () => {
+    setIsOpenSoldUpload(!isOpenSoldUpload);
+  };
+
   const toggleErrorModal = () => {
     setIsOpenError(!isOpenError);
     setIsOpenUpload(false);
+    setIsOpenSoldUpload(false);
   };
 
   const downloadTemplate = () => {
     const link = document.createElement('a');
     link.href = '/assets/accounts_template.xlsx';
     link.download = 'accounts_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const downloadSoldTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/assets/sold_accounts_template.xlsx';
+    link.download = 'sold_accounts_template.xlsx';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -105,6 +120,23 @@ export default function UploadSection() {
           />
         </div>
       </div>
+      <div className={styles.header_container}>
+        <h2 className={styles.header}>{t('Sidebar.accParMenu.upload')}</h2>
+        <p className={styles.header_text}>{t('Upload.headerText')}</p>
+        <div className={styles.button_wrap}>
+          <WhiteBtn
+            onClick={downloadSoldTemplate}
+            text={'Upload.buttons.downloadSold'}
+            icon="icon-cloud-download"
+            iconFill="icon-cloud-download-fill"
+          />
+          <WhiteBtn
+            onClick={toggleSoldUploadModal}
+            text={'Upload.buttons.loadSold'}
+            icon="icon-upload"
+          />
+        </div>
+      </div>
       <ModalComponent
         isOpen={isOpenUpload}
         onClose={toggleUploadModal}
@@ -112,6 +144,17 @@ export default function UploadSection() {
       >
         <UploadAccounts
           onClose={toggleUploadModal}
+          setResponseData={setResponseData}
+          toggleErrorModal={toggleErrorModal}
+        />
+      </ModalComponent>
+      <ModalComponent
+        isOpen={isOpenSoldUpload}
+        onClose={toggleSoldUploadModal}
+        title="Upload.modalUpload.titleSold"
+      >
+        <UploadSoldAccounts
+          onClose={toggleSoldUploadModal}
           setResponseData={setResponseData}
           toggleErrorModal={toggleErrorModal}
         />

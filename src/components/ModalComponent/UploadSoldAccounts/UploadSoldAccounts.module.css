@@ -1,0 +1,33 @@
+.buttons_wrap {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column-reverse;
+  justify-content: center;
+}
+
+.locate_accounts {
+  color: var(--text_light);
+  font-size: var(--fs_xsmall);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.37;
+
+  & span {
+    color: var(--text_dark);
+    font-size: var(--fs_xsmall);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.37;
+  }
+}
+
+@media (min-width: 768px) {
+  .buttons_wrap {
+    margin: 0;
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+  }
+}
