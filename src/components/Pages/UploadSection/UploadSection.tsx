@@ -121,8 +121,8 @@ export default function UploadSection() {
         </div>
       </div>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.accParMenu.upload')}</h2>
-        <p className={styles.header_text}>{t('Upload.headerText')}</p>
+        <h2 className={styles.header}>{t('Upload.modalUpload.titleSold')}</h2>
+        <p className={styles.header_text}>{t('Upload.headerSoldText')}</p>
         <div className={styles.button_wrap}>
           <WhiteBtn
             onClick={downloadSoldTemplate}
