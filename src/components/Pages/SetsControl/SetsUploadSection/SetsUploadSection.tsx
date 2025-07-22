@@ -184,8 +184,6 @@ export default function SetsUploadSection({
         ? formData?.dolphinMail
         : undefined,
     };
-    console.log('requestBody', requestBody);
-    return;
 
     try {
       const data = await sellSetItem(requestBody);
