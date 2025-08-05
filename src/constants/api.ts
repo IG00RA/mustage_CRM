@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   ACCOUNTS_SELL: `${BASE_URL}/accounts/sell`,
   ACCOUNTS_UPLOAD: `${BASE_URL}/accounts/upload`,
   ACCOUNTS_UPLOAD_SOLD: `${BASE_URL}/accounts/upload-sold`,
+  ACCOUNTS_DOWNLOAD_INTERNAL: `${BASE_URL}/accounts/download-internal`,
   PROMO_CODES: `${BASE_URL}/promocodes`,
   USERS: `${BASE_URL}/users`,
   USERS_ME: `${BASE_URL}/users/me`,

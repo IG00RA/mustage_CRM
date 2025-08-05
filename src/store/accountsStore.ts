@@ -10,6 +10,7 @@ import {
   Account,
   ReplaceRequest,
   AccountHistoryResponse,
+  DownloadInternalRequest,
 } from '../types/accountsTypes';
 import { ENDPOINTS } from '../constants/api';
 import { fetchWithErrorHandling, getAuthHeaders } from '../utils/apiUtils';
@@ -86,7 +87,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(requestBody),
       },
-     set
+      set
     );
 
     if (updateState) {
@@ -115,7 +116,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(requestBody),
       },
-     set
+      set
     );
 
     set({ loading: false });
@@ -137,7 +138,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(data),
       },
-     set
+      set
     );
 
     set({ loading: false });
@@ -163,7 +164,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(requestBody),
       },
-     set
+      set
     );
 
     set({ loading: false });
@@ -185,7 +186,30 @@ export const useAccountsStore = create<AccountsState>(set => ({
         credentials: 'include',
         body: JSON.stringify(request),
       },
-     set
+      set
+    );
+
+    set({ loading: false });
+    return data;
+  },
+
+  downloadInternalAccounts: async (request: DownloadInternalRequest) => {
+    set({ loading: true, error: null });
+
+    const url =
+      ENDPOINTS.ACCOUNTS_DOWNLOAD_INTERNAL || '/accounts/download-internal';
+    const data = await fetchWithErrorHandling<Account[]>(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(request),
+      },
+      set
     );
 
     set({ loading: false });
@@ -199,14 +223,14 @@ export const useAccountsStore = create<AccountsState>(set => ({
     const data = await fetchWithErrorHandling<AccountHistoryResponse>(
       url,
       {
-        method: 'GET',
+        method: 'POST',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
         credentials: 'include',
       },
-     set
+      set
     );
 
     set({ loading: false });

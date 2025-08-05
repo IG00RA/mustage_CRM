@@ -9,32 +9,20 @@ import { toast } from 'react-toastify';
 import ExcelJS from 'exceljs';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useAccountsStore } from '@/store/accountsStore';
-import {
-  AccountDataWrapper,
-  SellAccountsResponse,
-} from '@/types/accountsTypes';
+import { Account } from '@/types/accountsTypes';
 import { useUsersStore } from '@/store/usersStore';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
-import CustomCheckbox from '@/components/Buttons/CustomCheckbox/CustomCheckbox';
-import LoadAccountsConfirm from '@/components/ModalComponent/LoadAccountsConfirm/LoadAccountsConfirm';
-import LoadSectionSelfUse from './LoadSectionSelfUse';
+import LoadAccountsConfirmSelfUse from '@/components/ModalComponent/LoadAccountsConfirm/LoadAccountsConfirmSelfUse';
 
 type FormData = {
   nameField: string;
   accQuantity: string;
-  price: string;
-  cost: string;
+  purpose: string;
   seller_name: string;
-  nameDescription: string;
-  tgNick: string;
-  dolphinMail?: string;
-  settings: string[];
 };
 
-const settingsOptions = ['Load.check'];
-
-export default function LoadSection() {
+export default function LoadSectionSelfUse() {
   const t = useTranslations();
   const {
     categories,
@@ -42,7 +30,7 @@ export default function LoadSection() {
     subcategoriesWithParams: subcategories,
     fetchSubcategories,
   } = useCategoriesStore();
-  const { fetchAccounts, sellAccounts } = useAccountsStore();
+  const { fetchAccounts, downloadInternalAccounts } = useAccountsStore();
   const { currentUser, fetchCurrentUser } = useUsersStore();
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
@@ -51,9 +39,6 @@ export default function LoadSection() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string[]>([]);
   const [totalAvailableAccounts, setTotalAvailableAccounts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkedSettings, setCheckedSettings] = useState<
-    Record<string, boolean>
-  >({});
 
   const {
     register,
@@ -100,10 +85,7 @@ export default function LoadSection() {
       reset({
         nameField: '',
         accQuantity: '',
-        cost: '',
-        nameDescription: '',
-        tgNick: '',
-        dolphinMail: '',
+        purpose: '',
         seller_name: '',
       });
     }
@@ -118,8 +100,6 @@ export default function LoadSection() {
         sub => sub.account_subcategory_name === selectedSubcategory[0]
       );
       if (subcategory) {
-        setValue('cost', subcategory.cost_price.toString());
-        setValue('nameDescription', subcategory.price.toString());
         fetchAccounts({
           subcategory_ids: [subcategory.account_subcategory_id],
           status: ['NOT SOLD'],
@@ -136,18 +116,11 @@ export default function LoadSection() {
       reset({
         nameField: '',
         accQuantity: '',
-        cost: '',
-        nameDescription: '',
-        tgNick: '',
-        dolphinMail: '',
+        purpose: '',
         seller_name: '',
       });
     }
   }, [selectedSubcategory, subcategories, fetchAccounts, setValue, t, reset]);
-
-  const toggleCheckbox = (id: string) => {
-    setCheckedSettings(prev => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const toggleConfirmModal = () => {
     setIsOpenConfirm(!isOpenConfirm);
@@ -178,33 +151,20 @@ export default function LoadSection() {
 
     const requestBody = {
       subcategory_id: subcategory?.account_subcategory_id || 0,
-      seller_id: currentUser?.seller?.seller_id || 0,
       quantity: parseInt(formData?.accQuantity || '0'),
-      price: parseFloat(formData?.nameDescription || '0'),
-      client_name: formData?.tgNick || '',
-      client_dolphin_email: checkedSettings[settingsOptions[0]]
-        ? formData?.dolphinMail
-        : undefined,
+      purpose: formData?.purpose || '',
     };
     try {
-      const data = await sellAccounts(requestBody);
-      if (data.success) {
-        generateFiles(data);
-        toast.success(t('Load.successMessage'));
-        setIsLoadComplete(true);
-        reset({
-          nameField: '',
-          accQuantity: '',
-          cost: '',
-          nameDescription: '',
-          tgNick: '',
-          dolphinMail: '',
-          seller_name: '',
-        });
-        setCheckedSettings({});
-      } else {
-        toast.error(t('Load.errorMessage'));
-      }
+      const accounts = await downloadInternalAccounts(requestBody);
+      generateFiles(accounts);
+      toast.success(t('Load.successMessage'));
+      setIsLoadComplete(true);
+      reset({
+        nameField: '',
+        accQuantity: '',
+        purpose: '',
+        seller_name: '',
+      });
     } catch (error) {
       toast.error(`${t('Load.errorMessage')} : ${error}`);
     } finally {
@@ -212,8 +172,7 @@ export default function LoadSection() {
     }
   };
 
-  const generateFiles = async (data: SellAccountsResponse) => {
-    const accounts: AccountDataWrapper[] = data.account_data;
+  const generateFiles = async (accounts: Account[]) => {
     const date = new Date();
     const fileName = `${accounts.length}_${
       selectedSubcategory[0]
@@ -225,9 +184,6 @@ export default function LoadSection() {
     const worksheet = workbook.addWorksheet('Accounts');
 
     worksheet.columns = [
-      { header: 'transfer_requested', key: 'transfer_requested', width: 15 },
-      { header: 'transfer_success', key: 'transfer_success', width: 15 },
-      { header: 'transfer_message', key: 'transfer_message', width: 20 },
       { header: 'account_id', key: 'account_id', width: 10 },
       { header: 'upload_datetime', key: 'upload_datetime', width: 25 },
       { header: 'sold_datetime', key: 'sold_datetime', width: 25 },
@@ -235,7 +191,6 @@ export default function LoadSection() {
       { header: 'teamlead_name', key: 'teamlead_name', width: 15 },
       { header: 'client_name', key: 'client_name', width: 15 },
       { header: 'account_name', key: 'account_name', width: 20 },
-      { header: 'price', key: 'price', width: 10 },
       { header: 'status', key: 'status', width: 10 },
       { header: 'frozen_at', key: 'frozen_at', width: 25 },
       { header: 'replace_reason', key: 'replace_reason', width: 20 },
@@ -256,8 +211,6 @@ export default function LoadSection() {
         width: 20,
       },
       { header: 'account_category_id', key: 'account_category_id', width: 20 },
-      { header: 'price_subcategory', key: 'price_subcategory', width: 15 },
-      { header: 'cost_price', key: 'cost_price', width: 15 },
       { header: 'description', key: 'description', width: 20 },
       { header: 'output_format_field', key: 'output_format_field', width: 20 },
       { header: 'output_separator', key: 'output_separator', width: 15 },
@@ -272,44 +225,37 @@ export default function LoadSection() {
       { header: 'browser_name', key: 'browser_name', width: 15 },
     ];
 
-    accounts.forEach((acc: AccountDataWrapper) => {
+    accounts.forEach((acc: Account) => {
       worksheet.addRow({
-        transfer_requested: acc.transfer_requested,
-        transfer_success: acc.transfer_success,
-        transfer_message: acc.transfer_message,
-        account_id: acc.account.account_id,
-        upload_datetime: acc.account.upload_datetime,
-        sold_datetime: acc.account.sold_datetime,
-        worker_name: acc.account.worker_name,
-        teamlead_name: acc.account.teamlead_name,
-        client_name: acc.account.client_name,
-        account_name: acc.account.account_name,
-        price: acc.account.price,
-        status: acc.account.status,
-        frozen_at: acc.account.frozen_at,
-        replace_reason: acc.account.replace_reason,
-        profile_link: acc.account.profile_link,
-        archive_link: acc.account.archive_link,
-        account_data: acc.account.account_data || '',
-        seller_id: acc.account.seller?.seller_id || 0,
-        seller_name: acc.account.seller?.seller_name || '',
-        visible_in_bot: acc.account.seller?.visible_in_bot ?? false,
-        account_subcategory_id: acc.account.subcategory.account_subcategory_id,
-        account_subcategory_name:
-          acc.account.subcategory.account_subcategory_name,
-        account_category_id: acc.account.subcategory.account_category_id,
-        price_subcategory: acc.account.subcategory.price,
-        cost_price: acc.account.subcategory.cost_price,
-        description: acc.account.subcategory.description,
+        account_id: acc.account_id,
+        upload_datetime: acc.upload_datetime,
+        sold_datetime: acc.sold_datetime,
+        worker_name: acc.worker_name,
+        teamlead_name: acc.teamlead_name,
+        client_name: acc.client_name,
+        account_name: acc.account_name,
+        status: acc.status,
+        frozen_at: acc.frozen_at,
+        replace_reason: acc.replace_reason,
+        profile_link: acc.profile_link,
+        archive_link: acc.archive_link,
+        account_data: acc.account_data || '',
+        seller_id: acc.seller?.seller_id || 0,
+        seller_name: acc.seller?.seller_name || '',
+        visible_in_bot: acc.seller?.visible_in_bot ?? false,
+        account_subcategory_id: acc.subcategory.account_subcategory_id,
+        account_subcategory_name: acc.subcategory.account_subcategory_name,
+        account_category_id: acc.subcategory.account_category_id,
+        description: acc.subcategory.description,
         output_format_field:
-          acc.account.subcategory.output_format_field?.join(',') || '',
-        output_separator: acc.account.subcategory.output_separator || '|',
+          acc.subcategory.output_format_field?.join(',') || '',
+        output_separator: acc.subcategory.output_separator || '|',
         account_category_name:
-          acc.account.subcategory.category?.account_category_name || '',
-        destination_id: acc.account.destination?.destination_id,
-        browser_id: acc.account.destination?.browser_id,
-        username: acc.account.destination?.username,
-        browser_name: acc.account.destination?.browser?.browser_name || '',
+          acc.subcategory.category?.account_category_name || '',
+        destination_id: acc.destination?.destination_id,
+        browser_id: acc.destination?.browser_id,
+        username: acc.destination?.username,
+        browser_name: acc.destination?.browser?.browser_name || '',
       });
     });
 
@@ -323,23 +269,23 @@ export default function LoadSection() {
     link.click();
 
     const txtContent = accounts
-      .map((acc: AccountDataWrapper) => {
-        const formatFields = acc.account.subcategory.output_format_field || [
+      .map((acc: Account) => {
+        const formatFields = acc.subcategory.output_format_field || [
           'account_name',
         ];
-        const separator = acc.account.subcategory.output_separator || '|';
+        const separator = acc.subcategory.output_separator || '|';
         return formatFields
           .map((field: string) => {
             if (field === 'account_subcategory_id') {
-              return acc.account.subcategory.account_subcategory_id;
+              return acc.subcategory.account_subcategory_id;
             } else if (field === 'account_data') {
-              return acc.account.account_data === null
+              return acc.account_data === null
                 ? 'null'
-                : acc.account.account_data || '';
+                : acc.account_data || '';
             } else if (field === 'archive_link') {
-              return acc.account.archive_link || '';
+              return acc.archive_link || '';
             } else {
-              const value = acc.account[field as keyof typeof acc.account];
+              const value = acc[field as keyof typeof acc];
               return value === null ? 'null' : value || '';
             }
           })
@@ -363,10 +309,7 @@ export default function LoadSection() {
       reset({
         nameField: '',
         accQuantity: '',
-        cost: '',
-        nameDescription: '',
-        tgNick: '',
-        dolphinMail: '',
+        purpose: '',
         seller_name: '',
       });
     }
@@ -380,10 +323,7 @@ export default function LoadSection() {
       reset({
         nameField: '',
         accQuantity: '',
-        cost: '',
-        nameDescription: '',
-        tgNick: '',
-        dolphinMail: '',
+        purpose: '',
         seller_name: '',
       });
     }
@@ -487,99 +427,27 @@ export default function LoadSection() {
               </div>
               <div className={styles.field}>
                 <div className={styles.label_wrap}>
-                  <label className={styles.label}>{t('Load.namesCost')}</label>
+                  <label className={styles.label}>{t('Load.purpose')}</label>
                   <input
-                    type="number"
-                    step="any"
                     className={`${styles.input} ${
-                      errors.cost ? styles.input_error : ''
-                    }`}
-                    {...register('cost', {
-                      required: t('DBSettings.form.errorMessage'),
-                    })}
-                  />
-                </div>
-                {errors.cost && (
-                  <p className={styles.error}>{errors.cost.message}</p>
-                )}
-              </div>
-              <div className={styles.field}>
-                <div className={styles.label_wrap}>
-                  <label className={styles.label}>{t('Load.sellSum')}</label>
-                  <input
-                    type="number"
-                    step="any"
-                    className={`${styles.input} ${
-                      errors.nameDescription ? styles.input_error : ''
+                      errors.purpose ? styles.input_error : ''
                     }`}
                     placeholder={t('DBSettings.form.placeholder')}
-                    {...register('nameDescription', {
+                    {...register('purpose', {
                       required: t('DBSettings.form.errorMessage'),
                     })}
                   />
                 </div>
-                {errors.nameDescription && (
-                  <p className={styles.error}>
-                    {errors.nameDescription.message}
-                  </p>
+                {errors.purpose && (
+                  <p className={styles.error}>{errors.purpose.message}</p>
                 )}
               </div>
-              <div className={styles.field}>
-                <div className={styles.label_wrap}>
-                  <label className={styles.label}>{t('Load.tgNick')}</label>
-                  <input
-                    className={`${styles.input} ${
-                      errors.tgNick ? styles.input_error : ''
-                    }`}
-                    placeholder={t('DBSettings.form.placeholder')}
-                    {...register('tgNick', {
-                      required: t('DBSettings.form.errorMessage'),
-                    })}
-                  />
-                </div>
-                {errors.tgNick && (
-                  <p className={styles.error}>{errors.tgNick.message}</p>
-                )}
-              </div>
-              <div className={styles.field}>
-                <CustomCheckbox
-                  checked={checkedSettings[settingsOptions[0]] || false}
-                  onChange={() => toggleCheckbox(settingsOptions[0])}
-                  label={t(settingsOptions[0])}
-                />
-              </div>
-              {checkedSettings[settingsOptions[0]] && (
-                <div className={styles.field}>
-                  <div className={styles.label_wrap}>
-                    <label className={styles.label}>
-                      {t('Load.dolphinMail')}
-                    </label>
-                    <input
-                      className={`${styles.input} ${
-                        errors.dolphinMail ? styles.input_error : ''
-                      }`}
-                      placeholder={t('DBSettings.form.placeholder')}
-                      {...register('dolphinMail', {
-                        required: t('DBSettings.form.errorMessage'),
-                        pattern: {
-                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: t('ReplacementSection.invalidEmail'),
-                        },
-                      })}
-                    />
-                  </div>
-                  {errors.dolphinMail && (
-                    <p className={styles.error}>{errors.dolphinMail.message}</p>
-                  )}
-                </div>
-              )}
               <div className={styles.buttons_wrap}>
                 <SubmitBtn text="Load.button" />
               </div>
             </form>
           )}
       </div>
-      <LoadSectionSelfUse />
 
       <ModalComponent
         isOpen={isOpenConfirm}
@@ -591,13 +459,11 @@ export default function LoadSection() {
         }
         icon={isLoadComplete ? 'icon-ok-load' : ''}
       >
-        <LoadAccountsConfirm
+        <LoadAccountsConfirmSelfUse
           category={selectedCategory[0] || ''}
           names={selectedSubcategory[0] || ''}
           accQuantity={formData?.accQuantity || ''}
-          seller={currentUser?.seller?.seller_name || ''}
-          sellSum={formData?.nameDescription || ''}
-          tgNick={formData?.tgNick || ''}
+          purpose={formData?.purpose || ''}
           onConfirm={handleConfirmSubmit}
           isLoading={isLoading}
           onClose={toggleConfirmModal}

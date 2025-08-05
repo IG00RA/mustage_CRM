@@ -24,15 +24,17 @@ export interface Account {
   account_name: string;
   in_set?: boolean;
   price?: number | null;
-  status: 'SOLD' | 'NOT SOLD' | 'REPLACED' | 'EXCLUDED';
+  status: 'SOLD' | 'NOT SOLD' | 'REPLACED' | 'EXCLUDED' | 'SELF USE';
   frozen_at?: string | null;
   replace_reason?: string | null;
   profile_link?: string | null;
   archive_link?: string | null;
   account_data?: string | null;
+  set_item_id?: number | null;
+  platform?: string;
   seller?: Seller | null;
   subcategory: Subcategory;
-  category: Category;
+  category?: Category;
   destination?: DestinationResponse | null;
 }
 
@@ -136,6 +138,14 @@ export interface SellAccountsResponse extends BaseResponse {
   account_data: AccountDataWrapper[];
 }
 
+export interface DownloadInternalRequest {
+  subcategory_id: number;
+  quantity: number;
+  purpose: string;
+}
+
+export type DownloadInternalResponse = Account[];
+
 export interface AccountDataWrapper {
   transfer_requested: boolean;
   transfer_success: boolean;
@@ -156,4 +166,7 @@ export interface AccountsState {
   stopSellingAccounts: (accountIds: number[]) => Promise<StopSellingResponse>;
   sellAccounts: (request: SellAccountsRequest) => Promise<SellAccountsResponse>;
   fetchAccountHistory: (accountId: number) => Promise<AccountHistoryResponse>;
+  downloadInternalAccounts: (
+    request: DownloadInternalRequest
+  ) => Promise<DownloadInternalResponse>;
 }
