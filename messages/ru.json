@@ -348,6 +348,7 @@
       "statusNOT SOLD": "Не продан",
       "statusREPLACED": "Заменен",
       "statusEXCLUDED": "Исключен",
+      "statusSELF USE": "Не на продажу",
       "transfer": "Статус передачи: ",
       "allTransfer": "Все",
       "transferNot": "Не передан",

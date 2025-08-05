@@ -332,8 +332,8 @@ export default function LoadSectionSelfUse() {
   return (
     <section className={styles.section}>
       <div className={styles.header_container}>
-        <h2 className={styles.header}>{t('Sidebar.accParMenu.load')}</h2>
-        <p className={styles.header_text}>{t('Load.headerText')}</p>
+        <h2 className={styles.header}>{t('Load.headerSelf')}</h2>
+        <p className={styles.header_text}>{t('Load.headerTextSelf')}</p>
         <div className={styles.selects_wrap}>
           <CustomSelect
             label={t('Load.selectCategory')}

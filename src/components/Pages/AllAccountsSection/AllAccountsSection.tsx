@@ -646,7 +646,11 @@ export default function AllAccountsSection() {
     ],
     [subcategories, t, hasReadSubcategories]
   );
-  const statusOptionsRaw = ['SOLD', 'NOT SOLD', 'REPLACED', 'EXCLUDED'];
+  const statusOptionsRaw = useMemo(
+    () => ['SOLD', 'NOT SOLD', 'REPLACED', 'EXCLUDED', 'SELF USE'],
+    []
+  );
+
   const statusOptions = useMemo(
     () => [
       t('AllAccounts.selects.allStatus'),
@@ -654,7 +658,7 @@ export default function AllAccountsSection() {
         t(`AllAccounts.selects.status${status}`)
       ),
     ],
-    [t]
+    [t, statusOptionsRaw]
   );
   const transferOptions = useMemo(
     () => [
