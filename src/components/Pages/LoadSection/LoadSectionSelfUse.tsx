@@ -10,7 +10,6 @@ import ExcelJS from 'exceljs';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useAccountsStore } from '@/store/accountsStore';
 import { Account } from '@/types/accountsTypes';
-import { useUsersStore } from '@/store/usersStore';
 import CustomSelect from '@/components/Buttons/CustomSelect/CustomSelect';
 import SubmitBtn from '@/components/Buttons/SubmitBtn/SubmitBtn';
 import LoadAccountsConfirmSelfUse from '@/components/ModalComponent/LoadAccountsConfirm/LoadAccountsConfirmSelfUse';
@@ -19,7 +18,6 @@ type FormData = {
   nameField: string;
   accQuantity: string;
   purpose: string;
-  seller_name: string;
 };
 
 export default function LoadSectionSelfUse() {
@@ -31,7 +29,6 @@ export default function LoadSectionSelfUse() {
     fetchSubcategories,
   } = useCategoriesStore();
   const { fetchAccounts, downloadInternalAccounts } = useAccountsStore();
-  const { currentUser, fetchCurrentUser } = useUsersStore();
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
   const [isLoadComplete, setIsLoadComplete] = useState(false);
@@ -49,26 +46,16 @@ export default function LoadSectionSelfUse() {
   } = useForm<FormData>();
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchData = async () => {
       try {
         await fetchCategories();
-        await fetchCurrentUser();
-        if (isMounted && currentUser?.seller?.seller_name) {
-          setValue('seller_name', currentUser.seller.seller_name);
-        }
       } catch (error) {
         toast.error(`Error fetching data: ${error}`);
       }
     };
 
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchCategories, fetchCurrentUser, setValue]);
+  }, [fetchCategories]);
 
   useEffect(() => {
     if (
@@ -86,7 +73,6 @@ export default function LoadSectionSelfUse() {
         nameField: '',
         accQuantity: '',
         purpose: '',
-        seller_name: '',
       });
     }
   }, [selectedCategory, categories, fetchSubcategories, t, reset]);
@@ -108,7 +94,6 @@ export default function LoadSectionSelfUse() {
         }).then(data => {
           setTotalAvailableAccounts(data.total_rows);
           setValue('nameField', data.total_rows.toString());
-          setValue('seller_name', currentUser?.seller?.seller_name || '');
         });
       }
     } else {
@@ -117,7 +102,6 @@ export default function LoadSectionSelfUse() {
         nameField: '',
         accQuantity: '',
         purpose: '',
-        seller_name: '',
       });
     }
   }, [selectedSubcategory, subcategories, fetchAccounts, setValue, t, reset]);
@@ -163,7 +147,6 @@ export default function LoadSectionSelfUse() {
         nameField: '',
         accQuantity: '',
         purpose: '',
-        seller_name: '',
       });
     } catch (error) {
       toast.error(`${t('Load.errorMessage')} : ${error}`);
@@ -310,7 +293,6 @@ export default function LoadSectionSelfUse() {
         nameField: '',
         accQuantity: '',
         purpose: '',
-        seller_name: '',
       });
     }
   };
@@ -324,7 +306,6 @@ export default function LoadSectionSelfUse() {
         nameField: '',
         accQuantity: '',
         purpose: '',
-        seller_name: '',
       });
     }
   };
@@ -406,23 +387,6 @@ export default function LoadSectionSelfUse() {
                 </div>
                 {errors.accQuantity && (
                   <p className={styles.error}>{errors.accQuantity.message}</p>
-                )}
-              </div>
-              <div className={styles.field}>
-                <div className={styles.label_wrap}>
-                  <label className={styles.label}>{t('Load.seller')}</label>
-                  <input
-                    className={`${styles.input} ${
-                      errors.seller_name ? styles.input_error : ''
-                    }`}
-                    readOnly
-                    {...register('seller_name', {
-                      required: t('DBSettings.form.errorMessage'),
-                    })}
-                  />
-                </div>
-                {errors.seller_name && (
-                  <p className={styles.error}>{errors.seller_name.message}</p>
                 )}
               </div>
               <div className={styles.field}>
