@@ -223,7 +223,7 @@ export const useAccountsStore = create<AccountsState>(set => ({
     const data = await fetchWithErrorHandling<AccountHistoryResponse>(
       url,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json',

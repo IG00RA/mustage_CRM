@@ -604,7 +604,7 @@ export default function CreateRole({ onClose, pagination }: CreateRoleProps) {
                       !globalSubcategoriesConfig.subcategories.includes(
                         sub.account_subcategory_id
                       )
-                  ) // Виключаємо глобальні підкатегорії
+                  )
                   .map(sub => sub.account_subcategory_name);
 
                 return (
