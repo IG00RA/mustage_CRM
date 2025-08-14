@@ -32,6 +32,7 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.transfer',
   'AllAccounts.modalUpdate.selects.data',
   'AllAccounts.modalUpdate.selects.mega',
+  'AllAccounts.modalUpdate.selects.profileLink',
 ];
 
 export const ModalsSection = ({

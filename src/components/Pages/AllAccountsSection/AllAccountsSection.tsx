@@ -19,6 +19,7 @@ import {
   getSortedRowModel,
   useReactTable,
   SortingState,
+  Row,
 } from '@tanstack/react-table';
 import { Account, FetchAllAccountsParams } from '@/types/accountsTypes';
 import { useAccountsStore } from '@/store/accountsStore';
@@ -43,6 +44,7 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.transfer',
   'AllAccounts.modalUpdate.selects.data',
   'AllAccounts.modalUpdate.selects.mega',
+  'AllAccounts.modalUpdate.selects.profileLink',
 ];
 
 export default function AllAccountsSection() {
@@ -59,7 +61,6 @@ export default function AllAccountsSection() {
   } = useCategoriesStore();
   const { sellers, fetchSellers, error: sellersError } = useSellersStore();
 
-  // Логіка прав доступу
   const isFunctionsEmpty = currentUser?.functions.length === 0;
   const categoryPermissions =
     currentUser?.functions.find(
@@ -225,7 +226,6 @@ export default function AllAccountsSection() {
         ) => Promise<void>,
         pagination: PaginationState
       ) => {
-        console.log('debouncedLoadAccounts triggered with query:', query);
         loadAccountsFn(pagination, true);
       },
       100
@@ -236,7 +236,7 @@ export default function AllAccountsSection() {
     (query: string) => {
       if (query === globalFilter) return;
       console.log('handleSearch called with query:', query);
-      debouncedLoadAccounts.cancel(); // Cancel any pending debounced calls
+      debouncedLoadAccounts.cancel();
       setGlobalFilter(query);
       setPagination(prev => ({
         ...prev,
@@ -408,6 +408,8 @@ export default function AllAccountsSection() {
         : t('AllAccounts.selects.transferNot'),
     'AllAccounts.modalUpdate.selects.data': account => account.account_data,
     'AllAccounts.modalUpdate.selects.mega': account => account.archive_link,
+    'AllAccounts.modalUpdate.selects.profileLink': account =>
+      account.profile_link,
   };
 
   const fieldMap: Record<string, string> = {
@@ -418,6 +420,7 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.transfer': 'status',
     'AllAccounts.modalUpdate.selects.data': 'account_data',
     'AllAccounts.modalUpdate.selects.mega': 'archive_link',
+    'AllAccounts.modalUpdate.selects.profileLink': 'profile_link',
   };
 
   const columns: ColumnDef<Account>[] = useMemo(() => {
@@ -427,7 +430,10 @@ export default function AllAccountsSection() {
         accessorKey: field,
         header: t(colId),
         cell: ({ row }) => {
-          if (colId === 'AllAccounts.modalUpdate.selects.mega') {
+          if (
+            colId === 'AllAccounts.modalUpdate.selects.mega' ||
+            colId === 'AllAccounts.modalUpdate.selects.profileLink'
+          ) {
             const link = columnDataMap[colId](row.original);
             return link ? (
               <a
@@ -533,7 +539,7 @@ export default function AllAccountsSection() {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml sheet',
     });
     saveAs(blob, 'filtered_accounts_report.xlsx');
   };
@@ -556,6 +562,61 @@ export default function AllAccountsSection() {
     saveAs(blob, 'all_accounts_report.xlsx');
   };
 
+  const globalFilterFn = useCallback(
+    (row: Row<Account>, columnId: string, filterValue: string) => {
+      const searchValue = filterValue?.toLowerCase?.() || '';
+      const categoryName =
+        categoryMap.get(row.original.subcategory?.account_category_id) || 'N/A';
+      const matchesSearch =
+        searchValue === '' ||
+        String(row.original.account_id).includes(searchValue) ||
+        row.original.account_name.toLowerCase().includes(searchValue) ||
+        categoryName.toLowerCase().includes(searchValue) ||
+        (row.original.seller?.seller_name || '')
+          .toLowerCase()
+          .includes(searchValue) ||
+        (row.original.status || '').toLowerCase().includes(searchValue) ||
+        (row.original.account_data || '').toLowerCase().includes(searchValue) ||
+        (row.original.archive_link || '').toLowerCase().includes(searchValue) ||
+        (row.original.profile_link || '').toLowerCase().includes(searchValue);
+
+      const matchesStatus =
+        selectedStatuses.length === 0 ||
+        selectedStatuses.includes(row.original.status);
+      const matchesTransfer =
+        selectedTransfers.length === 0 ||
+        (selectedTransfers.includes(t('AllAccounts.selects.transferYes')) &&
+          row.original.destination) ||
+        (selectedTransfers.includes(t('AllAccounts.selects.transferNot')) &&
+          !row.original.destination);
+      const matchesSeller =
+        selectedSellerIds.length === 0 ||
+        selectedSellerIds.includes(String(row.original.seller?.seller_id));
+      const matchesInSet =
+        selectedInSet.length === 0 ||
+        (selectedInSet.includes(t('AllAccounts.selects.inSetYes')) &&
+          row.original.in_set) ||
+        (selectedInSet.includes(t('AllAccounts.selects.inSetNo')) &&
+          !row.original.in_set);
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesTransfer &&
+        matchesSeller &&
+        matchesInSet
+      );
+    },
+    [
+      selectedStatuses,
+      selectedTransfers,
+      selectedSellerIds,
+      selectedInSet,
+      categoryMap,
+      t,
+    ]
+  );
+
   const exportSalesReport = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Sales Report');
@@ -573,6 +634,7 @@ export default function AllAccountsSection() {
       'Replace Reason',
       'Category Name',
       'Subcategory Name',
+      'Profile Link',
     ];
     sheet.addRow(columns);
 
@@ -610,6 +672,7 @@ export default function AllAccountsSection() {
         account.replace_reason || 'N/A',
         account.subcategory?.category?.account_category_name || 'N/A',
         account.subcategory?.account_subcategory_name || 'N/A',
+        account.profile_link || 'N/A',
       ]);
     });
 
@@ -695,49 +758,7 @@ export default function AllAccountsSection() {
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     autoResetPageIndex: false,
-    globalFilterFn: (row, columnId, filterValue) => {
-      const searchValue = filterValue?.toLowerCase?.() || '';
-      const categoryName =
-        categoryMap.get(row.original.subcategory?.account_category_id) || 'N/A';
-      const matchesSearch =
-        searchValue === '' ||
-        String(row.original.account_id).includes(searchValue) ||
-        row.original.account_name.toLowerCase().includes(searchValue) ||
-        categoryName.toLowerCase().includes(searchValue) ||
-        (row.original.seller?.seller_name || '')
-          .toLowerCase()
-          .includes(searchValue) ||
-        (row.original.status || '').toLowerCase().includes(searchValue) ||
-        (row.original.account_data || '').toLowerCase().includes(searchValue) ||
-        (row.original.archive_link || '').toLowerCase().includes(searchValue);
-
-      const matchesStatus =
-        selectedStatuses.length === 0 ||
-        selectedStatuses.includes(row.original.status);
-      const matchesTransfer =
-        selectedTransfers.length === 0 ||
-        (selectedTransfers.includes(t('AllAccounts.selects.transferYes')) &&
-          row.original.destination) ||
-        (selectedTransfers.includes(t('AllAccounts.selects.transferNot')) &&
-          !row.original.destination);
-      const matchesSeller =
-        selectedSellerIds.length === 0 ||
-        selectedSellerIds.includes(String(row.original.seller?.seller_id));
-      const matchesInSet =
-        selectedInSet.length === 0 ||
-        (selectedInSet.includes(t('AllAccounts.selects.inSetYes')) &&
-          row.original.in_set) ||
-        (selectedInSet.includes(t('AllAccounts.selects.inSetNo')) &&
-          !row.original.in_set);
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesTransfer &&
-        matchesSeller &&
-        matchesInSet
-      );
-    },
+    globalFilterFn,
   });
 
   const handleSaveSettings = (newSelectedColumns: string[]) => {
