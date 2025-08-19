@@ -60,7 +60,7 @@ export interface UpdateUserRequest {
   password?: string;
   first_name?: string;
   last_name?: string;
-  email?: string;
+  email?: string | null;
   is_admin?: boolean;
   is_referral?: boolean;
   telegram_id?: number;

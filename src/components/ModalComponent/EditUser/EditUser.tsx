@@ -30,8 +30,23 @@ interface FormData {
   secondName: string;
   tgId: number;
   tgNick: string;
-  email?: string;
+  email?: string | null;
   roleId?: number;
+}
+
+interface UpdateUserRequest {
+  user_id: number;
+  login?: string;
+  password?: string;
+  first_name?: string;
+  last_name?: string;
+  telegram_id?: number;
+  telegram_username?: string;
+  email?: string | null;
+  create_seller?: boolean;
+  is_admin?: boolean;
+  role_id?: number;
+  notifications_for_subcategories?: number[];
 }
 
 interface EditUserProps {
@@ -81,6 +96,18 @@ export default function EditUser({
   );
   const hasLoadedRef = useRef(false);
 
+  const initialFormValues = useRef<FormData>({
+    login: user.login,
+    name: user.first_name,
+    secondName: user.last_name,
+    tgId: user.telegram_id,
+    tgNick: user.telegram_username,
+    email: user.email || null,
+    pass: undefined,
+    confirmPass: undefined,
+    roleId: user?.role?.role_id,
+  });
+
   const {
     register,
     handleSubmit,
@@ -88,18 +115,11 @@ export default function EditUser({
     watch,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: {
-      login: user.login,
-      name: user.first_name,
-      secondName: user.last_name,
-      tgId: user.telegram_id,
-      tgNick: user.telegram_username,
-      email: user.email,
-    },
+    defaultValues: initialFormValues.current,
     mode: 'onChange',
   });
 
-  const password = watch('pass');
+  const watchedFields = watch();
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -147,27 +167,63 @@ export default function EditUser({
       return;
     }
 
+    const changedFields: UpdateUserRequest = { user_id: user.user_id };
+
+    if (data.login !== initialFormValues.current.login) {
+      changedFields.login = data.login;
+    }
+    if (data.pass && data.pass !== initialFormValues.current.pass) {
+      changedFields.password = data.pass;
+    }
+    if (data.name !== initialFormValues.current.name) {
+      changedFields.first_name = data.name;
+    }
+    if (data.secondName !== initialFormValues.current.secondName) {
+      changedFields.last_name = data.secondName;
+    }
+    if (Number(data.tgId) !== initialFormValues.current.tgId) {
+      changedFields.telegram_id = Number(data.tgId);
+    }
+    if (data.tgNick !== initialFormValues.current.tgNick) {
+      changedFields.telegram_username = data.tgNick;
+    }
+    if (data.email !== initialFormValues.current.email) {
+      changedFields.email = data.email || null;
+    }
+
+    if (isSeller !== !!user.seller) {
+      changedFields.create_seller = isSeller;
+    }
+
+    if (isAdminRoleSelected !== user.is_admin) {
+      changedFields.is_admin = isAdminRoleSelected;
+    }
+    if (!isAdminRoleSelected && selectedRoleId !== user?.role?.role_id) {
+      changedFields.role_id = selectedRoleId;
+    }
+
     const subcatIds = subcategories
       .filter(sub => addedSubcategories.includes(sub.account_subcategory_name))
       .map(sub => sub.account_subcategory_id);
+    const initialSubcatIds = user.notifications_for_subcategories || [];
+    if (
+      isNotificationsEnabled !==
+        !!user.notifications_for_subcategories?.length ||
+      JSON.stringify(subcatIds.sort()) !==
+        JSON.stringify(initialSubcatIds.sort())
+    ) {
+      changedFields.notifications_for_subcategories = isNotificationsEnabled
+        ? subcatIds
+        : [];
+    }
 
-    const userData = {
-      user_id: user.user_id,
-      login: data.login,
-      ...(data.pass && { password: data.pass }),
-      first_name: data.name,
-      create_seller: isSeller,
-      last_name: data.secondName,
-      telegram_id: Number(data.tgId),
-      telegram_username: data.tgNick,
-      email: data.email,
-      is_admin: isAdminRoleSelected,
-      role_id: isAdminRoleSelected ? undefined : selectedRoleId,
-      notifications_for_subcategories: isNotificationsEnabled ? subcatIds : [],
-    };
+    if (Object.keys(changedFields).length <= 1) {
+      toast.info(t('UserSection.modalEdit.noChanges') || 'No changes detected');
+      return;
+    }
 
     try {
-      await editUser(userData);
+      await editUser(changedFields);
       toast.success(
         t('UserSection.modalEdit.successMessage') || 'User updated successfully'
       );
@@ -175,6 +231,7 @@ export default function EditUser({
         limit: pagination.pageSize,
         offset: pagination.pageIndex,
       });
+      initialFormValues.current = { ...data, roleId: selectedRoleId };
       onClose();
     } catch (error) {
       if (error === 'Such user already exists') {
@@ -465,7 +522,7 @@ export default function EditUser({
               {...register('confirmPass', {
                 validate: value =>
                   !value ||
-                  value === password ||
+                  value === watchedFields.pass ||
                   t('UserSection.modalCreate.passwordMismatch'),
               })}
             />
