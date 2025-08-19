@@ -177,9 +177,7 @@ export default function EditUser({
       });
       onClose();
     } catch (error) {
-      if (
-        error === 'Such user already exists'
-      ) {
+      if (error === 'Such user already exists') {
         toast.error(t('UserSection.modalCreate.errorMessageUserExist'));
       } else {
         toast.error(`${t('UserSection.modalEdit.errorMessage')} : ${error}`);
@@ -307,7 +305,6 @@ export default function EditUser({
         ? [t('UserSection.modalCreate.jobSelect'), ...roleOptions]
         : [t('UserSection.modalCreate.jobSelect')];
 
-    // Додаємо опцію "Admin", якщо поточний користувач є адміном
     if (isAdmin) {
       baseOptions.push(t('UserSection.modalCreate.adminRole'));
     }

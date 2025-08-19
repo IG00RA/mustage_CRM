@@ -417,8 +417,12 @@ export default function AllAccountsSection() {
       account.upload_datetime || 'N/A',
     'AllAccounts.modalUpdate.selects.soldDate': account =>
       account.sold_datetime || 'N/A',
-    'AllAccounts.modalUpdate.selects.clientName': account =>
+    'AllAccounts.modalUpdate.selects.destination': account =>
       account.client_name || 'N/A',
+    'AllAccounts.modalUpdate.selects.loadDate': account =>
+      account.upload_datetime || 'N/A',
+    'AllAccounts.modalUpdate.selects.sellDate': account =>
+      account.sold_datetime || 'N/A',
   };
 
   const fieldMap: Record<string, string> = {
@@ -432,7 +436,9 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.profileLink': 'profile_link',
     'AllAccounts.modalUpdate.selects.uploadDate': 'upload_datetime',
     'AllAccounts.modalUpdate.selects.soldDate': 'sold_datetime',
-    'AllAccounts.modalUpdate.selects.clientName': 'client_name',
+    'AllAccounts.modalUpdate.selects.destination': 'client_name',
+    'AllAccounts.modalUpdate.selects.loadDate': 'upload_datetime',
+    'AllAccounts.modalUpdate.selects.sellDate': 'sold_datetime',
   };
 
   const columns: ColumnDef<Account>[] = useMemo(() => {
