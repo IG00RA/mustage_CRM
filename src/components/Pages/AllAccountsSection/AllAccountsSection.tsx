@@ -45,6 +45,9 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.data',
   'AllAccounts.modalUpdate.selects.mega',
   'AllAccounts.modalUpdate.selects.profileLink',
+  'AllAccounts.modalUpdate.selects.loadDate',
+  'AllAccounts.modalUpdate.selects.sellDate',
+  'AllAccounts.modalUpdate.selects.destination',
 ];
 
 export default function AllAccountsSection() {
@@ -410,6 +413,12 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.mega': account => account.archive_link,
     'AllAccounts.modalUpdate.selects.profileLink': account =>
       account.profile_link,
+    'AllAccounts.modalUpdate.selects.uploadDate': account =>
+      account.upload_datetime || 'N/A',
+    'AllAccounts.modalUpdate.selects.soldDate': account =>
+      account.sold_datetime || 'N/A',
+    'AllAccounts.modalUpdate.selects.clientName': account =>
+      account.client_name || 'N/A',
   };
 
   const fieldMap: Record<string, string> = {
@@ -421,6 +430,9 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.data': 'account_data',
     'AllAccounts.modalUpdate.selects.mega': 'archive_link',
     'AllAccounts.modalUpdate.selects.profileLink': 'profile_link',
+    'AllAccounts.modalUpdate.selects.uploadDate': 'upload_datetime',
+    'AllAccounts.modalUpdate.selects.soldDate': 'sold_datetime',
+    'AllAccounts.modalUpdate.selects.clientName': 'client_name',
   };
 
   const columns: ColumnDef<Account>[] = useMemo(() => {
@@ -501,7 +513,19 @@ export default function AllAccountsSection() {
   const exportFilteredToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Filtered Accounts');
-    sheet.addRow(selectedColumns.map(colId => t(colId)));
+    const columnHeaders = selectedColumns.map(colId => t(colId));
+    if (!selectedColumns.includes('AllAccounts.modalUpdate.selects.loadDate')) {
+      columnHeaders.push(t('AllAccounts.modalUpdate.selects.loadDate'));
+    }
+    if (!selectedColumns.includes('AllAccounts.modalUpdate.selects.sellDate')) {
+      columnHeaders.push(t('AllAccounts.modalUpdate.selects.sellDate'));
+    }
+    if (
+      !selectedColumns.includes('AllAccounts.modalUpdate.selects.destination')
+    ) {
+      columnHeaders.push(t('AllAccounts.modalUpdate.selects.destination'));
+    }
+    sheet.addRow(columnHeaders);
 
     const fetchParams: FetchAllAccountsParams = {
       subcategory_ids:
@@ -534,12 +558,30 @@ export default function AllAccountsSection() {
 
     const { items } = await fetchAccounts(fetchParams, false);
     items.forEach(account => {
-      sheet.addRow(selectedColumns.map(colId => columnDataMap[colId](account)));
+      const rowData = selectedColumns.map(colId =>
+        columnDataMap[colId](account)
+      );
+      if (
+        !selectedColumns.includes('AllAccounts.modalUpdate.selects.loadDate')
+      ) {
+        rowData.push(account.upload_datetime || 'N/A');
+      }
+      if (
+        !selectedColumns.includes('AllAccounts.modalUpdate.selects.sellDate')
+      ) {
+        rowData.push(account.sold_datetime || 'N/A');
+      }
+      if (
+        !selectedColumns.includes('AllAccounts.modalUpdate.selects.destination')
+      ) {
+        rowData.push(account.client_name || 'N/A');
+      }
+      sheet.addRow(rowData);
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml sheet',
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
     saveAs(blob, 'filtered_accounts_report.xlsx');
   };
@@ -560,6 +602,80 @@ export default function AllAccountsSection() {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
     saveAs(blob, 'all_accounts_report.xlsx');
+  };
+
+  const exportSalesReport = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Sales Report');
+    const columns = [
+      'Account ID',
+      'Дата загрузки',
+      'Дата продажи',
+      'Имя воркера',
+      'Имя тимлида',
+      'Имя клиента',
+      'Имся акаунта',
+      'Цена',
+      'Статус',
+      'Селлер',
+      'Причина замены',
+      'Категория',
+      'Наименование',
+      'Ссылка на профиль',
+    ];
+    sheet.addRow(columns);
+
+    const fetchParams: FetchAllAccountsParams = {
+      status: ['SOLD', 'REPLACED', 'SELF USE'],
+      limit: totalAllRows,
+    };
+
+    if (
+      sellDateRange === 'custom' &&
+      sellCustomStartDate &&
+      sellCustomEndDate
+    ) {
+      fetchParams.sold_start_date = sellCustomStartDate;
+      fetchParams.sold_end_date = sellCustomEndDate;
+    } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
+      const { start, end } = getDateRange(sellDateRange);
+      fetchParams.sold_start_date = formatDate(start);
+      fetchParams.sold_end_date = formatDate(end);
+    }
+
+    const { items } = await fetchAccounts(fetchParams, false);
+    items.forEach(account => {
+      sheet.addRow([
+        account.account_id,
+        account.upload_datetime || 'N/A',
+        account.sold_datetime || 'N/A',
+        account.worker_name || 'N/A',
+        account.teamlead_name || 'N/A',
+        account.client_name || 'N/A',
+        account.account_name || 'N/A',
+        account.price !== null ? account.price : 'N/A',
+        account.status || 'N/A',
+        account.seller?.seller_name || 'N/A',
+        account.replace_reason || 'N/A',
+        account.subcategory?.category?.account_category_name || 'N/A',
+        account.subcategory?.account_subcategory_name || 'N/A',
+        account.profile_link || 'N/A',
+      ]);
+    });
+
+    const period =
+      sellDateRange === 'custom' && sellCustomStartDate && sellCustomEndDate
+        ? `${sellCustomStartDate}_to_${sellCustomEndDate}`
+        : sellDateRange !== 'all'
+        ? sellDateRange
+        : 'all_time';
+    const fileName = `sales_accounts_report_${period}.xlsx`;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, fileName);
   };
 
   const globalFilterFn = useCallback(
@@ -616,80 +732,6 @@ export default function AllAccountsSection() {
       t,
     ]
   );
-
-  const exportSalesReport = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Sales Report');
-    const columns = [
-      'Account ID',
-      'Upload DateTime',
-      'Sold DateTime',
-      'Worker Name',
-      'Teamlead Name',
-      'Client Name',
-      'Account Name',
-      'Price',
-      'Status',
-      'Seller Name',
-      'Replace Reason',
-      'Category Name',
-      'Subcategory Name',
-      'Profile Link',
-    ];
-    sheet.addRow(columns);
-
-    const fetchParams: FetchAllAccountsParams = {
-      status: ['SOLD', 'REPLACED'],
-      limit: totalAllRows,
-    };
-
-    if (
-      sellDateRange === 'custom' &&
-      sellCustomStartDate &&
-      sellCustomEndDate
-    ) {
-      fetchParams.sold_start_date = sellCustomStartDate;
-      fetchParams.sold_end_date = sellCustomEndDate;
-    } else if (sellDateRange !== 'custom' && sellDateRange !== 'all') {
-      const { start, end } = getDateRange(sellDateRange);
-      fetchParams.sold_start_date = formatDate(start);
-      fetchParams.sold_end_date = formatDate(end);
-    }
-
-    const { items } = await fetchAccounts(fetchParams, false);
-    items.forEach(account => {
-      sheet.addRow([
-        account.account_id,
-        account.upload_datetime || 'N/A',
-        account.sold_datetime || 'N/A',
-        account.worker_name || 'N/A',
-        account.teamlead_name || 'N/A',
-        account.client_name || 'N/A',
-        account.account_name || 'N/A',
-        account.price !== null ? account.price : 'N/A',
-        account.status || 'N/A',
-        account.seller?.seller_name || 'N/A',
-        account.replace_reason || 'N/A',
-        account.subcategory?.category?.account_category_name || 'N/A',
-        account.subcategory?.account_subcategory_name || 'N/A',
-        account.profile_link || 'N/A',
-      ]);
-    });
-
-    const period =
-      sellDateRange === 'custom' && sellCustomStartDate && sellCustomEndDate
-        ? `${sellCustomStartDate}_to_${sellCustomEndDate}`
-        : sellDateRange !== 'all'
-        ? sellDateRange
-        : 'all_time';
-    const fileName = `sales_accounts_report_${period}.xlsx`;
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-    saveAs(blob, fileName);
-  };
 
   const categoryOptions = useMemo(
     () => [
