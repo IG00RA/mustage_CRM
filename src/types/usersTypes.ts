@@ -21,7 +21,7 @@ export interface User {
   last_name: string;
   is_admin?: boolean;
   is_referral?: boolean;
-  email?: string;
+  email?: string | null;
   telegram_id: number;
   telegram_username: string;
   role?: {
