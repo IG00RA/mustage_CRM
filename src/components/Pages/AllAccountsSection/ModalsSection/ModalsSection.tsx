@@ -22,18 +22,8 @@ interface ModalsSectionProps {
   onExportAllToExcel: () => Promise<void>;
   onExportSalesReport: () => Promise<void>;
   t?: (key: string) => string;
+  settingsOptions: string[];
 }
-
-const settingsOptions = [
-  'AllAccounts.modalUpdate.selects.id',
-  'AllAccounts.modalUpdate.selects.name',
-  'AllAccounts.modalUpdate.selects.category',
-  'AllAccounts.modalUpdate.selects.seller',
-  'AllAccounts.modalUpdate.selects.transfer',
-  'AllAccounts.modalUpdate.selects.data',
-  'AllAccounts.modalUpdate.selects.mega',
-  'AllAccounts.modalUpdate.selects.profileLink',
-];
 
 export const ModalsSection = ({
   isOpenEdit,
@@ -48,6 +38,7 @@ export const ModalsSection = ({
   onExportFilteredToExcel,
   onExportAllToExcel,
   onExportSalesReport,
+  settingsOptions,
 }: ModalsSectionProps) => {
   const [isExportFilteredLoading, setIsExportFilteredLoading] = useState(false);
   const [isExportAllLoading, setIsExportAllLoading] = useState(false);

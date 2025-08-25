@@ -40,6 +40,7 @@ const settingsOptions = [
   'AllAccounts.modalUpdate.selects.id',
   'AllAccounts.modalUpdate.selects.name',
   'AllAccounts.modalUpdate.selects.category',
+  'AllAccounts.modalUpdate.selects.subCategory',
   'AllAccounts.modalUpdate.selects.seller',
   'AllAccounts.modalUpdate.selects.transfer',
   'AllAccounts.modalUpdate.selects.data',
@@ -403,6 +404,8 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.name': account => account.account_name,
     'AllAccounts.modalUpdate.selects.category': account =>
       categoryMap.get(account.subcategory?.account_category_id) || 'N/A',
+    'AllAccounts.modalUpdate.selects.subCategory': account =>
+      account.subcategory.account_subcategory_name || 'N/A',
     'AllAccounts.modalUpdate.selects.seller': account =>
       account.seller?.seller_name || 'N/A',
     'AllAccounts.modalUpdate.selects.transfer': account =>
@@ -429,6 +432,7 @@ export default function AllAccountsSection() {
     'AllAccounts.modalUpdate.selects.id': 'account_id',
     'AllAccounts.modalUpdate.selects.name': 'account_name',
     'AllAccounts.modalUpdate.selects.category': 'category',
+    'AllAccounts.modalUpdate.selects.subCategory': 'account_subcategory_name',
     'AllAccounts.modalUpdate.selects.seller': 'seller',
     'AllAccounts.modalUpdate.selects.transfer': 'status',
     'AllAccounts.modalUpdate.selects.data': 'account_data',
@@ -1019,6 +1023,7 @@ export default function AllAccountsSection() {
         isOpenAccHistory={isOpenAccHistory}
         selectedAccount={selectedAccount}
         onToggleEditModal={toggleEditModal}
+        settingsOptions={settingsOptions}
         onToggleDownload={toggleDownload}
         onToggleAccHistoryModal={toggleAccHistoryModal}
         selectedColumns={selectedColumns}
