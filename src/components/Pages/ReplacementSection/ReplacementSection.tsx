@@ -43,9 +43,12 @@ export default function ReplacementSection() {
     setIsLoading(true);
     try {
       const response = await searchAccounts(accountNames);
+      const filteredFoundAccounts = response.found_accounts.filter(
+        acc => acc.status !== 'SELF USE'
+      );
       setSearchResults({
         inputAccounts: accountNames,
-        foundAccounts: response.found_accounts,
+        foundAccounts: filteredFoundAccounts,
         notFoundAccounts: Object.values(response.not_found_accounts).flat(),
       });
       setIsOpenSearch(true);
