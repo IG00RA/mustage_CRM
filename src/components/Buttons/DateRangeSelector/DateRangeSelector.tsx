@@ -264,6 +264,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
                 yearDropdownItemNumber={15}
                 scrollableYearDropdown
                 showMonthDropdown
+                calendarStartDay={1}
               />
             </div>
           )}
